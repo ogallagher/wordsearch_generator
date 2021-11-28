@@ -1,0 +1,42 @@
+{
+	"//comment": 
+	"Each range is a either a range denoted by two extremes, or a set of options denoted by a list of length≠2.",
+	
+	"en": {
+		"//comment": "english. a-z, A-Z.",
+		
+		"ranges": [
+			[97,122]
+		],
+		
+		"upper_ranges": [
+			[65,90]
+		]
+	},
+	
+	"es": {
+		"//comment": "español. a-z, áéíóúü, A-Z, ÁÉÍÓÚÜ.",
+		
+		"ranges": [
+			[97,122],
+			[225,233,237,243,250,252]
+		],
+		
+		"upper_ranges": [
+			[65,90],
+			[193,201,205,211,218,220]
+		]
+	},
+	
+	"ko": {
+		"//comment": "한국어. 각-힣",
+		
+		"ranges": [
+			[44032,55203]
+		],
+		
+		"upper_ranges": [
+			[44032,55203]
+		]
+	}
+}

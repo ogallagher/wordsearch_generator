@@ -1,0 +1,12 @@
+{
+	"language": "es",
+	"case": "upper",
+	"size": 15,
+	"words": [
+		"MANZANA:la fruta del otoño",
+		"CALAVERA:hueso de cabeza",
+		"TIJERAS:corta papel",
+		"BARCO:flota en agua",
+		"PÁJARO:plumas y picos"
+	]
+}
