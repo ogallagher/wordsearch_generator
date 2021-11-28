@@ -10,7 +10,7 @@ import rl from 'readline'
 
 // local imports
 
-import WordsearchGenerator from './wordsearch_generator.js'
+import { WordsearchGenerator } from './wordsearch_generator.cjs'
 
 const cli = rl.createInterface({
 	input: process.stdin,
@@ -52,7 +52,7 @@ cli.question('create with file [f] or interactively [i]? ', (input_mode) => {
 			if (width != undefined) {
 				width = parseInt(width)
 			}
-	
+			
 			wordsearch = new WordsearchGenerator(
 				// 'ko',
 				// 'es','upper',
@@ -66,13 +66,13 @@ cli.question('create with file [f] or interactively [i]? ', (input_mode) => {
 })
 
 function on_alphabet_load() {
-	// console.log(
-	// 	`DEBUG ${
-	// 		wordsearch.language
-	// 	} alphabet = ${
-	// 		JSON.stringify(wordsearch.alphabet,null,2)
-	// 	}`
-	// )
+	console.log(
+		`DEBUG ${
+			wordsearch.language
+		} alphabet = ${
+			JSON.stringify(wordsearch.alphabet,null,2)
+		}`
+	)
 	
 	// test_random_cells(25)
 	

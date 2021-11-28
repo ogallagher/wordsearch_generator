@@ -14,5 +14,9 @@
     "wordsearch"
   ],
   "author": "Owen Gallagher",
-  "license": "SEE LICENSE IN license.txt"
+  "license": "SEE LICENSE IN license.txt",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1"
+  }
 }

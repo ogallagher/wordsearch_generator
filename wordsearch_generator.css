@@ -1,0 +1,35 @@
+/*
+
+Owen Gallagher
+2021-11-28
+
+*/
+
+.wordsearch {
+	font-family: monospace;
+}
+
+.ws-row {
+	
+}
+
+.ws-cell {
+	color: black;
+	text-align: center;
+	font-weight: bold;
+	
+	padding: 4px 8px;
+	/*margin: 2px 2px;*/
+	
+	background-color: white;
+	
+	cursor: pointer;
+	
+	/*
+	border-style: solid;
+	border-color: black;
+	border-width: 1px 1px 1px 1px;*/
+}
+.ws-cell:hover {
+	background-color: gray;
+}

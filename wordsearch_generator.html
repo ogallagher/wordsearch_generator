@@ -1,0 +1,184 @@
+<html>
+	<head>
+        <meta charset="utf-8"/>
+        <!--scales viewport depending on worldspace device width-->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		
+        <meta name="description" content="Multilingual wordsearch generator."/>
+        <meta name="author" content="Owen Gallagher <github.com/ogallagher>"/>
+		<meta name="page-name" content="wordsearch_generator.html"/>
+		
+		<!-- bootstrap css -->
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+		
+		<link href="/wordsearch_generator.css" rel="stylesheet"/>
+		
+		<script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js"></script>
+		
+		<script src="/wordsearch_generator.cjs" type="text/javascript"></script>
+		<script type="text/javascript">
+			const INPUT_FILE = 0
+			const INPUT_FORM = 1
+			let wordsearch_input_type
+			
+			window.onload = function(e) {
+				set_wordsearch_input_type(INPUT_FILE)
+				
+				// handle input choice
+				$('#wordsearch-input-file').click(function() {
+					set_wordsearch_input_type(INPUT_FILE)
+				})
+				$('#wordsearch-input-form').click(function() {
+					set_wordsearch_input_type(INPUT_FORM)
+				})
+				
+				// handle description file upload
+				let description_json
+				$('.wordsearch-file').on('change', function() {
+					let filereader = new FileReader()
+					filereader.onload = function() {
+						description_json = filereader.result
+						on_wordsearch_input_file(description_json)
+					}
+					filereader.readAsText($(this).prop('files')[0])
+				})
+				
+				// handle reload button
+				$('.wordsearch-reload').click(function() {
+					on_wordsearch_input_file(description_json)
+				})
+			}
+			
+			function set_wordsearch_input_type(input_type) {
+				wordsearch_input_type = input_type
+				
+				switch (input_type) {
+					case INPUT_FILE:
+						$('#wordsearch-input-file').removeClass('btn-outline-secondary').addClass('btn-secondary')
+						$('#wordsearch-input-form').removeClass('btn-secondary').addClass('btn-outline-secondary')
+						$('.wordsearch-file').show()
+						break
+						
+					case INPUT_FORM:
+						$('#wordsearch-input-file').removeClass('btn-secondary').addClass('btn-outline-secondary')
+						$('#wordsearch-input-form').removeClass('btn-outline-secondary').addClass('btn-secondary')
+						$('.wordsearch-file').hide()
+						break
+				}
+			}
+			
+			function on_wordsearch_input_file(wordsearch_json) {
+				if (wordsearch_json != undefined) {
+					let description = JSON.parse(wordsearch_json)
+					let wordsearch = new WordsearchGenerator(
+						description['language'],
+						description['case'],
+						description['size']
+					)
+					wordsearch.init_promise.then(() => {
+						load_word_clues(wordsearch, description['words'])
+					
+						display_wordsearch(wordsearch)
+					})
+				}
+				else {
+					console.log('ERROR wordsearch description not defined')
+				}
+			}
+			
+			function load_word_clues(wordsearch, word_clues, clue_delim=':') {
+				for (let word_clue of word_clues) {
+					let array = word_clue.split(clue_delim)
+		
+					let word = array[0]
+					let clue = word
+					if (array.length == 2) {
+						clue = array[1]
+					}
+					
+					if (word.length <= wordsearch.grid.length) {
+						if (!wordsearch.add_word_clue(word,clue)) {
+							console.log(`ERROR failed to find a place for ${word}`)
+						}
+					}
+					else {
+						console.log(
+							`ERROR ${word} length ${word.length} longer than board width ${
+								wordsearch.grid.length
+							}`
+						)
+					}
+				}
+			}
+			
+			function display_wordsearch(wordsearch) {
+				// console.log(`DEBUG final grid:\n${wordsearch.grid_string()}`)
+				// console.log(`DEBUG clues:\n${wordsearch.clues.join('\n')}`)
+				
+				let wel = $('.wordsearch')
+				.html('')
+				
+				for (let row of wordsearch.grid) {
+					let rel = $(`
+						<div class="row ws-row"></div>
+					`)
+					
+					for (let cell of row) {
+						let cel = $(`
+							<div class="col-auto ws-cell">${cell}</div>
+						`)
+						rel.append(cel)
+					}
+					
+					wel.append(rel)
+				}
+			}
+		</script>
+		
+		<title>
+			Multilingual Wordsearch Generator
+		</title>
+	</head>
+	
+	<body class="w-100 h-100 bg-dark text-light">
+		<header class="container-fluid">
+			header
+		</header>
+		
+		<section class="container">
+			<div class="wordsearch-form">
+				<div class="row">
+					<div class="col">
+						<div class="input-group mb-3">
+							<button class="btn btn-outline-secondary" id="wordsearch-input-file">
+								File
+							</button>
+							<button class="btn btn-outline-secondary" id="wordsearch-input-form">
+								Form
+							</button>
+						</div>
+					</div>
+				</div>
+				
+				<div class="row">
+					<div class="col">
+						<input type="file" class="wordsearch-file form-control">
+					</div>
+					
+					<div class="col-auto">
+						<button class="btn btn-primary wordsearch-reload">
+							Reload
+						</button>
+					</div>
+				</div>
+			</div>
+			
+			<div class="wordsearch rounded p-2">
+			</div>
+		</section>
+		
+		<footer class="container-fluid">
+			footer
+		</footer>
+	</body>
+</html>
