@@ -21,6 +21,8 @@
 			const INPUT_FORM = 1
 			let wordsearch_input_type
 			
+			let endpoint_cells = []
+			
 			window.onload = function(e) {
 				set_wordsearch_input_type(INPUT_FILE)
 				
@@ -115,23 +117,130 @@
 				// console.log(`DEBUG final grid:\n${wordsearch.grid_string()}`)
 				// console.log(`DEBUG clues:\n${wordsearch.clues.join('\n')}`)
 				
+				// clear endpoint_cells
+				endpoint_cells = []
+				
 				let wel = $('.wordsearch')
 				.html('')
 				
+				let y=0
 				for (let row of wordsearch.grid) {
 					let rel = $(`
-						<div class="row ws-row"></div>
+						<div class="row flex-nowrap justify-content-center ws-row"></div>
 					`)
 					
+					let x=0
 					for (let cell of row) {
-						let cel = $(`
-							<div class="col-auto ws-cell">${cell}</div>
-						`)
+						let cel = $(
+							`<div 
+								class="col-auto ws-cell"
+								data-x="${x}" data-y="${y}" data-word="${cell}"
+								data-on="false">
+							${cell}
+							</div>`
+						)
+						
+						cel.click(function() {
+							on_cell_click($(this), wordsearch)
+						})
+						
 						rel.append(cel)
+						x++
 					}
 					
 					wel.append(rel)
+					y++
 				}
+				
+				display_answers(wordsearch.words, wordsearch.clues)
+			}
+			
+			function display_answers(words, clues) {
+				let answersjq = $('.answers').html('')
+				
+				for (let i=0; i<words.length; i++) {
+					let rowjq = $(
+						`<li class="ws-answer" data-word-idx="${i}">
+							<span class="ws-clue">${clues[i]}</span> &rarr;
+							<span class="ws-word" data-found="false">${words[i]}</span>
+						</li>`
+					)
+					
+					answersjq.append(rowjq)
+				}
+			}
+			
+			function on_cell_click(cell, wordsearch) {
+				// console.log(
+				// 	`DEBUG cell ${cell.attr('data-x')},${cell.attr('data-y')}=${
+				// 		cell.attr('data-word')
+				// 	} clicked`
+				// )
+				
+				let is_on = !cell_is_on(cell)
+				cell.attr('data-on', is_on)
+				
+				if (is_on) {
+					if (endpoint_cells.length < 2) {
+						// add to endpoint_cells
+						endpoint_cells.push(cell)
+					}
+					
+					if (endpoint_cells.length >= 2) {
+						// check endpoints
+						let ab = 
+							`${endpoint_cells[0].attr('data-x')},${endpoint_cells[0].attr('data-y')}-`
+							+ `${endpoint_cells[1].attr('data-x')},${endpoint_cells[1].attr('data-y')}`
+						
+						let word_idx = wordsearch.point_to_word_idx[ab]
+						if (word_idx != undefined) {
+							console.log(`DEBUG word ${word_idx}=${wordsearch.words[word_idx]} found`)
+							let a = endpoint_cells[0]
+							.attr('data-on',false)
+							
+							let b = endpoint_cells[1]
+							.attr('data-on',false)
+							
+							let ax=parseInt(a.attr('data-x')), ay=parseInt(a.attr('data-y'))
+							let bx=parseInt(b.attr('data-x')), by=parseInt(b.attr('data-y'))
+							let dx=Math.sign(bx-ax), dy=Math.sign(by-ay)
+							
+							// mark all word cells as found
+							for (let x=ax,y=ay; x!=bx+dx || y!=by+dy; ) {
+								// console.log(`.ws-cell[data-x="${x}"][data-y="${y}"]`)
+								$(`.ws-cell[data-x="${x}"][data-y="${y}"]`)
+								.attr('data-found',true)
+								
+								x += dx
+								y += dy
+							}
+							
+							// reveal answer
+							$(`.ws-answer[data-word-idx="${word_idx}"] > .ws-word`)
+							.attr('data-found', true)
+						}
+						else {
+							console.log(`DEBUG endpoints not a word`)
+							for (let ec of endpoint_cells) {
+								ec.attr('data-on', false)
+							}
+						}
+						
+						// clear endpoint_cells
+						endpoint_cells = []
+					}
+				}
+				else {
+					// remove from endpoint_cells
+					let i = endpoint_cells.indexOf(cell)
+					if (i != -1) {
+						endpoint_cells.splice(i,1)
+					}
+				}
+			}
+			
+			function cell_is_on(cell) {
+				return cell.attr('data-on') === 'true'
 			}
 		</script>
 		
@@ -142,10 +251,9 @@
 	
 	<body class="w-100 h-100 bg-dark text-light">
 		<header class="container-fluid">
-			header
 		</header>
 		
-		<section class="container">
+		<section class="container my-4">
 			<div class="wordsearch-form">
 				<div class="row">
 					<div class="col">
@@ -175,10 +283,15 @@
 			
 			<div class="wordsearch rounded p-2">
 			</div>
+			
+			<h2>Answers</h2>
+			<div class="bg-light my-2">
+				<ol class="answers">
+				</ol>
+			</div>
 		</section>
 		
 		<footer class="container-fluid">
-			footer
 		</footer>
 	</body>
 </html>

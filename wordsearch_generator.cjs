@@ -313,8 +313,10 @@ class WordsearchGenerator {
 		
 		// add word index to point_to_word_idx for detecting answers
 		let n = wxys.length-1
-		this.point_to_word_idx[[ wxys[0][1],wxys[0][2] ]] = word_idx
-		this.point_to_word_idx[[ wxys[n][1],wxys[n][2] ]] = word_idx
+		let ab = `${wxys[0][1]},${wxys[0][2]}-${wxys[n][1]},${wxys[n][2]}`
+		let ba = `${wxys[n][1]},${wxys[n][2]}-${wxys[0][1]},${wxys[0][2]}`
+		this.point_to_word_idx[ab] = word_idx
+		this.point_to_word_idx[ba] = word_idx
 	}
 	
 	// static methods

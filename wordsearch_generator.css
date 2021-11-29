@@ -5,12 +5,17 @@ Owen Gallagher
 
 */
 
+body {
+	/* set root font size relative to default */
+	font-size: 100%;
+}
+
 .wordsearch {
 	font-family: monospace;
+	font-size: 2.25rem;
 }
 
 .ws-row {
-	
 }
 
 .ws-cell {
@@ -18,7 +23,7 @@ Owen Gallagher
 	text-align: center;
 	font-weight: bold;
 	
-	padding: 4px 8px;
+	padding: 2px 16px;
 	/*margin: 2px 2px;*/
 	
 	background-color: white;
@@ -32,4 +37,29 @@ Owen Gallagher
 }
 .ws-cell:hover {
 	background-color: gray;
+}
+.ws-cell[data-found="true"] {
+	color: white;
+	background-color: black;
+}
+.ws-cell[data-on="true"] {
+	color: white;
+	background-color: navy;
+}
+
+.ws-answer {
+	color: black;
+	font-size: 1.5rem;
+	margin-left: 16px;
+}
+
+.ws-clue {
+}
+
+.ws-word {
+	font-weight: bold;
+	color: navy;
+}
+.ws-word[data-found="false"] {
+	display: none;
 }
