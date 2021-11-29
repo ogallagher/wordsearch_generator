@@ -28,7 +28,7 @@ Promise.all([
 	environment = ENV_FRONTEND
 })
 .finally(() => {
-	console.log(`wordsearch_generator.js environment = ${environment}`)
+	// console.log(`wordsearch_generator.js environment = ${environment}`)
 })
 
 // class
@@ -355,7 +355,9 @@ class WordsearchGenerator {
 						reject()
 					}
 					else {
-						WordsearchGenerator.load_alphabet(JSON.parse(alphabets_json)[language])
+						WordsearchGenerator.load_alphabet(
+							JSON.parse(alphabets_json)[language], case_key, path
+						)
 						.then(resolve)
 						.catch(reject)
 					}
@@ -377,7 +379,7 @@ class WordsearchGenerator {
 				let ranges = alphabet[case_key]
 				let count_total = 0
 				let counts = []
-
+				
 				// count ranges
 				// determine relative size of each corresponding set to determine probability
 				for (let rset of ranges) {
@@ -401,7 +403,7 @@ class WordsearchGenerator {
 				let probabilities = counts.map((c) => {
 					return c/count_total
 				})
-
+				
 				alphabet[KEY_PROBABILITIES] = probabilities
 			
 				let accum_prob = 0
@@ -411,7 +413,7 @@ class WordsearchGenerator {
 					accum_probabilities[i] = accum_prob
 				}
 				alphabet[KEY_ACCUM_PROBABILITIES] = accum_probabilities
-			
+				
 				resolve(alphabet)
 			}
 			else {
