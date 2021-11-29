@@ -49,6 +49,22 @@
 				$('.wordsearch-reload').click(function() {
 					on_wordsearch_input_file(description_json)
 				})
+				
+				// handle word-clue add button click
+				$('#add-word-clue').click(function() {
+					let containerjq = $('#word-clues')
+					let rowjq = $(
+						`<div class="row word-clue mt-1">
+							<div class="col">
+								<input type="text" placeholder="word" class="word-clue-word form-control"/>
+							</div>
+							<div class="col">
+								<input type="text" placeholder="clue (optional)" class="word-clue-clue form-control"/>
+							</div>
+						</div>`
+					)
+					containerjq.append(rowjq)
+				})
 			}
 			
 			function set_wordsearch_input_type(input_type) {
@@ -59,12 +75,14 @@
 						$('#wordsearch-input-file').removeClass('btn-outline-secondary').addClass('btn-secondary')
 						$('#wordsearch-input-form').removeClass('btn-secondary').addClass('btn-outline-secondary')
 						$('.wordsearch-file').show()
+						$('.wordsearch-form').hide()
 						break
 						
 					case INPUT_FORM:
 						$('#wordsearch-input-file').removeClass('btn-secondary').addClass('btn-outline-secondary')
 						$('#wordsearch-input-form').removeClass('btn-outline-secondary').addClass('btn-secondary')
 						$('.wordsearch-file').hide()
+						$('.wordsearch-form').show()
 						break
 				}
 			}
@@ -254,7 +272,8 @@
 		</header>
 		
 		<section class="container my-4">
-			<div class="wordsearch-form">
+			<div>
+				<!-- input config/description method-->
 				<div class="row">
 					<div class="col">
 						<div class="input-group mb-3">
@@ -270,7 +289,39 @@
 				
 				<div class="row">
 					<div class="col">
+						<!-- file input -->
 						<input type="file" class="wordsearch-file form-control">
+						
+						<!-- form input -->
+						<div class="wordsearch-form">
+							<div class="mb-3">
+								<label class="h3" for="language">Language</label>
+								<input type="text" id="language" name="language" value="en" class="form-control"/>
+							</div>
+							
+							<div class="mb-3">
+								<label class="h3" for="case">Case</label>
+								<input type="text" id="case" name="case" value="lower" class="form-control"/>
+							</div>
+							
+							<div class="mb-3">
+								<label class="h3" for="size">Size</label>
+								<input type="text" id="size" name="size" value="10" class="form-control"/>
+							</div>
+							
+							<div class="">
+								<label class="h3" for="word-clues">Words (and clues)</label>
+								<div id="word-clues">
+								</div>
+								<div class="text-center p-2">
+									<button class="btn btn-secondary" id="add-word-clue">
+										<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+											<path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+										</svg>
+									</button>
+								</div>
+							</div>
+						</div>
 					</div>
 					
 					<div class="col-auto">
