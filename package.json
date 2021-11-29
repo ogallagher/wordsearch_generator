@@ -1,6 +1,6 @@
 {
   "name": "korean_wordsearch_generator",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Wordsearch generator, extensible for different languages.",
   "main": "main.js",
   "type": "module",
