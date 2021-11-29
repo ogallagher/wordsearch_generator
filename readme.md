@@ -18,6 +18,32 @@ Generates custom wordsearch puzzles with multiple supported languages.
 
 ![spanish example](docs/img/wordsearch\_webpage\_es.png)
 
+```
+node test_driver_cli.js 
+create with file [f] or interactively [i]? f
+wordsearch json description file: example_ko.json
+INFO placed 사과 in 1 attempts
+INFO placed 머리 in 1 attempts
+INFO placed 가위 in 1 attempts
+INFO placed 지름 in 1 attempts
+INFO placed 까치 in 1 attempts
+final grid:
+랉 쬶 지 퍹 쉂 룹 겡 뒅
+툗 꼵 뛑 름 뽍 뗞 벘 뤀
+쩢 뛑 뤃 붂 얛 위 졊 뢵
+뜗 좮 땩 둩 뿤 가 봝 윕
+귄 깓 콠 릶 컺 쵫 뫖 꿡
+몘 놖 까 먷 쥆 리 냯 퓅
+녥 큐 치 캷 과 머 듨 귱
+턪 뜗 몲 사 샹 죢 뱳 쪮
+clues:
+과일 중 하나
+head, 목 위에
+scissors
+diameter
+이름이 ㄲ로 시작하는 새
+```
+
 ## Use
 
 To run the playable webpage version:
