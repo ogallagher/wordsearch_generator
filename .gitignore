@@ -1,3 +1,9 @@
+# node dependencies
 node_modules
+
+# mac dir metadata
 .DS_Store
+
+# local only
+local
 

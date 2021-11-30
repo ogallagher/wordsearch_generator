@@ -20,11 +20,13 @@
 			const INPUT_FILE = 0
 			const INPUT_FORM = 1
 			let wordsearch_input_type
+			let wordsearch_is_random_subset
 			
 			let endpoint_cells = []
 			
 			window.onload = function(e) {
 				set_wordsearch_input_type(INPUT_FILE)
+				set_wordsearch_is_random_subset(false)
 				
 				// handle input choice
 				$('#wordsearch-input-file').click(function() {
@@ -65,6 +67,11 @@
 					)
 					containerjq.append(rowjq)
 				})
+				
+				// handle random subset button click
+				$('#random-subset').click(function() {
+					set_wordsearch_is_random_subset(!is_on($(this)))
+				})
 			}
 			
 			function set_wordsearch_input_type(input_type) {
@@ -84,6 +91,23 @@
 						$('.wordsearch-file').hide()
 						$('.wordsearch-form').show()
 						break
+				}
+			}
+			
+			function set_wordsearch_is_random_subset(is_random) {
+				wordsearch_is_random_subset = is_random
+				
+				// update button data
+				$('#random-subset')
+				.attr('data-on', is_random)
+				.addClass(is_random ? 'btn-secondary' : 'btn-outline-secondary')
+				.removeClass(is_random ? 'btn-outline-secondary' : 'btn-secondary')
+				
+				if (is_random) {
+					$('#random-subset-count').prop('disabled', false)
+				}
+				else {
+					$('#random-subset-count').prop('disabled', true)
 				}
 			}
 			
@@ -107,6 +131,35 @@
 			}
 			
 			function load_word_clues(wordsearch, word_clues, clue_delim=':') {
+				if (wordsearch_is_random_subset) {
+					let subset_count_jq = $('#random-subset-count')
+					if (subset_count_jq.val() == '') {
+						subset_count_jq.val(word_clues.length)
+					}
+					
+					// show answer count in random subset input
+					let subset_length = parseInt(subset_count_jq.val())
+					
+					// get random subset of words and clues
+					if (subset_length < word_clues.length && subset_length > 0) {
+						let subset_idx = new Set()
+						while (subset_idx.size < subset_length) {
+							subset_idx.add(Math.floor(Math.random() * word_clues.length))
+						}
+						
+						subset_idx = new Array(...subset_idx)
+						let subset = new Array(subset_length)
+						for (let i=0; i<subset_idx.length; i++) {
+							subset[i] = word_clues[subset_idx[i]]
+						}
+						
+						word_clues = subset
+					}
+				}
+				else {
+					$('#random-subset-count').val('')
+				}
+				
 				for (let word_clue of word_clues) {
 					let array = word_clue.split(clue_delim)
 		
@@ -174,6 +227,7 @@
 			}
 			
 			function display_answers(words, clues) {
+				// show answer word-clues
 				let answersjq = $('.answers').html('')
 				
 				for (let i=0; i<words.length; i++) {
@@ -195,10 +249,10 @@
 				// 	} clicked`
 				// )
 				
-				let is_on = !cell_is_on(cell)
-				cell.attr('data-on', is_on)
+				let cell_is_on = !is_on(cell)
+				cell.attr('data-on', cell_is_on)
 				
-				if (is_on) {
+				if (cell_is_on) {
 					if (endpoint_cells.length < 2) {
 						// add to endpoint_cells
 						endpoint_cells.push(cell)
@@ -257,8 +311,8 @@
 				}
 			}
 			
-			function cell_is_on(cell) {
-				return cell.attr('data-on') === 'true'
+			function is_on(jq) {
+				return jq.attr('data-on') === 'true'
 			}
 		</script>
 		
@@ -288,7 +342,7 @@
 				</div>
 				
 				<div class="row">
-					<div class="col">
+					<div class="col-md mb-3">
 						<!-- file input -->
 						<input type="file" class="wordsearch-file form-control">
 						
@@ -324,10 +378,19 @@
 						</div>
 					</div>
 					
-					<div class="col-auto">
-						<button class="btn btn-primary wordsearch-reload">
+					<div class="col-md-5">
+						<button class="btn btn-primary wordsearch-reload mb-3">
 							Reload
 						</button>
+						
+						<!-- random subset -->
+						<div class="input-group">
+							<button class="btn btn-outline-secondary" id="random-subset" data-on="false">
+								Random subset of
+							</button>
+							<input type="text" class="form-control" id="random-subset-count" disabled/>
+							<span class="input-group-text">words</span>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -342,7 +405,8 @@
 			</div>
 		</section>
 		
-		<footer class="container-fluid">
+		<footer class="container-fluid pb-2">
+			<a href="https://github.com/ogallagher" class="text-light">Owen Gallagher</a>
 		</footer>
 	</body>
 </html>
