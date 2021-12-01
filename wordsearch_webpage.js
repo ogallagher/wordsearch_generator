@@ -7,6 +7,7 @@ const INPUT_FILE = 0
 const INPUT_FORM = 1
 let wordsearch_input_type
 let wordsearch_is_random_subset
+let wordsearch_global
 
 let endpoint_cells = []
 
@@ -90,6 +91,21 @@ window.onload = function(e) {
 		
 		// hide answers
 		$('.ws-word').attr('data-found',false)
+	})
+	
+	// handle export config button
+	$('.wordsearch-export-config').click(function() {
+		if (wordsearch_global != undefined) {
+			let wordsearch_json_encoded = btoa(unescape(encodeURIComponent(
+				JSON.stringify(wordsearch_global.export_config())
+			)))
+			console.log(`DEBUG encoded export = ${wordsearch_json_encoded}`)
+			
+			$('.wordsearch-export-link')
+			.prop('href',`data:application/json;base64,${wordsearch_json_encoded}`)
+			.prop('download',`wordsearch_cfg_${new Date().toISOString()}.json`)
+			[0].click()
+		}
 	})
 }
 
@@ -285,6 +301,9 @@ function display_wordsearch(wordsearch) {
 	
 	// enable print view
 	$('.wordsearch-print').prop('disabled', false)
+	
+	// update wordsearch reference
+	wordsearch_global = wordsearch
 }
 
 function print_wordsearch() {

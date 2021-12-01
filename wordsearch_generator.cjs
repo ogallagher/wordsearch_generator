@@ -319,6 +319,21 @@ class WordsearchGenerator {
 		this.point_to_word_idx[ba] = word_idx
 	}
 	
+	export_config() {
+		let config = {
+			language: this.language,
+			size: this.grid.length,
+			case: this.alphabet_case
+		}
+		
+		config.words = new Array(this.words.length)
+		for (let i=0; i<config.words.length; i++) {
+			config.words[i] = `${this.words[i]}:${this.clues[i]}`
+		}
+		
+		return config
+	}
+	
 	// static methods
 	
 	/**
