@@ -62,7 +62,21 @@ body {
 	display: none;
 }
 
-/*
+/**
+ * printer friendly styles
+ */
+.wordsearch.printable {
+	
+}
+.printable .ws-cell, .printable .ws-cell:hover {
+	color: black;
+	border-color: black;
+	border-width: 2px;
+	border-style: solid;
+	background-color: white;
+}
+
+/**
  * prevent button icons from consuming click events
  */
 button > svg {

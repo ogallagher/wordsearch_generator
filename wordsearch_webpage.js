@@ -76,6 +76,21 @@ window.onload = function(e) {
 	$('#random-subset').click(function() {
 		set_wordsearch_is_random_subset(!is_on($(this)))
 	})
+	
+	// handle print button
+	$('.wordsearch-print').click(function() {
+		// clean wordsearch
+		$('.wordsearch').addClass('printable')
+		
+		// hide config
+		$('.wordsearch-config').hide()
+		
+		// hide answers header
+		$('#answers-header').css('visibility','hidden')
+		
+		// hide answers
+		$('.ws-word').attr('data-found',false)
+	})
 }
 
 function set_wordsearch_input_type(input_type) {
@@ -267,6 +282,9 @@ function display_wordsearch(wordsearch) {
 	}
 	
 	display_answers(wordsearch.words, wordsearch.clues)
+	
+	// enable print view
+	$('.wordsearch-print').prop('disabled', false)
 }
 
 function print_wordsearch() {
