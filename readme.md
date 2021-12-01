@@ -56,8 +56,8 @@ To run the playable webpage version:
 
 4. Visit [localhost](http://localhost) to see the wordsearch generator page.
 
-To configure the wordsearch with a file, select **file** 
-and see the `example_<language>.json` files
+To configure the wordsearch with a file, select **file**. 
+See the `docs/examples/example_<language>.json` files
 for examples. Once the wordsearch description file is ready, use the file input
 to pick it.
 
