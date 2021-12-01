@@ -35,19 +35,37 @@ window.onload = function(e) {
 	
 	// handle reload button
 	$('.wordsearch-reload').click(function() {
-		on_wordsearch_input_file(description_json)
+		switch (wordsearch_input_type) {
+			case INPUT_FILE:
+				on_wordsearch_input_file(description_json)
+				break
+			
+			case INPUT_FORM:
+				on_wordsearch_input_form()
+				break
+		}
 	})
 	
 	// handle word-clue add button click
 	$('#add-word-clue').click(function() {
+		let datetime_str = new Date().toISOString()
 		let containerjq = $('#word-clues')
 		let rowjq = $(
-			`<div class="row word-clue mt-1">
+			`<div class="row word-clue mt-1 gx-1" data-when="${datetime_str}">
 				<div class="col">
 					<input type="text" placeholder="word" class="word-clue-word form-control"/>
 				</div>
 				<div class="col">
 					<input type="text" placeholder="clue (optional)" class="word-clue-clue form-control"/>
+				</div>
+				<div class="col-auto d-flex flex-column justify-content-center">
+					<button 
+						class="btn btn-danger word-clue-delete" data-when="${datetime_str}"
+						onclick="on_word_clue_delete_click(event)">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" fill="currentColor" class="bi bi-dash-lg" viewBox="0 0 16 16">
+							<path fill-rule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z"/>
+						</svg>
+					</button>
 				</div>
 			</div>`
 		)
@@ -107,7 +125,7 @@ function on_wordsearch_input_file(wordsearch_json) {
 		)
 		wordsearch.init_promise.then(() => {
 			load_word_clues(wordsearch, description['words'])
-		
+			
 			display_wordsearch(wordsearch)
 		})
 	}
@@ -117,7 +135,42 @@ function on_wordsearch_input_file(wordsearch_json) {
 }
 
 function on_wordsearch_input_form() {
-	// TODO handle wordsearch config via form
+	try {
+		// load initial config
+		let wordsearch = new WordsearchGenerator(
+			$('#language').val().trim().toLowerCase(),
+			$('#case').val().trim().toLowerCase(),
+			parseInt($('#size').val().trim())
+		)
+		
+		wordsearch.init_promise.then(() => {
+			let word_clues = []
+			
+			$('.word-clue').each(function(idx) {
+				// read word and clue from row
+				let rowjq = $(this)
+				
+				let word = rowjq.find('.word-clue-word').val()
+				let clue = rowjq.find('.word-clue-clue').val()
+				if (word !== '') {
+					if (clue === '') {
+						clue = word
+					}
+				
+					word_clues.push(`${word}:${clue}`)
+				}
+			})
+			.promise().done(() => {
+				load_word_clues(wordsearch, word_clues)
+				
+				display_wordsearch(wordsearch)
+			})
+		})
+	}
+	catch (err) {
+		console.log(err)
+		console.log(`ERROR wordsearch config is invalid: ${err}`)
+	}
 }
 
 function load_word_clues(wordsearch, word_clues, clue_delim=':') {
@@ -152,7 +205,7 @@ function load_word_clues(wordsearch, word_clues, clue_delim=':') {
 	
 	for (let word_clue of word_clues) {
 		let array = word_clue.split(clue_delim)
-
+		
 		let word = array[0]
 		let clue = word
 		if (array.length == 2) {
@@ -303,6 +356,16 @@ function on_cell_click(cell, wordsearch) {
 			endpoint_cells.splice(i,1)
 		}
 	}
+}
+
+/**
+ * Handle word-clue delete button click.
+ * 
+ * @param {Object} event Click MouseEvent instance.
+ */
+function on_word_clue_delete_click(event) {
+	let datetime_str = event.target.getAttribute('data-when')
+	$(`.word-clue[data-when="${datetime_str}"]`).remove()
 }
 
 function is_on(jq) {

@@ -1,9 +1,7 @@
-/*
-
-Owen Gallagher
-2021-11-28
-
-*/
+/**
+ * Owen Gallagher
+ * 2021-11-28
+ */
 
 body {
 	/* set root font size relative to default */
@@ -62,4 +60,11 @@ body {
 }
 .ws-word[data-found="false"] {
 	display: none;
+}
+
+/*
+ * prevent button icons from consuming click events
+ */
+button > svg {
+	pointer-events: none;
 }
