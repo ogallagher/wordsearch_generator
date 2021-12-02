@@ -337,61 +337,70 @@ function on_cell_click(cell, wordsearch) {
 	cell.attr('data-on', cell_is_on)
 	
 	if (cell_is_on) {
-		if (endpoint_cells.length < 2) {
+		let en = endpoint_cells.length
+		if (en < 2) {
 			// add to endpoint_cells
 			endpoint_cells.push(cell)
+			en++
 		}
 		
-		if (endpoint_cells.length >= 2) {
-			// check endpoints
-			let ab = 
-				`${endpoint_cells[0].attr('data-x')},${endpoint_cells[0].attr('data-y')}-`
-				+ `${endpoint_cells[1].attr('data-x')},${endpoint_cells[1].attr('data-y')}`
+		let a = endpoint_cells[0]
+		let b = en == 1
+			// single char word
+			? a
+			// multi char word
+			: endpoint_cells[1]
+		
+		// check endpoints
+		let ab = 
+			`${a.attr('data-x')},${a.attr('data-y')}-`
+			+ `${b.attr('data-x')},${b.attr('data-y')}`
+		
+		let word_idx = wordsearch.point_to_word_idx[ab]
+		if (word_idx != undefined) {
+			console.log(`DEBUG word ${word_idx}=${wordsearch.words[word_idx]} found`)
+			a.attr('data-on',false)
+			b.attr('data-on',false)
 			
-			let word_idx = wordsearch.point_to_word_idx[ab]
-			if (word_idx != undefined) {
-				console.log(`DEBUG word ${word_idx}=${wordsearch.words[word_idx]} found`)
-				let a = endpoint_cells[0]
-				.attr('data-on',false)
-				
-				let b = endpoint_cells[1]
-				.attr('data-on',false)
-				
+			// mark all word cells as found
+			if (a === b) {
+				a.attr('data-found',true)
+			}
+			else {
 				let ax=parseInt(a.attr('data-x')), ay=parseInt(a.attr('data-y'))
 				let bx=parseInt(b.attr('data-x')), by=parseInt(b.attr('data-y'))
 				let dx=Math.sign(bx-ax), dy=Math.sign(by-ay)
-				
-				// mark all word cells as found
+			
 				for (let x=ax,y=ay; x!=bx+dx || y!=by+dy; ) {
 					// console.log(`.ws-cell[data-x="${x}"][data-y="${y}"]`)
 					$(`.ws-cell[data-x="${x}"][data-y="${y}"]`)
 					.attr('data-found',true)
-					
+				
 					x += dx
 					y += dy
 				}
-				
-				// reveal answer
-				$(`.ws-answer[data-word-idx="${word_idx}"] > .ws-word`)
-				.attr('data-found', true)
-			}
-			else {
-				console.log(`DEBUG endpoints not a word`)
-				for (let ec of endpoint_cells) {
-					ec.attr('data-on', false)
-				}
 			}
 			
-			// clear endpoint_cells
+			// reveal answer
+			$(`.ws-answer[data-word-idx="${word_idx}"] > .ws-word`)
+			.attr('data-found', true)
+		}
+		else if (en > 1) {
+			// clear cells from attempt
+			console.log(`DEBUG endpoints not a word`)
+			for (let ec of endpoint_cells) {
+				ec.attr('data-on', false)
+			}
+		}
+		
+		// clear endpoint_cells if len>=2 or single char word found
+		if (en > 1 || word_idx != undefined) {
 			endpoint_cells = []
 		}
 	}
 	else {
-		// remove from endpoint_cells
-		let i = endpoint_cells.indexOf(cell)
-		if (i != -1) {
-			endpoint_cells.splice(i,1)
-		}
+		// clear endpoint_cells
+		endpoint_cells = []
 	}
 }
 
