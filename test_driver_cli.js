@@ -1,3 +1,5 @@
+#!node
+
 /**
  * Owen Gallagher
  * 2021-11-27

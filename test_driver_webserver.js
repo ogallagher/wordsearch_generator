@@ -1,3 +1,5 @@
+#!node
+
 /*
 
 Owen Gallagher <github.com/ogallagher>
