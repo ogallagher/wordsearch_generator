@@ -38,7 +38,19 @@ window.onload = function(e) {
 	$('.wordsearch-reload').click(function() {
 		switch (wordsearch_input_type) {
 			case INPUT_FILE:
-				on_wordsearch_input_file(description_json)
+				let config = JSON.parse(description_json)
+				
+				// use random subset count input if enabled
+				if (wordsearch_is_random_subset) {
+					let ui_subset_length = $('#random-subset-count').val()
+					if (ui_subset_length !== '') {
+						ui_subset_length = parseInt(ui_subset_length)
+						// console.log(`DEBUG ui subset length = ${ui_subset_length}`)
+						config['random_subset'] = ui_subset_length
+					}
+				}
+				
+				on_wordsearch_input_file(config)
 				break
 			
 			case INPUT_FORM:
@@ -129,7 +141,7 @@ function set_wordsearch_input_type(input_type) {
 	}
 }
 
-function set_wordsearch_is_random_subset(is_random) {
+function set_wordsearch_is_random_subset(is_random, subset_length) {
 	wordsearch_is_random_subset = is_random
 	
 	// update button data
@@ -138,8 +150,11 @@ function set_wordsearch_is_random_subset(is_random) {
 	.addClass(is_random ? 'btn-secondary' : 'btn-outline-secondary')
 	.removeClass(is_random ? 'btn-outline-secondary' : 'btn-secondary')
 	
+	// update count input
 	if (is_random) {
-		$('#random-subset-count').prop('disabled', false)
+		$('#random-subset-count')
+		.prop('disabled', false)
+		.val(subset_length)
 	}
 	else {
 		$('#random-subset-count').prop('disabled', true)
@@ -148,15 +163,32 @@ function set_wordsearch_is_random_subset(is_random) {
 
 function on_wordsearch_input_file(wordsearch_json) {
 	if (wordsearch_json != undefined) {
-		let description = JSON.parse(wordsearch_json)
+		let description = typeof wordsearch_json === 'string' 
+			? JSON.parse(wordsearch_json)
+			: wordsearch_json
+		
+		let random_subset = description['random_subset']
+		
 		let wordsearch = new WordsearchGenerator(
 			description['language'],
 			description['case'],
-			description['size']
+			description['size'],
+			description['words'],
+			random_subset
 		)
-		wordsearch.init_promise.then(() => {
-			load_word_clues(wordsearch, description['words'])
-			
+		
+		if (random_subset != undefined) {
+			set_wordsearch_is_random_subset(true, random_subset)
+		}
+		
+		wordsearch.init_promise
+		/*
+		// load word-clues via driver
+		.then(() => {
+			return load_word_clues(wordsearch, description['words'])
+		})
+		*/
+		.then(() => {
 			display_wordsearch(wordsearch)
 		})
 	}
@@ -256,6 +288,8 @@ function load_word_clues(wordsearch, word_clues, clue_delim=':') {
 			)
 		}
 	}
+	
+	return Promise.resolve()
 }
 
 function display_wordsearch(wordsearch) {

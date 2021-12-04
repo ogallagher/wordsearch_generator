@@ -39,6 +39,7 @@ const CASE_UPPER = 'upper'
 const CASE_DEFAULT = CASE_LOWER
 const ALPHABET_FILE = './alphabets.json'
 const WIDTH_DEFAULT = 10
+const WORD_CLUE_DELIM = ':'
 
 // alphabets.json keys
 
@@ -76,8 +77,12 @@ class WordsearchGenerator {
 	 *		point_to_word_idx
 	 *
 	 * @param {String} language Language code string.
+	 * @param {String} alphabet_case Alphabet case (upper, lower).
+	 * @param {Number} width .
+	 * @param {Array} words .
+	 * @param {Number} random_subset .
 	 */
-	constructor(language=LANGUAGE_DEFAULT, alphabet_case=CASE_DEFAULT, width=WIDTH_DEFAULT) {
+	constructor(language=LANGUAGE_DEFAULT, alphabet_case=CASE_DEFAULT, width=WIDTH_DEFAULT, words, random_subset) {
 		this.language = language
 		this.alphabet_case = alphabet_case
 		
@@ -110,20 +115,31 @@ class WordsearchGenerator {
 		this.point_to_word_idx = {}
 		
 		this.init_promise = WordsearchGenerator.get_alphabet(this.language, case_key)
+		// load alphabet
 		.then((alphabet) => {
 			this.alphabet = alphabet
 		})
-		.catch((err) => {
-			if (err) {
-				console.log(`ERROR: ${err}`)
-			}
-			this.alphabet = undefined
-		})
-		.finally(() => {
-			this.randomize_cells()
+		.then(
+			// alphabet succeeds
+			() => {
+				// randomize cells
+				this.randomize_cells()
+				
+				if (words != undefined) {
+					// load words (and clues)
+					this.add_word_clues(words, random_subset)
+				}
+				// else, delegate words load to driver
+			},
 			
-			return Promise.resolve()
-		})
+			// alphabet fails
+			(err) => {
+				if (err) {
+					console.log(`ERROR: ${err}`)
+				}
+				this.alphabet = undefined
+			}
+		)
 	}
 	
 	/**
@@ -179,6 +195,68 @@ class WordsearchGenerator {
 		}
 		
 		return grid_rows.join('\n')
+	}
+	
+	/**
+	 * Load words and clues in bulk.
+	 *
+	 * @param {Array} word_clues Array of word or word-clue strings.
+	 * @param {Number} subset_length .
+	 *
+	 * @returns passes (placed words) and fails (skipped words).
+	 * @type Object
+	 */
+	add_word_clues(word_clues, subset_length, max_attempts) {
+		if (subset_length != undefined) {
+			// get random subset of words and clues
+			if (subset_length < word_clues.length && subset_length > 0) {
+				// set of word-clue indeces
+				let subset_idx = new Set()
+				while (subset_idx.size < subset_length) {
+					subset_idx.add(Math.floor(Math.random() * word_clues.length))
+				}
+				
+				// convert to array
+				subset_idx = new Array(...subset_idx)
+				// convert to word-clues subset
+				let subset = new Array(subset_length)
+				for (let i=0; i<subset_idx.length; i++) {
+					subset[i] = word_clues[subset_idx[i]]
+				}
+				
+				// assign to word_clues
+				word_clues = subset
+			}
+		}
+		
+		// add word-clues
+		let fails = [], passes = []
+		for (let word_clue of word_clues) {
+			let array = word_clue.split(WORD_CLUE_DELIM)
+			
+			let word = array[0]
+			let clue = word
+			if (array.length == 2) {
+				clue = array[1]
+			}
+			
+			if (word.length <= this.grid.length) {
+				if (this.add_word_clue(word, clue, max_attempts)) {
+					passes.push(word)
+				}
+				else {
+					fails.push(word)
+				}
+			}
+			else {
+				fails.push(word)
+			}
+		}
+		
+		return {
+			passes: passes,
+			fails: fails
+		}
 	}
 	
 	/**
@@ -330,11 +408,13 @@ class WordsearchGenerator {
 	}
 	
 	export_config() {
-		let config = {
-			KEY_LANGUAGE: this.language,
-			KEY_SIZE: this.grid.length,
-			KEY_CASE: this.alphabet_case
-		}
+		let config = {}
+		
+		config[KEY_LANGUAGE] = this.language
+		
+		config[KEY_SIZE] = this.grid.length
+		
+		config[KEY_CASE] = this.alphabet_case
 		
 		let words = new Array(this.words.length)
 		for (let i=0; i<words.length; i++) {
@@ -475,8 +555,18 @@ class WordsearchGenerator {
 }
 
 if (typeof exports != 'undefined') {
+	// export WordsearchGenerator class
 	exports.WordsearchGenerator = WordsearchGenerator
-	console.log(exports)
+	
+	// export useful constants
+	exports.WORD_CLUE_DELIM = WORD_CLUE_DELIM
+	exports.KEY_LANGUAGE = KEY_LANGUAGE
+	exports.KEY_CASE = KEY_CASE
+	exports.KEY_SIZE = KEY_SIZE
+	exports.KEY_WORDS = KEY_WORDS
+	exports.KEY_RANDOM_SUBSET = KEY_RANDOM_SUBSET
+	
+	// console.log(`DEBUG ${exports}`)
 }
 else {
 	// console.log(`DEBUG no exports`)

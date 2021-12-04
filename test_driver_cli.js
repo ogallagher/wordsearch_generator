@@ -12,7 +12,19 @@ import rl from 'readline'
 
 // local imports
 
-import { WordsearchGenerator } from './wordsearch_generator.cjs'
+import { 
+	
+	WordsearchGenerator,
+	
+	WORD_CLUE_DELIM,
+	
+	KEY_LANGUAGE,
+	KEY_CASE,
+	KEY_SIZE,
+	KEY_WORDS,
+	KEY_RANDOM_SUBSET
+	
+} from './wordsearch_generator.cjs'
 
 const cli = rl.createInterface({
 	input: process.stdin,
@@ -34,17 +46,7 @@ cli.question('create with file [f] or interactively [i]? ', (input_mode) => {
 					console.log(`ERROR wordsearch description file ${input_file} not found`)
 				}
 				else {
-					let desc = JSON.parse(input_json)
-					
-					wordsearch = new WordsearchGenerator(
-						desc['language'],
-						desc['case'],
-						desc['size']
-					)
-					wordsearch.init_promise
-					.then(() => {
-						load_word_clues(desc['words'])
-					})
+					on_file_load(input_json)
 				}
 			})
 		})
@@ -84,21 +86,43 @@ function on_alphabet_load() {
 		word_count = 0
 		word_clues = new Array(parseInt(word_count_str))
 		
-		console.log('word:clue')
+		console.log(`word${WORD_CLUE_DELIM}clue`)
 		next_word_clue()
 		.then(() => {
 			cli.close()
 			
-			load_word_clues(word_clues)
+			return load_word_clues(word_clues)
 		})
+		.then(print_wordsearch)
 	})
+}
+
+function on_file_load(input_json) {
+	let desc = JSON.parse(input_json)
+	
+	wordsearch = new WordsearchGenerator(
+		desc[KEY_LANGUAGE],
+		desc[KEY_CASE],
+		desc[KEY_SIZE],
+		// load word-clues via config file
+		desc[KEY_WORDS],
+		desc[KEY_RANDOM_SUBSET]
+	)
+	wordsearch.init_promise
+	/*
+	// load word-clues via driver
+	.then(() => {
+		load_word_clues(desc['words'])
+	})
+	*/
+	.then(print_wordsearch)
 }
 
 function next_word_clue() {
 	return new Promise(function(resolve) {
 		cli.question(`${word_count+1} = `, (word_clue) => {
 			word_clues[word_count++] = word_clue
-		
+			
 			if (word_count < word_clues.length) {
 				// console.log(`${word_count} < ${word_clues.length}`)
 				next_word_clue()
@@ -119,7 +143,7 @@ function test_random_cells(reps) {
 	console.log(random_cells.join(','))
 }
 
-function load_word_clues(word_clues, clue_delim=':') {
+function load_word_clues(word_clues, clue_delim=WORD_CLUE_DELIM) {
 	for (let word_clue of word_clues) {
 		let array = word_clue.split(clue_delim)
 		
@@ -139,7 +163,11 @@ function load_word_clues(word_clues, clue_delim=':') {
 		}
 	}
 	
-	console.log(`final grid:\n${wordsearch.grid_string()}`)
+	return Promise.resolve()
+}
+
+function print_wordsearch() {
+	console.log(`final grid:\n\n${wordsearch.grid_string()}\n`)
 	
-	console.log(`clues:\n${wordsearch.clues.join('\n')}`)
+	console.log(`clues:\n\n${wordsearch.clues.join('\n')}\n`)
 }
