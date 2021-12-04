@@ -40,6 +40,8 @@ const CASE_DEFAULT = CASE_LOWER
 const ALPHABET_FILE = './alphabets.json'
 const WIDTH_DEFAULT = 10
 
+// alphabets.json keys
+
 const KEY_COMMENT = '//comment'
 const KEY_RANGES = 'ranges'
 const KEY_LOWER_RANGES = KEY_RANGES
@@ -48,6 +50,14 @@ const KEY_UPPER_RANGES = `upper_${KEY_RANGES}`
 const KEY_COUNTS = 'counts'
 const KEY_PROBABILITIES = 'probabilities'
 const KEY_ACCUM_PROBABILITIES = 'accum_probabilities'
+
+// wordsearch config keys
+
+const KEY_LANGUAGE = 'language'
+const KEY_CASE = 'case'
+const KEY_SIZE = 'size'
+const KEY_WORDS = 'words'
+const KEY_RANDOM_SUBSET = 'random_subset'
 
 class WordsearchGenerator {
 	/**
@@ -321,15 +331,16 @@ class WordsearchGenerator {
 	
 	export_config() {
 		let config = {
-			language: this.language,
-			size: this.grid.length,
-			case: this.alphabet_case
+			KEY_LANGUAGE: this.language,
+			KEY_SIZE: this.grid.length,
+			KEY_CASE: this.alphabet_case
 		}
 		
-		config.words = new Array(this.words.length)
-		for (let i=0; i<config.words.length; i++) {
-			config.words[i] = `${this.words[i]}:${this.clues[i]}`
+		let words = new Array(this.words.length)
+		for (let i=0; i<words.length; i++) {
+			words[i] = `${this.words[i]}:${this.clues[i]}`
 		}
+		config[KEY_WORDS] = words
 		
 		return config
 	}
