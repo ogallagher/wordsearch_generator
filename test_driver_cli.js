@@ -98,16 +98,8 @@ function on_alphabet_load() {
 }
 
 function on_file_load(input_json) {
-	let desc = JSON.parse(input_json)
+	wordsearch = WordsearchGenerator.import_config(input_json)
 	
-	wordsearch = new WordsearchGenerator(
-		desc[KEY_LANGUAGE],
-		desc[KEY_CASE],
-		desc[KEY_SIZE],
-		// load word-clues via config file
-		desc[KEY_WORDS],
-		desc[KEY_RANDOM_SUBSET]
-	)
 	wordsearch.init_promise
 	/*
 	// load word-clues via driver
@@ -167,7 +159,15 @@ function load_word_clues(word_clues, clue_delim=WORD_CLUE_DELIM) {
 }
 
 function print_wordsearch() {
-	console.log(`final grid:\n\n${wordsearch.grid_string()}\n`)
+	if (wordsearch.title !== undefined) {
+		console.log(`\n${
+			wordsearch.title
+		}\n${
+			new Array(wordsearch.title.length).fill('-').join('')
+		}\n`)
+	}
+	
+	console.log(`\n${wordsearch.grid_string()}\n`)
 	
 	console.log(`clues:\n\n${wordsearch.clues.join('\n')}\n`)
 }

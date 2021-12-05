@@ -59,6 +59,7 @@ const KEY_CASE = 'case'
 const KEY_SIZE = 'size'
 const KEY_WORDS = 'words'
 const KEY_RANDOM_SUBSET = 'random_subset'
+const KEY_TITLE = 'title'
 
 class WordsearchGenerator {
 	/**
@@ -70,6 +71,7 @@ class WordsearchGenerator {
 	 *		alphabet_case_key
 	 * 		alphabet
 	 * 		init_promise
+	 *		title
 	 *		grid
 	 *		words
 	 *		clues
@@ -82,7 +84,7 @@ class WordsearchGenerator {
 	 * @param {Array} words .
 	 * @param {Number} random_subset .
 	 */
-	constructor(language=LANGUAGE_DEFAULT, alphabet_case=CASE_DEFAULT, width=WIDTH_DEFAULT, words, random_subset) {
+	constructor(language=LANGUAGE_DEFAULT, alphabet_case=CASE_DEFAULT, width=WIDTH_DEFAULT, words, random_subset, title) {
 		this.language = language
 		this.alphabet_case = alphabet_case
 		
@@ -98,6 +100,8 @@ class WordsearchGenerator {
 				break
 		}
 		this.alphabet_case_key = case_key
+		
+		this.title = title
 		
 		this.grid = new Array(width)
 		for (let y=0; y<width; y++) {
@@ -530,6 +534,32 @@ class WordsearchGenerator {
 	}
 	
 	/**
+	 * Create WordsearchGenerator from config json file.
+	 *
+	 * @param {String|Object} config_json Config json contents.
+	 *
+	 * @returns A {WordsearchGenerator} instance.
+	 * @type WordsearchGenerator
+	 */
+	static import_config(config_json) {
+		// config is js object, parse json if necessary
+		let config = typeof config_json === 'string' 
+			? JSON.parse(config_json)
+			: config_json
+		
+		let wordsearch = new WordsearchGenerator(
+			config[KEY_LANGUAGE],
+			config[KEY_CASE],
+			config[KEY_SIZE],
+			config[KEY_WORDS],
+			config[KEY_RANDOM_SUBSET],
+			config[KEY_TITLE]
+		)
+		
+		return wordsearch
+	}
+	
+	/**
 	 * Convert character to unicode value.
 	 *
 	 * @param {String} char Character.
@@ -565,9 +595,19 @@ if (typeof exports != 'undefined') {
 	exports.KEY_SIZE = KEY_SIZE
 	exports.KEY_WORDS = KEY_WORDS
 	exports.KEY_RANDOM_SUBSET = KEY_RANDOM_SUBSET
+	exports.KEY_TITLE = KEY_TITLE
 	
 	// console.log(`DEBUG ${exports}`)
 }
 else {
+	// export scoped constants as class vars
+	WordsearchGenerator.WORD_CLUE_DELIM = WORD_CLUE_DELIM
+	WordsearchGenerator.KEY_LANGUAGE = KEY_LANGUAGE
+	WordsearchGenerator.KEY_CASE = KEY_CASE
+	WordsearchGenerator.KEY_SIZE = KEY_SIZE
+	WordsearchGenerator.KEY_WORDS = KEY_WORDS
+	WordsearchGenerator.KEY_RANDOM_SUBSET = KEY_RANDOM_SUBSET
+	WordsearchGenerator.KEY_TITLE = KEY_TITLE
+	
 	// console.log(`DEBUG no exports`)
 }

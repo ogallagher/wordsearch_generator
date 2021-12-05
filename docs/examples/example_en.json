@@ -1,6 +1,7 @@
 {
 	"language": "en",
 	"size": 15,
+	"title": "Example English wordsearch",
 	"words": [
 		"apple:a fruit",
 		"skull:head bone",
