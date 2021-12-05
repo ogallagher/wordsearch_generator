@@ -420,6 +420,10 @@ class WordsearchGenerator {
 		
 		config[KEY_CASE] = this.alphabet_case
 		
+		if (this.title !== undefined) {
+			config[KEY_TITLE] = this.title
+		}
+		
 		let words = new Array(this.words.length)
 		for (let i=0; i<words.length; i++) {
 			words[i] = `${this.words[i]}:${this.clues[i]}`
@@ -543,7 +547,7 @@ class WordsearchGenerator {
 	 */
 	static import_config(config_json) {
 		// config is js object, parse json if necessary
-		let config = typeof config_json === 'string' 
+		let config = typeof config_json === 'string' || config_json instanceof Buffer
 			? JSON.parse(config_json)
 			: config_json
 		

@@ -174,7 +174,8 @@ function on_wordsearch_input_file(wordsearch_json) {
 			description['case'],
 			description['size'],
 			description['words'],
-			random_subset
+			random_subset,
+			description['title']
 		)
 		
 		if (random_subset != undefined) {
