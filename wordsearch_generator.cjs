@@ -37,7 +37,9 @@ const LANGUAGE_DEFAULT = 'en'
 const CASE_LOWER = 'lower'
 const CASE_UPPER = 'upper'
 const CASE_DEFAULT = CASE_LOWER
-const ALPHABET_FILE = './alphabets.json'
+// directory where this file is
+let parent_dir = __dirname
+const ALPHABET_FILE = 'alphabets.json'
 const WIDTH_DEFAULT = 10
 const WORD_CLUE_DELIM = ':'
 
@@ -462,7 +464,7 @@ class WordsearchGenerator {
 			}
 			else if (environment == ENV_BACKEND) {
 				// load with nodejs fs module
-				fs.readFile(path, function(err, alphabets_json) {
+				fs.readFile(`${parent_dir}/${path}`, function(err, alphabets_json) {
 					if (err) {
 						console.log(`ERROR alphabets file not found at ${path}`)
 						console.log(err)

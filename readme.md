@@ -95,6 +95,20 @@ frontend environments:
 1. A nodejs cli driver at `wordsearch_cli.js`.
 2. A webserver driver at `wordsearch_webserver.js` that serves a webpage with the wordsearch generator included.
 
+The `bin/` folder contains linux compatible relative symbolic links to those drivers and 
+`alphabets.json` which can be added to the path and be used as quick cli tools. As in:
+
+```bash
+# add to path via bash profile
+PATH=${PATH}:<wordsearch-bin-dir-path> >> ~/.bashrc
+export PATH >> ~/.bashrc
+
+source ~/.bashrc
+
+# use cli scripts without specifying path
+wordsearch-cli
+```
+
 ## Develop
 
 ### Custom interface/environment
