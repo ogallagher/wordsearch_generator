@@ -19,24 +19,30 @@ Generates custom wordsearch puzzles with multiple supported languages.
 ![spanish example](docs/img/wordsearch\_webpage\_es.png)
 
 ```
-node test_driver_cli.js 
+./wordsearch_cli.js    
 create with file [f] or interactively [i]? f
-wordsearch json description file: example_ko.json
+wordsearch json description file: docs/examples/example_ko.json
 INFO placed 사과 in 1 attempts
 INFO placed 머리 in 1 attempts
 INFO placed 가위 in 1 attempts
-INFO placed 지름 in 1 attempts
-INFO placed 까치 in 1 attempts
-final grid:
-랉 쬶 지 퍹 쉂 룹 겡 뒅
-툗 꼵 뛑 름 뽍 뗞 벘 뤀
-쩢 뛑 뤃 붂 얛 위 졊 뢵
-뜗 좮 땩 둩 뿤 가 봝 윕
-귄 깓 콠 릶 컺 쵫 뫖 꿡
-몘 놖 까 먷 쥆 리 냯 퓅
-녥 큐 치 캷 과 머 듨 귱
-턪 뜗 몲 사 샹 죢 뱳 쪮
+INFO placed 지름 in 2 attempts
+INFO placed 까치 in 2 attempts
+
+한국 단어찾기 예
+---------
+
+
+껪 쉘 뛋 퉐 렗 겸 쪾 헻
+졍 쾾 랇 름 쳜 푤 턻 사
+가 꼩 지 욊 쭞 먶 땜 과
+쫖 위 뮥 춄 됩 퓿 암 닇
+퐉 럷 헢 톼 꽲 띯 쳥 쁀
+껁 샅 헞 뉘 머 리 툔 쬰
+치 뮘 봵 콻 눟 궇 칃 폼
+논 까 흭 쌂 쭁 딡 꼄 짨
+
 clues:
+
 과일 중 하나
 head, 목 위에
 scissors
@@ -46,13 +52,15 @@ diameter
 
 ## Use
 
+### Webpage
+
 To run the playable webpage version:
 
 1. Install [nodejs](https://nodejs.org). If using a mac, I recommend doing so via [nvm](https://github.com/nvm-sh/nvm).
 
 2. Download/clone this repository.
 
-3. Run `node test_driver_webserver.js` to launch the local webserver. Opening `wordsearch_generator.html` directly doesn't work because of inability to access other local files.
+3. Run `node wordsearch_webserver.js` to launch the local webserver. Opening `wordsearch_generator.html` directly doesn't work because of inability to access other local files.
 
 4. Visit [localhost](http://localhost) to see the wordsearch generator page.
 
@@ -68,13 +76,24 @@ Note that for additional difficulty an answer can be broken into a word and a cl
 delimited with : in a description file (ex. `greeting:hello`), but providing
 a separate clue is optional.
 
+### Command Line
+
+1. Install [nodejs](https://nodejs.org). If using a mac, I recommend doing so via [nvm](https://github.com/nvm-sh/nvm).
+
+2. Download/clone this repository.
+
+3. Run `node wordsearch_cli.js`.
+
+4. Follow the prompts to generate a wordsearch. The output is not interactive/playable.
+
 ## Contents
 
-This repository includes the core wordsearch generator class `WordsearchGenerator` in `wordsearch_generator.cjs`,
-as well two drivers showing usage in both backend and frontend environments:
+This repository includes the core wordsearch generator class `WordsearchGenerator` in 
+`wordsearch_generator.cjs`, as well two drivers showing usage in both backend and 
+frontend environments:
 
-1. A nodejs cli driver at `test_driver_cli.js`.
-2. A webserver driver that serves a webpage with the wordsearch generator included.
+1. A nodejs cli driver at `wordsearch_cli.js`.
+2. A webserver driver at `wordsearch_webserver.js` that serves a webpage with the wordsearch generator included.
 
 ## Develop
 
