@@ -284,7 +284,7 @@ class WordsearchGenerator {
 		let placed = false
 		while (!placed && attempt < max_attempts) {
 			let wxys = new Array(word_arr.length)
-
+			
 			// place word in grid
 			if (direction < 1 / 3) {
 				// horizontal
@@ -295,7 +295,6 @@ class WordsearchGenerator {
 					w, no_collide = true
 				for (let c = 0; c < word_arr.length && no_collide; c++) {
 					w = word_arr[c]
-					console.log(w)
 					xc = x + c
 
 					no_collide = this.try_character(w, xc, yc)
@@ -310,12 +309,11 @@ class WordsearchGenerator {
 				// vertical
 				let y = Math.floor(Math.random() * free_width)
 				let x = Math.floor(Math.random() * this.grid.length)
-
+				
 				let xc = x,
 					yc, w, no_collide = true
 				for (let c = 0; c < word_arr.length && no_collide; c++) {
 					w = word_arr[c]
-					console.log(w)
 					yc = y + c
 
 					no_collide = this.try_character(w, xc, yc)
@@ -335,7 +333,6 @@ class WordsearchGenerator {
 					let xc, yc, w, no_collide = true
 					for (let c = 0; c < word_arr.length && no_collide; c++) {
 						w = word_arr[c]
-						console.log(w)
 						xc = x + c
 						yc = y + c
 
@@ -355,7 +352,6 @@ class WordsearchGenerator {
 					let xc, yc, w, no_collide = true
 					for (let c = 0; c < word_arr.length && no_collide; c++) {
 						w = word_arr[c]
-						console.log(w)
 						xc = x - c
 						yc = y + c
 
