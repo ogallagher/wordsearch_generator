@@ -38,5 +38,17 @@
 		"upper_ranges": [
 			[44032,55203]
 		]
+	},
+	
+	"domino": {
+		"//comment": "Unicode domino symbols. 🀰-🂓",
+		
+		"ranges": [
+			[127024, 127123]
+		],
+		
+		"upper_ranges": [
+			[127024, 127123]
+		]
 	}
 }
