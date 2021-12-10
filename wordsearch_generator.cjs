@@ -19,21 +19,21 @@ let fs
 let parent_dir
 
 Promise.all([
-		import ('fs')
-	])
-	.then((modules) => {
-		fs = modules[0].default
-		parent_dir = __dirname
-		environment = ENV_BACKEND
-	})
-	.catch(() => {
-		fs = undefined
-		parent_dir = '.'
-		environment = ENV_FRONTEND
-	})
-	.finally(() => {
-		// console.log(`wordsearch_generator.js environment = ${environment}`)
-	})
+	import('fs')
+])
+.then((modules) => {
+	fs = modules[0].default
+	parent_dir = __dirname
+	environment = ENV_BACKEND
+})
+.catch(() => {
+	fs = undefined
+	parent_dir = '.'
+	environment = ENV_FRONTEND
+})
+.finally(() => {
+	// console.log(`wordsearch_generator.js environment = ${environment}`)
+})
 
 // class
 
