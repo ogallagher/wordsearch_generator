@@ -1,22 +1,33 @@
 {
-  "name": "wordsearch_generator",
-  "version": "0.13.0",
-  "description": "Wordsearch generator, extensible for different languages.",
-  "main": "wordsearch_webserver.js",
-  "type": "module",
-  "scripts": {
-    "test": "node test_driver.js"
-  },
-  "keywords": [
-    "english",
-    "spanish",
-    "korean",
-    "wordsearch"
-  ],
-  "author": "Owen Gallagher",
-  "license": "SEE LICENSE IN license.txt",
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.17.1"
-  }
+	"name": "wordsearch_generator",
+	"version": "0.13.0",
+	"description": "Wordsearch generator, extensible for different languages.",
+	"homepage": "https://github.com/ogallagher/wordsearch_generator",
+	"repository": {
+		"repository": {
+			"type": "git",
+			"url": "https://github.com/ogallagher/wordsearch_generator.git"
+		}
+	},
+	"main": "wordsearch_webserver.js",
+	"type": "module",
+	"scripts": {
+		"test": "node wordsearch_cli.js"
+	},
+	"keywords": [
+		"english",
+		"spanish",
+		"korean",
+		"wordsearch"
+	],
+	"author": {
+		"name": "Owen Gallagher",
+		"email": "owengall@icloud.com",
+		"url": "https://linkedin.com/in/owenjpgallagher"
+	},
+	"license": "SEE LICENSE IN license.txt",
+	"dependencies": {
+		"cors": "^2.8.5",
+		"express": "^4.17.1"
+	}
 }
