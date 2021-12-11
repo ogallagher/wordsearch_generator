@@ -300,24 +300,32 @@ function display_wordsearch(wordsearch) {
 	// clear endpoint_cells
 	endpoint_cells = []
 	
+	// wordsearch element
 	let wel = $('.wordsearch')
 	.html('')
 	
+	// table element
+	let tel = $(
+		`<table></table>`
+	)
+	
 	let y=0
 	for (let row of wordsearch.grid) {
-		let rel = $(`
-			<div class="row flex-nowrap justify-content-center ws-row"></div>
-		`)
+		// row element
+		let rel = $(
+			`<tr class="ws-row"></tr>`
+		)
 		
 		let x=0
 		for (let cell of row) {
+			// cell element
 			let cel = $(
-				`<div 
-					class="col-auto ws-cell"
+				`<td 
+					class="ws-cell d-flex flex-column justify-content-center"
 					data-x="${x}" data-y="${y}" data-word="${cell}"
 					data-on="false">
-					${cell}
-				</div>`
+					<div>${cell}</div>
+				</td>`
 			)
 			
 			cel.click(function() {
@@ -328,9 +336,11 @@ function display_wordsearch(wordsearch) {
 			x++
 		}
 		
-		wel.append(rel)
+		tel.append(rel)
 		y++
 	}
+	
+	wel.append(tel)
 	
 	display_answers(wordsearch.words, wordsearch.clues)
 	

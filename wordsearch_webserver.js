@@ -38,7 +38,7 @@ Promise.all([
 		server.use(cors({
 			origin: function(origin,callback) {
 				if (origin != null && origins.indexOf(origin) == -1) {
-					console.log(`cross origin request failed for ${origin}`)
+					console.log(`ERROR cross origin request failed for ${origin}`)
 					return callback(new Error('CORS for origin ' + origin + ' is not allowed access.'), false)
 				}
 				else {
@@ -54,7 +54,7 @@ Promise.all([
 	
 		// route root path to wordsearch generator page
 		server.get('/', function(req,res,next) {
-			console.log(`routing root path to /wordsearch_generator.html`)
+			console.log(`INFO routing root path to /wordsearch_generator.html`)
 			res.sendFile(`./wordsearch_generator.html`, {
 				root: PUBLIC_DIR
 			})
@@ -64,9 +64,9 @@ Promise.all([
 		server.listen(server.get('port'), on_start)
 	
 		// methods
-	
+		
 		function on_start() {
-			console.log('server running')
+			console.log('INFO server running')
 		}
 	}
 	catch (err) {
@@ -76,7 +76,7 @@ Promise.all([
 })
 .catch((err) => {
 	console.error(err)
-	console.error('make sure you run the `npm install` command to get needed node modules first')
+	console.error('ERROR make sure you run the `npm install` command to get needed node modules first')
 	process.exit(1)
 })
 

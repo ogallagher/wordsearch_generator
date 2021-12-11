@@ -10,28 +10,27 @@ body {
 
 .wordsearch {
 	font-family: monospace;
-	font-size: 2.25rem;
 }
 
 .ws-row {
 }
 
 .ws-cell {
+	font-size: 2.25rem;
 	color: black;
 	text-align: center;
 	font-weight: bold;
 	
-	padding: 2px 16px;
-	/*margin: 2px 2px;*/
+	/* width of cell equals width of widest letter */
+	width: 1em;
+	
+	padding: 0px;
+	padding-left: 16px;
+	padding-right: 16px;
 	
 	background-color: white;
 	
 	cursor: pointer;
-	
-	/*
-	border-style: solid;
-	border-color: black;
-	border-width: 1px 1px 1px 1px;*/
 }
 .ws-cell:hover {
 	background-color: gray;
