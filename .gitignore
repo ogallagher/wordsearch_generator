@@ -8,3 +8,6 @@ package-lock.json
 # local only
 local
 
+# admin
+bin/wordsearch-ssh
+
