@@ -10,6 +10,8 @@ Generates custom wordsearch puzzles with multiple supported languages.
 
 **한국어/Korean (ko)**
 
+**Domino (domino)**
+
 ## Showcase
 
 ![english example](docs/img/wordsearch\_webpage\_en.png)
@@ -114,4 +116,4 @@ wordsearch-cli
 ### Custom interface/environment
 
 If you want to use the wordsearch generator in a different environment, include the `WordsearchGenerator`
-class from `wordsearch_generator.cjs`, as well as `alphabets.json`
+class from `wordsearch_generator.js`, as well as `alphabets.json`
