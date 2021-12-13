@@ -13,24 +13,43 @@ Wordsearch generator webserver.
 // the module's base scope, allowing for custom import error handling as shown
 Promise.all([
 	import('express'),
-	import('cors')
+	import('cors'),
+	import('dotenv')
 ])
 .then(function(modules) {
 	try {
 		const express = modules[0].default
 		const cors = modules[1].default
+		const dotenv = modules[2].default
+
+		// load .env into process.env
+		dotenv.config()
 		
 		// constants
 		const port = process.env.PORT || 80
 	
 		// cross origin request origins
 		const origins = [
-			'http://localhost',	'http://127.0.0.1',		// local testing (same device)
+			// local testing (same device)
+			'http://localhost',	
+			'http://127.0.0.1',
+
+			// dreamhost
+			'http://wordsearch.dreamhosters.com',
+			'https://wordsearch.dreamhosters.com'
 		]
 	
-		const PUBLIC_DIR = script_dir()
+		let PUBLIC_DIR
+		if (process.env.IS_DREAMHOST) {
+			PUBLIC_DIR = './public'
+		}
+		else {
+			// module syntax
+			// PUBLIC_DIR = script_dir()
+			PUBLIC_DIR = __dirname
+		}
 		console.log(`DEBUG serving ${PUBLIC_DIR}/`)
-		
+			
 		// server instance
 		const server = express()
 
@@ -80,16 +99,20 @@ Promise.all([
 	process.exit(1)
 })
 
+// module syntax
+/*
 import { fileURLToPath as file_url_to_path } from 'url';
 import { dirname } from 'path';
 
 /**
  * Get parent directory of this script, being a nodejs module.
  * Derived from https://stackoverflow.com/a/62892482/10200417
- */
+ * /
 function script_dir() {
 	let file = file_url_to_path(import.meta.url)
 	let dir = dirname(file)
 	
 	return dir
 }
+*/
+

@@ -5,13 +5,24 @@
  * 2021-11-27
  */
 
+// node version
+
+const NODE_VERSION = process.version
+const NV_MAJOR = parseInt(NODE_VERSION.substr(1, NODE_VERSION.indexOf('.')))
+
 // external imports
 
-import fs from 'fs'
-import rl from 'readline'
+// module syntax
+// import fs from 'fs'
+// import rl from 'readline'
+
+// common syntax
+const fs = require('fs')
+const rl = require('readline')
 
 // local imports
 
+/* this doesn't work with NV_MAJOR < 14
 import { 
 	
 	WordsearchGenerator,
@@ -25,6 +36,15 @@ import {
 	KEY_RANDOM_SUBSET
 	
 } from './wordsearch_generator.cjs'
+*/
+const wg = require('./wordsearch_generator.js')
+const WordsearchGenerator = wg.WordsearchGenerator
+const WORD_CLUE_DELIM = wg.WORD_CLUE_DELIM
+const KEY_LANGUAGE = wg.KEY_LANGUAGE
+const KEY_CASE = wg.KEY_CASE
+const KEY_SIZE = wg.KEY_SIZE
+const KEY_WORDS = wg.KEY_WORDS
+const KEY_RANDOM_SUBSET = wg.KEY_RANDOM_SUBSET
 
 const cli = rl.createInterface({
 	input: process.stdin,

@@ -1,6 +1,7 @@
 # node dependencies
 node_modules
 package-lock.json
+.env
 
 # mac dir metadata
 .DS_Store
@@ -10,4 +11,9 @@ local
 
 # admin
 bin/wordsearch-ssh
+
+# dreamhost
+app.js
+.htaccess
+tmp
 
