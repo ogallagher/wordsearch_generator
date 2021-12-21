@@ -64,15 +64,45 @@ body {
 /**
  * printer friendly styles
  */
+.printscreen-only {
+	display: none;
+}
+.printscreen-only.printable {
+	display: block;
+}
+
 .wordsearch.printable {
 	
 }
-.printable .ws-cell, .printable .ws-cell:hover {
+
+.printable .ws-cell, 
+.printable .ws-cell:hover {
 	color: black;
 	border-color: black;
 	border-width: 2px;
 	border-style: solid;
 	background-color: white;
+}
+
+.ws-word.printable {
+	display: none;
+}
+
+.wordsearch-config.printable {
+	display: none;
+}
+
+#answers-header {
+	visibility: visible;
+}
+#answers-header.printable {
+	visibility: hidden;
+}
+
+@media print {
+	.printscreen-only, .printscreen-only.printable {
+		display: none;
+	}
 }
 
 /**

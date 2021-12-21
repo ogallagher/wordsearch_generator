@@ -96,13 +96,34 @@ window.onload = function(e) {
 		$('.wordsearch').addClass('printable')
 		
 		// hide config
-		$('.wordsearch-config').hide()
+		$('.wordsearch-config').addClass('printable')
 		
 		// hide answers header
-		$('#answers-header').css('visibility','hidden')
+		$('#answers-header').addClass('printable')
 		
 		// hide answers
-		$('.ws-word').attr('data-found',false)
+		$('.ws-word').addClass('printable')
+		
+		// show print-only
+		$('.printscreen-only').addClass('printable')
+	})
+	
+	// handle screen button
+	$('.wordsearch-screen').click(function() {
+		// mark wordsearch
+		$('.wordsearch').removeClass('printable')
+		
+		// show config
+		$('.wordsearch-config').removeClass('printable')
+		
+		// show answers header
+		$('#answers-header').removeClass('printable')
+		
+		// show answers
+		$('.ws-word').removeClass('printable')
+		
+		// hide print-only
+		$('.printscreen-only').removeClass('printable')
 	})
 	
 	// handle export config button
