@@ -64,6 +64,7 @@ body {
 /**
  * printer friendly styles
  */
+
 .printscreen-only {
 	display: none;
 }
@@ -100,8 +101,34 @@ body {
 }
 
 @media print {
+	/*
+	hide printscreen-only in page
+	*/
 	.printscreen-only, .printscreen-only.printable {
 		display: none;
+	}
+	
+	/*
+	ensure wordsearch fits in 8.5 x 11 in page
+	*/
+	.ws-cell, 
+	.printable .ws-cell {
+		font-size: 1.2rem;
+		
+		padding: 0px;
+		padding-left: 8px;
+		padding-right: 8px;
+	
+		background-color: white;
+	
+		cursor: pointer;
+		
+		border-width: 1px;
+	}
+	
+	.answers,
+	.ws-answer {
+		font-size: 14px;
 	}
 }
 
