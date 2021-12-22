@@ -3,8 +3,6 @@
  * 2021-11-27
  * 
  * Generate wordsearch in any language.
- *
- * Note .cjs extension to allow use of [module.]exports instead of export keyword.
  */
 
 // imports
@@ -48,6 +46,7 @@ const WORD_CLUE_DELIM = ':'
 // alphabets.json keys
 
 const KEY_COMMENT = '//comment'
+const KEY_ALPHABET_ALIASES  = 'alphabet_aliases'
 const KEY_RANGES = 'ranges'
 const KEY_LOWER_RANGES = KEY_RANGES
 const KEY_UPPER_RANGES = `upper_${KEY_RANGES}`
@@ -443,39 +442,75 @@ class WordsearchGenerator {
 	 * @type Object
 	 */
 	static get_alphabet(language, case_key = CASE_DEFAULT, path = ALPHABET_FILE) {
-		return new Promise(function(resolve, reject) {
-			if (environment == ENV_FRONTEND) {
-				// load with ajax
-				$.ajax({
-					method: 'GET',
-					url: path,
-					dataType: 'json',
-					success: function(alphabets) {
-						// console.log(`DEBUG GET ${path} = ${JSON.stringify(alphabets,null,2)}`)
-						WordsearchGenerator.load_alphabet(alphabets[language], case_key, path)
-							.then(resolve)
-							.catch(reject)
+		return new Promise(function(resolve, reject) {	
+			new Promise(function(resolve_lang, reject_lang) {
+				if (environment == ENV_FRONTEND) {
+					// load with ajax
+					$.ajax({
+						method: 'GET',
+						url: path,
+						dataType: 'json',
+						success: function(alphabets) {
+							resolve_lang(alphabets)
+						},
+						error: function(err) {
+							console.log(`ERROR failed to get alphabets file ${path}`)
+							console.log(err)
+							reject_lang()
+						}
+					})
+				} 
+				else if (environment == ENV_BACKEND) {
+					// load with nodejs fs module
+					fs.readFile(`${parent_dir}/${path}`, function(err, alphabets_json) {
+						if (err) {
+							console.log(`ERROR alphabets file not found at ${path}`)
+							console.log(err)
+							reject_lang()
+						} 
+						else {
+							resolve_lang(JSON.parse(alphabets_json))
+						}
+					})
+				} 
+				else {
+					console.log(`ERROR unable to load alphabets file in unknown env ${environment}`)
+					reject_lang()
+				}
+			})
+			.catch(reject)
+			.then((alphabets) => {
+				let lang_aliases = alphabets[KEY_ALPHABET_ALIASES]
+				let alphabet = null
+				
+				if (language in lang_aliases) {
+					alphabet = alphabets[language]
+				}
+				else {
+					let a = 0
+					let lang_alias_keys = Object.keys(lang_aliases)
+					
+					while (alphabet == null && a<lang_alias_keys.length) {
+						if (lang_aliases[lang_alias_keys[a]].indexOf(language.toLowerCase()) !== -1) {
+							alphabet = alphabets[lang_alias_keys[a]]
+						}
+						else {
+							console.log(`${language} not in ${lang_aliases[lang_alias_keys[a]]}`)
+						}
+						a++
 					}
-				})
-			} else if (environment == ENV_BACKEND) {
-				// load with nodejs fs module
-				fs.readFile(`${parent_dir}/${path}`, function(err, alphabets_json) {
-					if (err) {
-						console.log(`ERROR alphabets file not found at ${path}`)
-						console.log(err)
-						reject()
-					} else {
-						WordsearchGenerator.load_alphabet(
-								JSON.parse(alphabets_json)[language], case_key, path
-							)
-							.then(resolve)
-							.catch(reject)
-					}
-				})
-			} else {
-				console.log(`ERROR unable to load alphabets file in unknown environment`)
-				reject()
-			}
+				}
+				
+				if (alphabet != null) {
+					WordsearchGenerator.load_alphabet(alphabet, case_key, path)
+					.then(resolve)
+					.catch(reject)
+				}
+				else {
+					console.log(`ERROR alphabet not found for language ${language}`)
+					reject()
+				}
+			})
 		})
 	}
 

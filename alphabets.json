@@ -2,6 +2,13 @@
 	"//comment": 
 	"Each range is a either a range denoted by two extremes, or a set of options denoted by a list of length≠2.",
 	
+	"alphabet_aliases": {
+		"en": ["eng","english","inglés","영어"],
+		"es": ["esp","spa","spanish","español","스페인어"],
+		"ko": ["kor","korean","한국어"],
+		"domino": ["domino","dominoes","도미노"]
+	},
+	
 	"en": {
 		"//comment": "english. a-z, A-Z.",
 		

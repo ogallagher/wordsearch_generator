@@ -80,7 +80,7 @@ cli.question('create with file [f] or interactively [i]? ', (input_mode) => {
 			wordsearch = new WordsearchGenerator(
 				// 'ko',
 				// 'es','upper',
-				'en','lower',
+				'영어','lower',
 				width
 			)
 			wordsearch.init_promise
