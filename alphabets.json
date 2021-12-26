@@ -3,8 +3,12 @@
 	"Each range is a either a range denoted by two extremes, or a set of options denoted by a list of length≠2.",
 	
 	"alphabet_aliases": {
+		"//comment": "Primary key is ISO 2-char language code if it exists. Otherwise, the primary key is the full name in English.",
+		
 		"en": ["eng","english","inglés","영어"],
 		"es": ["esp","spa","spanish","español","스페인어"],
+		"hiragana": [],
+		"ja": ["jpn","japanese","jap","japonés","일본어"],
 		"ko": ["kor","korean","한국어"],
 		"domino": ["domino","dominoes","도미노"]
 	},
@@ -32,6 +36,45 @@
 		"upper_ranges": [
 			[65,90],
 			[193,201,205,211,218,220]
+		]
+	},
+	
+	"hiragana": {
+		"//comment": "japanese hiragana alphabet, excluding small letters. あいうえおつやゆよわゟ, か-ぢ, づ-も, ら-ろ, ゐ-ゔ",
+		"ranges": [
+			[12354,12356,12358,12360,12362,12388,12420,12422,12424,12431,12447],
+			[12363,12386],
+			[12389,12418],
+			[12425,12429],
+			[12432,12436]
+		],
+		
+		"upper_ranges": [
+			[12354,12356,12358,12360,12362,12388,12420,12422,12424,12431,12447],
+			[12363,12386],
+			[12389,12418],
+			[12425,12429],
+			[12432,12436]
+		]
+	},
+	
+	"ja": {
+		"//comment": "japanese, all alphabet systems: hiragana (soon + katakana + kanji).",
+		
+		"ranges": [
+			[12354,12356,12358,12360,12362,12388,12420,12422,12424,12431,12447],
+			[12363,12386],
+			[12389,12418],
+			[12425,12429],
+			[12432,12436]
+		],
+		
+		"upper_ranges": [
+			[12354,12356,12358,12360,12362,12388,12420,12422,12424,12431,12447],
+			[12363,12386],
+			[12389,12418],
+			[12425,12429],
+			[12432,12436]
 		]
 	},
 	

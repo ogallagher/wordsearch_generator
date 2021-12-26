@@ -46,6 +46,8 @@ const KEY_SIZE = wg.KEY_SIZE
 const KEY_WORDS = wg.KEY_WORDS
 const KEY_RANDOM_SUBSET = wg.KEY_RANDOM_SUBSET
 
+const DEFAULT_ALPHABET = 'en'
+
 const cli = rl.createInterface({
 	input: process.stdin,
 	output: process.stdout
@@ -72,19 +74,34 @@ cli.question('create with file [f] or interactively [i]? ', (input_mode) => {
 		})
 	}
 	else {
-		cli.question('wordsearch width ', (width) => {
-			if (width != undefined) {
-				width = parseInt(width)
-			}
+		WordsearchGenerator.get_alphabet_aliases()
+		.then(function(aliases) {
+			alphabet_options = JSON.stringify(aliases, null, 1)
 			
-			wordsearch = new WordsearchGenerator(
-				// 'ko',
-				// 'es','upper',
-				'영어','lower',
-				width
+			cli.question(
+				`wordsearch alphabet\n${alphabet_options}\n(default=${DEFAULT_ALPHABET}): `, 
+				function(alphabet_key) {
+					if (alphabet_key == '') {
+						alphabet_key = DEFAULT_ALPHABET
+					}
+					
+					case_key = 'lower'
+					
+					cli.question('wordsearch width ', function(width) {
+						if (width != '') {
+							width = parseInt(width)
+						}
+						
+						wordsearch = new WordsearchGenerator(
+							alphabet_key,
+							case_key,
+							width
+						)
+						wordsearch.init_promise
+						.then(on_alphabet_load)
+					})
+				}
 			)
-			wordsearch.init_promise
-			.then(on_alphabet_load)
 		})
 	}
 })
@@ -106,14 +123,19 @@ function on_alphabet_load() {
 		word_count = 0
 		word_clues = new Array(parseInt(word_count_str))
 		
-		console.log(`word${WORD_CLUE_DELIM}clue`)
-		next_word_clue()
-		.then(() => {
-			cli.close()
-			
-			return load_word_clues(word_clues)
-		})
-		.then(print_wordsearch)
+		if (word_clues.length > 0) {
+			console.log(`word${WORD_CLUE_DELIM}clue`)
+			next_word_clue()
+			.then(() => {
+				cli.close()
+				
+				return load_word_clues(word_clues)
+			})
+			.then(print_wordsearch)
+		}
+		else {
+			print_wordsearch()
+		}
 	})
 }
 

@@ -1,0 +1,20 @@
+{
+	"language": "hiragana",
+	"title": "Example Japanese Hiragana wordsearch",
+	"size": 20,
+	"case": "lower",
+	"words": [
+		"ひと:person",
+		"はやい:fast",
+		"さむい:cold",
+		"あたらしい:new",
+		"みじかい:short",
+		"よすし:sushi",
+		"つくえ:desk/table",
+		"とけい:clock",
+		"ねこ:cat",
+		"いぬ:dog",
+		"さかな:fish",
+		"ほん:book"
+	]
+}

@@ -431,6 +431,33 @@ class WordsearchGenerator {
 	}
 
 	// static methods
+	
+	/**
+	 * Get alphabet aliases as a plain object.
+	 *
+	 * @param {String|Object|Array|Boolean|Number} paramName Describe this parameter
+	 *
+	 * @returns Describe what it returns
+	 * @type String|Object|Array|Boolean|Number
+	 */
+	
+	static get_alphabet_aliases(path = ALPHABET_FILE) {
+		return new Promise(function(resolve, reject) {
+			WordsearchGenerator.load_alphabets_file(path)
+			.then((alphabets) => {
+				let aliases = alphabets[KEY_ALPHABET_ALIASES]
+				
+				// remove comments
+				delete aliases[KEY_COMMENT]
+				
+				resolve(aliases)
+			})
+			.catch(() => {
+				console.log(`error unable to get alphabet aliases from alphabets`)
+				reject()
+			})
+		})
+	}
 
 	/**
 	 * Get alphabet description given the language code.
@@ -443,44 +470,14 @@ class WordsearchGenerator {
 	 */
 	static get_alphabet(language, case_key = CASE_DEFAULT, path = ALPHABET_FILE) {
 		return new Promise(function(resolve, reject) {	
-			new Promise(function(resolve_lang, reject_lang) {
-				if (environment == ENV_FRONTEND) {
-					// load with ajax
-					$.ajax({
-						method: 'GET',
-						url: path,
-						dataType: 'json',
-						success: function(alphabets) {
-							resolve_lang(alphabets)
-						},
-						error: function(err) {
-							console.log(`ERROR failed to get alphabets file ${path}`)
-							console.log(err)
-							reject_lang()
-						}
-					})
-				} 
-				else if (environment == ENV_BACKEND) {
-					// load with nodejs fs module
-					fs.readFile(`${parent_dir}/${path}`, function(err, alphabets_json) {
-						if (err) {
-							console.log(`ERROR alphabets file not found at ${path}`)
-							console.log(err)
-							reject_lang()
-						} 
-						else {
-							resolve_lang(JSON.parse(alphabets_json))
-						}
-					})
-				} 
-				else {
-					console.log(`ERROR unable to load alphabets file in unknown env ${environment}`)
-					reject_lang()
-				}
-			})
+			WordsearchGenerator.load_alphabets_file(path)
 			.catch(reject)
 			.then((alphabets) => {
 				let lang_aliases = alphabets[KEY_ALPHABET_ALIASES]
+				
+				// remove comments
+				delete lang_aliases[KEY_COMMENT]
+				
 				let alphabet = null
 				
 				if (language in lang_aliases) {
@@ -513,7 +510,54 @@ class WordsearchGenerator {
 			})
 		})
 	}
-
+	
+	/**
+	 * Load alphabets file into a plain object.
+	 *
+	 * @param {String} path Path to the alphabets file.
+	 *
+	 * @returns Promise resolving a plain object describing character sets per language, or rejecting
+	 * empty on failure.
+	 * @type Promise
+	 */
+	static load_alphabets_file(path = ALPHABET_FILE) {
+		return new Promise(function(resolve, reject) {
+			if (environment == ENV_FRONTEND) {
+				// load with ajax
+				$.ajax({
+					method: 'GET',
+					url: path,
+					dataType: 'json',
+					success: function(alphabets) {
+						resolve(alphabets)
+					},
+					error: function(err) {
+						console.log(`ERROR failed to get alphabets file ${path}`)
+						console.log(err)
+						reject()
+					}
+				})
+			} 
+			else if (environment == ENV_BACKEND) {
+				// load with nodejs fs module
+				fs.readFile(`${parent_dir}/${path}`, function(err, alphabets_json) {
+					if (err) {
+						console.log(`ERROR alphabets file not found at ${path}`)
+						console.log(err)
+						reject()
+					} 
+					else {
+						resolve(JSON.parse(alphabets_json))
+					}
+				})
+			} 
+			else {
+				console.log(`ERROR unable to load alphabets file in unknown env ${environment}`)
+				reject()
+			}
+		})
+	}
+	
 	/**
 	 * Called by {get_alphabet}.
 	 */
