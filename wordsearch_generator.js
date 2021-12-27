@@ -492,7 +492,7 @@ class WordsearchGenerator {
 							alphabet = alphabets[lang_alias_keys[a]]
 						}
 						else {
-							console.log(`${language} not in ${lang_aliases[lang_alias_keys[a]]}`)
+							console.log(`DEBUG ${language} not in ${lang_aliases[lang_alias_keys[a]]}`)
 						}
 						a++
 					}

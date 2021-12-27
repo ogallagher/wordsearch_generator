@@ -79,7 +79,7 @@ cli.question('create with file [f] or interactively [i]? ', (input_mode) => {
 			alphabet_options = JSON.stringify(aliases, null, 1)
 			
 			cli.question(
-				`wordsearch alphabet\n${alphabet_options}\n(default=${DEFAULT_ALPHABET}): `, 
+				`n${alphabet_options}\nwordsearch alphabet (default=${DEFAULT_ALPHABET}): `, 
 				function(alphabet_key) {
 					if (alphabet_key == '') {
 						alphabet_key = DEFAULT_ALPHABET

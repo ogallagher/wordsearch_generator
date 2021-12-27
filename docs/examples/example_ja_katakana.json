@@ -2,7 +2,6 @@
 	"language": "katakana",
 	"title": "Example Japanese Katakana wordsearch",
 	"size": 20,
-	"case": "lower",
 	"words": [
 		"ビル:building",
 		"デパート:department store",

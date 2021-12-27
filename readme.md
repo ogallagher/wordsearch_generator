@@ -9,6 +9,8 @@ having found it in [unicode documentation](https://unicode.org/charts/nameslist/
 characters that seem generally valid for spelling. If you find mistakes with any alphabet, open an 
 issue and we can fix them by modifying `alphabets.json`.
 
+**Chinese/漢語 (zh)**
+
 **English (en)**
 
 **Español/Spanish (es)**
