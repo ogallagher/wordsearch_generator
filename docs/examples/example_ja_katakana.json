@@ -1,0 +1,19 @@
+{
+	"language": "katakana",
+	"title": "Example Japanese Katakana wordsearch",
+	"size": 20,
+	"case": "lower",
+	"words": [
+		"ビル:building",
+		"デパート:department store",
+		"スーパー:supermarket",
+		"レストラン:restaurant",
+		"プール:pool",
+		"ホテル:hotel",
+		"コンビニ:convenience store",
+		"ホッケー:hockey",
+		"カメラ:camera",
+		"タオル:towel",
+		"タクシー:taxi"
+	]
+}

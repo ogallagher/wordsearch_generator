@@ -2,13 +2,20 @@
 
 Generates custom wordsearch puzzles with multiple supported languages.
 
-## Supported languages
+## Supported languages/alphabets
+
+Note that in many cases I've _included_ an alphabet corresponding to a language I do not know,
+having found it in [unicode documentation](https://unicode.org/charts/nameslist/) and selected
+characters that seem generally valid for spelling. If you find mistakes with any alphabet, open an 
+issue and we can fix them by modifying `alphabets.json`.
 
 **English (en)**
 
 **Español/Spanish (es)**
 
-**Hiragana, Japanese (hiragana)**
+**Hiragana/ひらがな, Japanese (hiragana)**
+
+**Katakana/カタカナ, Japanese (katakana)**
 
 **한국어/Korean (ko)**
 

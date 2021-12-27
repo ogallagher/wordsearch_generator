@@ -7,8 +7,9 @@
 		
 		"en": ["eng","english","inglés","영어"],
 		"es": ["esp","spa","spanish","español","스페인어"],
-		"hiragana": [],
-		"ja": ["jpn","japanese","jap","japonés","일본어"],
+		"hiragana": ["ひらがな","平仮名","히라가나"],
+		"ja": ["jpn","japanese","jap","japonés","일본어","日本語"],
+		"katakana": ["カタカナ","片仮名","가타카나"],
 		"ko": ["kor","korean","한국어"],
 		"domino": ["domino","dominoes","도미노"]
 	},
@@ -40,7 +41,7 @@
 	},
 	
 	"hiragana": {
-		"//comment": "japanese hiragana alphabet, excluding small letters. あいうえおつやゆよわゟ, か-ぢ, づ-も, ら-ろ, ゐ-ゔ",
+		"//comment": "japanese hiragana alphabet, excluding small letters, iteration marks, and ー, including ゟ. あいうえおつやゆよわゟ, か-ぢ, づ-も, ら-ろ, ゐ-ゔ",
 		"ranges": [
 			[12354,12356,12358,12360,12362,12388,12420,12422,12424,12431,12447],
 			[12363,12386],
@@ -59,7 +60,7 @@
 	},
 	
 	"ja": {
-		"//comment": "japanese, all alphabet systems: hiragana (soon + katakana + kanji).",
+		"//comment": "japanese, all alphabet systems: hiragana + katakana (+ kanji).",
 		
 		"ranges": [
 			[12354,12356,12358,12360,12362,12388,12420,12422,12424,12431,12447],
@@ -75,6 +76,28 @@
 			[12389,12418],
 			[12425,12429],
 			[12432,12436]
+		]
+	},
+	
+	"katakana": {
+		"//comment": "japanese katakana alphabet, excluding small letters, punctuation, and iteration marks, including ヷヸヹヺーヿ. アイウエツヤユーヿ, オ-ヂ, ツ-モ, ヨ-ロ, ワ-ヴ, ヷ-ヺ",
+		
+		"ranges": [
+			[12450,12452,12454,12456,12516,12518,12540,12543],
+			[12458,12482],
+			[12484,12514],
+			[12520,12525],
+			[12527,12532],
+			[12535,12538]
+		],
+		
+		"upper_ranges": [
+			[12450,12452,12454,12456,12516,12518,12540,12543],
+			[12458,12482],
+			[12484,12514],
+			[12520,12525],
+			[12527,12532],
+			[12535,12538]
 		]
 	},
 	
