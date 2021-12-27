@@ -8,6 +8,8 @@ Generates custom wordsearch puzzles with multiple supported languages.
 
 **Español/Spanish (es)**
 
+**Hiragana, Japanese (hiragana)**
+
 **한국어/Korean (ko)**
 
 **Domino (domino)**

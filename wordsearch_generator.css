@@ -61,6 +61,21 @@ body {
 	display: none;
 }
 
+.language-option:hover {
+	background-color: white;
+}
+.language-option .alphabet-key {
+	color: white;
+	pointer-events: none;
+}
+.language-option:hover .alphabet-key {
+	color: black;
+}
+.language-option .alphabet-aliases {
+	color: gray;
+	pointer-events: none;
+}
+
 /**
  * printer friendly styles
  */

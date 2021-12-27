@@ -487,7 +487,7 @@ class WordsearchGenerator {
 					let a = 0
 					let lang_alias_keys = Object.keys(lang_aliases)
 					
-					while (alphabet == null && a<lang_alias_keys.length) {
+					while (alphabet == null && a < lang_alias_keys.length) {
 						if (lang_aliases[lang_alias_keys[a]].indexOf(language.toLowerCase()) !== -1) {
 							alphabet = alphabets[lang_alias_keys[a]]
 						}
@@ -670,7 +670,7 @@ class WordsearchGenerator {
 	static string_to_array(str) {
 		let arr = []
 		
-		for (let i=0; i<str.length; i++) {
+		for (let i=0; i < str.length; i++) {
 			let char = WordsearchGenerator.whole_char_at(str,i)
 			if (char !== false) {
 				arr.push(char)

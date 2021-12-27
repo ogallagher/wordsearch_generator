@@ -23,6 +23,46 @@ window.onload = function(e) {
 		set_wordsearch_input_type(INPUT_FORM)
 	})
 	
+	// handle alphabet choices list
+	let langs_jq = $('.languages')
+	
+	// show on focus
+	$('#language')
+	.on('focusin', function() {
+		// show alphabets
+		langs_jq.show()
+	})
+	.on('focusout', function(event) {
+		// potentially allow a language option to accept a click event before disappearing
+		setTimeout(() => {
+			langs_jq.hide()
+		}, 100)
+	})
+	
+	WordsearchGenerator.get_alphabet_aliases()
+	.then(function(alphabets) {
+		const alphabet_option_template = 
+		`<div class="language-option px-2">
+			<span class="alphabet-key"></span>
+			<span class="alphabet-aliases"></span>
+		</div>`
+		
+		// display alphabets in list
+		for (let alphabet_key in alphabets) {
+			// console.log(`debug loaded alphabet:\b${JSON.stringify(alphabet_key)}`)
+			let alphabet_jq = $(alphabet_option_template)
+			.attr('data-alphabet-key', alphabet_key)
+			
+			alphabet_jq.find('.alphabet-key').html(alphabet_key)
+			alphabet_jq.find('.alphabet-aliases').html(alphabets[alphabet_key].join(' '))
+			
+			langs_jq.append(alphabet_jq)
+			
+			// handle alphabet click
+			alphabet_jq.on('click', on_alphabet_option_click)
+		}
+	})
+	
 	// handle description file upload
 	let description_json
 	$('.wordsearch-file').on('change', function() {
@@ -277,7 +317,7 @@ function load_word_clues(wordsearch, word_clues, clue_delim=':') {
 			
 			subset_idx = new Array(...subset_idx)
 			let subset = new Array(subset_length)
-			for (let i=0; i<subset_idx.length; i++) {
+			for (let i=0; i < subset_idx.length; i++) {
 				subset[i] = word_clues[subset_idx[i]]
 			}
 			
@@ -380,7 +420,7 @@ function display_answers(words, clues) {
 	// show answer word-clues
 	let answersjq = $('.answers').html('')
 	
-	for (let i=0; i<words.length; i++) {
+	for (let i=0; i < words.length; i++) {
 		let rowjq = $(
 			`<li class="ws-answer" data-word-idx="${i}">
 				<span class="ws-clue">${clues[i]}</span> &rarr;
@@ -478,6 +518,14 @@ function on_cell_click(cell, wordsearch) {
 function on_word_clue_delete_click(event) {
 	let datetime_str = event.target.getAttribute('data-when')
 	$(`.word-clue[data-when="${datetime_str}"]`).remove()
+}
+
+function on_alphabet_option_click(event) {
+	let alphabet_option = event.target
+	let alphabet_key = alphabet_option.getAttribute('data-alphabet-key')
+	console.log(`info select alphabet ${alphabet_key}`)
+	
+	$('#language').val(alphabet_key)
 }
 
 function is_on(jq) {
