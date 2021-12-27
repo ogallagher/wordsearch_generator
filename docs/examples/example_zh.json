@@ -1,7 +1,7 @@
 {
 	"language": "zh",
 	"title": "Example Chinese wordsearch.",
-	"size": 15,
+	"size": 10,
 	"words": [
 		"字典:dictionary (zìdiǎn)",
 		"大象:elephant (dà xiàng)",

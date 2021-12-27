@@ -25,11 +25,23 @@ issue and we can fix them by modifying `alphabets.json`.
 
 ## Showcase
 
+### English
+
 ![english example](docs/img/wordsearch\_webpage\_en.png)
+
+### Korean
 
 ![korean example](docs/img/wordsearch\_webpage\_ko.png)
 
+### Spanish
+
 ![spanish example](docs/img/wordsearch\_webpage\_es.png)
+
+### Chinese
+
+![chinese example](docs/img/wordsearch\_webpage\_zh.png)
+
+### CLI, Korean
 
 ```
 ./wordsearch_cli.js    
