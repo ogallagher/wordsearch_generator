@@ -83,7 +83,7 @@ Include the following in your `<head/>` tag:
 
 ```html
 <script 
-	src="/wordsearch_webpage.js" type="text/javascript"
+	src="https://wordsearch.dreamhosters.com/wordsearch_webpage.js" type="text/javascript"
 	data-containers=".wordsearch-container">
 </script>
 ```
