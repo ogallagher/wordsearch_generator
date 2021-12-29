@@ -7,6 +7,8 @@ const current_script = document.currentScript
 const INPUT_FILE = 0
 const INPUT_FORM = 1
 
+const USE_HOST_URL = true
+const HOST_URL = 'https://wordsearch.dreamhosters.com'
 const DEPENDENCIES_URL = '/webpage_dependencies.html'
 const WORDSEARCH_COMPONENT_URL = '/wordsearch_webcomponent.html'
 const DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR = '.wordsearch-container'
@@ -19,16 +21,22 @@ let wordsearch_global = {}
 let endpoint_cells = []
 
 let dependencies_promise = new Promise(function(resolve, reject) {
+	let url = USE_HOST_URL
+		? `${HOST_URL}${DEPENDENCIES_URL}`
+		: DEPENDENCIES_URL
+	
 	$.ajax({
 		method: 'GET',
-		url: DEPENDENCIES_URL,
+		url: url,
 		dataType: 'html',
 		success: function(dependencies_html) {
+			console.log(`DEBUG loaded wordsearch dependencies html of length ${dependencies_html.length}`)
 			$('head').append(dependencies_html)
-			resolve()
+			.promise()
+			.then(resolve)
 		},
 		error: function(err) {
-			console.log(`ERROR failed to get dependencies at ${DEPENDENCIES_URL}`)
+			console.log(`ERROR failed to get dependencies at ${url}`)
 			reject()
 		}
 	})
@@ -36,43 +44,60 @@ let dependencies_promise = new Promise(function(resolve, reject) {
 
 // load wordsearch web component and resolve the html as a string
 let wordsearch_component_promise = new Promise(function(resolve, reject) {
+	let url = USE_HOST_URL
+		? `${HOST_URL}${WORDSEARCH_COMPONENT_URL}`
+		: WORDSEARCH_COMPONENT_URL
+	
 	$.ajax({
 		method: 'GET',
-		url: WORDSEARCH_COMPONENT_URL,
+		url: url,
 		dataType: 'html',
 		success: function(component_html) {
 			console.log(`DEBUG loaded wordsearch web component html of length ${component_html.length}`)
 			resolve(component_html)
 		},
 		error: function(err) {
-			console.log(`ERROR failed to get wordsearch web component at ${WORDSEARCH_COMPONENT_URL}`)
+			console.log(`ERROR failed to get wordsearch web component at ${url}`)
 			reject()
 		}
 	})
 })
+
 window.onload = function(e) {
 	let alphabets
 	
 	dependencies_promise
-	.catch(function() {
+	.catch(function(err) {
+		if (err) {
+			console.log(err)
+		}
+		
 		$('body').append(
 			`<div class="wordsearch-component-error">
 				Failed to fetch wordsearch component dependencies
 			</div>`
 		)
 	})
-	.then(() => {
-		if (WordsearchGenerator !== undefined) {
-			return WordsearchGenerator.get_alphabet_aliases()
+	.then(function() {
+		return WordsearchGenerator.get_alphabet_aliases()
+	})
+	.catch(function(err) {
+		if (err) {
+			console.log(err)
+			console.log(`ERROR failed to load alphabet options`)
 		}
 	})
 	.then(function(alphabet_aliases) {
 		alphabets = alphabet_aliases
 	})
-	.then(() => {
+	.then(function() {
 		return wordsearch_component_promise
 	})
-	.catch(function() {
+	.catch(function(err) {
+		if (err) {
+			console.log(err)
+		}
+		
 		$('body').append(
 			`<div class="wordsearch-component-error">Failed to fetch wordsearch component</div>`
 		)
@@ -447,7 +472,7 @@ function load_word_clues(wordsearch_cmp_id, wordsearch, word_clues, clue_delim='
 			clue = array[1]
 		}
 		
-		if (word.length <= wordsearch.grid.length) {
+		if (WordsearchGenerator.string_to_array(word).length <= wordsearch.grid.length) {
 			if (!wordsearch.add_word_clue(word,clue)) {
 				console.log(`ERROR failed to find a place for ${word}`)
 			}

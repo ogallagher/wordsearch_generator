@@ -12,6 +12,9 @@ const ENV_BACKEND = 'backend'
 const ENV_FRONTEND = 'frontend'
 let environment = ENV_UNKNOWN
 
+const USE_HOST_URL = true
+const HOST_URL = 'https://wordsearch.dreamhosters.com'
+
 let fs
 	// directory where this file is
 let parent_dir
@@ -438,12 +441,17 @@ class WordsearchGenerator {
 	/**
 	 * Get alphabet aliases as a plain object.
 	 *
-	 * @param {String|Object|Array|Boolean|Number} paramName Describe this parameter
+	 * @param {String} path Path to alphabets file.
 	 *
-	 * @returns Describe what it returns
-	 * @type String|Object|Array|Boolean|Number
+	 * @returns Resolve alphabet aliases, or reject on failure.
+	 * @type Promise
 	 */
 	static get_alphabet_aliases(path = ALPHABET_FILE) {
+		if (USE_HOST_URL && environment == ENV_FRONTEND) {
+			path = `${HOST_URL}/${path}`
+			console.log(`DEBUG alphabet file path w host = ${path}`)
+		}
+		
 		return new Promise(function(resolve, reject) {
 			environment_promise
 			.then(() => {
@@ -474,6 +482,11 @@ class WordsearchGenerator {
 	 * @type Object
 	 */
 	static get_alphabet(language, case_key = CASE_DEFAULT, path = ALPHABET_FILE) {
+		if (USE_HOST_URL && environment == ENV_FRONTEND) {
+			path = `${HOST_URL}/${path}`
+			console.log(`DEBUG alphabet file path w host = ${path}`)
+		}
+		
 		return new Promise(function(resolve, reject) {	
 			WordsearchGenerator.load_alphabets_file(path)
 			.catch(reject)
@@ -666,6 +679,8 @@ class WordsearchGenerator {
 	
 	/**
 	 * Convert string (including unicode with surrogate chars) to char array.
+	 * If this breaks for characters w higher byte counts, try alternatives mentioned
+	 * at https://github.com/ogallagher/wordsearch_generator/issues/27.
 	 *
 	 * @param {String} str Describe this parameter
 	 *

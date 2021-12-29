@@ -42,13 +42,11 @@ Promise.all([
 		
 		// server instance
 		const server = express()
-
+		
 		// enable cross-origin requests for same origin html imports
 		server.use(cors({
-			origin: function(origin,callback) {
-				console.log(`DEBUG allow all origins including ${origin}`)
-				return callback(null,true)
-			}
+			// allow all origins
+			origin: '*'
 		}))
 		
 		server.set('port', port)
