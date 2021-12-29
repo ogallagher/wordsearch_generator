@@ -7,8 +7,8 @@ const current_script = document.currentScript
 const INPUT_FILE = 0
 const INPUT_FORM = 1
 
-const USE_HOST_URL = true
-const HOST_URL = 'https://wordsearch.dreamhosters.com'
+const USE_WP_HOST_URL = true
+const WP_HOST_URL = 'https://wordsearch.dreamhosters.com'
 const DEPENDENCIES_URL = '/webpage_dependencies.html'
 const WORDSEARCH_COMPONENT_URL = '/wordsearch_webcomponent.html'
 const DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR = '.wordsearch-container'
@@ -21,8 +21,8 @@ let wordsearch_global = {}
 let endpoint_cells = []
 
 let dependencies_promise = new Promise(function(resolve, reject) {
-	let url = USE_HOST_URL
-		? `${HOST_URL}${DEPENDENCIES_URL}`
+	let url = USE_WP_HOST_URL
+		? `${WP_HOST_URL}${DEPENDENCIES_URL}`
 		: DEPENDENCIES_URL
 	
 	$.ajax({
@@ -44,8 +44,8 @@ let dependencies_promise = new Promise(function(resolve, reject) {
 
 // load wordsearch web component and resolve the html as a string
 let wordsearch_component_promise = new Promise(function(resolve, reject) {
-	let url = USE_HOST_URL
-		? `${HOST_URL}${WORDSEARCH_COMPONENT_URL}`
+	let url = USE_WP_HOST_URL
+		? `${WP_HOST_URL}${WORDSEARCH_COMPONENT_URL}`
 		: WORDSEARCH_COMPONENT_URL
 	
 	$.ajax({
