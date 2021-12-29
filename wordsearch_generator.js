@@ -13,7 +13,7 @@ const ENV_FRONTEND = 'frontend'
 let environment = ENV_UNKNOWN
 
 const USE_HOST_URL = true
-const HOST_URL = 'https://wordsearch.dreamhosters.com'
+const WG_HOST_URL = 'https://wordsearch.dreamhosters.com'
 
 let fs
 	// directory where this file is
@@ -448,7 +448,7 @@ class WordsearchGenerator {
 	 */
 	static get_alphabet_aliases(path = ALPHABET_FILE) {
 		if (USE_HOST_URL && environment == ENV_FRONTEND) {
-			path = `${HOST_URL}/${path}`
+			path = `${WG_HOST_URL}/${path}`
 			console.log(`DEBUG alphabet file path w host = ${path}`)
 		}
 		
@@ -483,7 +483,7 @@ class WordsearchGenerator {
 	 */
 	static get_alphabet(language, case_key = CASE_DEFAULT, path = ALPHABET_FILE) {
 		if (USE_HOST_URL && environment == ENV_FRONTEND) {
-			path = `${HOST_URL}/${path}`
+			path = `${WG_HOST_URL}/${path}`
 			console.log(`DEBUG alphabet file path w host = ${path}`)
 		}
 		
