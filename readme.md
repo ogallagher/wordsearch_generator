@@ -88,6 +88,9 @@ Include the following in your `<head/>` tag:
 </script>
 ```
 
+The `data-containers` attribute is a way to customize the css selector used to identify container
+tags in which each wordsearch generator will be loaded.
+
 See `wordsearch_generator.html` for an example of how to insert a wordsearch generator dynamically
 into an external webpage. The [public webserver](https://wordsearch.dreamhosters.com) should
 allow the needed cross origin requests for the component to be provided.

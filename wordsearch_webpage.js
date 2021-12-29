@@ -3,6 +3,7 @@
  * 2021-11-30
  */
 
+const current_script = document.currentScript
 const INPUT_FILE = 0
 const INPUT_FORM = 1
 
@@ -49,11 +50,9 @@ let wordsearch_component_promise = new Promise(function(resolve, reject) {
 		}
 	})
 })
-
 window.onload = function(e) {
 	let alphabets
 	
-	// load wordsearch components into each container
 	dependencies_promise
 	.catch(function() {
 		$('body').append(
@@ -80,7 +79,8 @@ window.onload = function(e) {
 	})
 	.then(function(wordsearch_html) {		
 		// get attributes from script tag
-		let script_jq = $(document.currentScript)
+		// unsure why referencing document.currentScript here returns null
+		let script_jq = $(current_script)
 		
 		let wordsearch_containers_selector = script_jq.attr('data-containers')
 		if (wordsearch_containers_selector == undefined) {
@@ -90,6 +90,7 @@ window.onload = function(e) {
 		
 		delete script_jq
 		
+		// load wordsearch components into each container
 		$(wordsearch_containers_selector).each(function(idx) {
 			console.log(`DEBUG load wordsearch generator component ${idx}`)
 			
