@@ -1,0 +1,99 @@
+<div class="wordsearch-component">
+	<div class="row wordsearch-config">
+		<!-- input config/description method-->
+		<div class="col-md mb-3">
+			<div class="col" class="wordsearch-input-group">
+				<div class="input-group mb-3">
+					<button class="wordsearch-input-file btn btn-outline-secondary">
+						File
+					</button>
+					<button class="wordsearch-input-form btn btn-outline-secondary">
+						Form
+					</button>
+				</div>
+			</div>
+			
+			<!-- file input -->
+			<input type="file" class="wordsearch-file form-control">
+			
+			<!-- form input -->
+			<div class="wordsearch-form">
+				<div class="mb-3">
+					<label class="h3" for="language">Language</label>
+					<input type="text" class="language form-control" name="language" value="en"/>
+					<div class="languages form-text mt-1" style="display: none;">
+						<!-- language options loaded by wordsearch_webpage.js -->
+					</div>
+				</div>
+				
+				<div class="mb-3">
+					<label class="h3" for="case">Case</label>
+					<input type="text" class="case form-control" name="case" value="lower"/>
+				</div>
+				
+				<div class="mb-3">
+					<label class="h3" for="size">Size</label>
+					<input type="text" class="size form-control" name="size" value="10"/>
+				</div>
+				
+				<div>
+					<label class="h3" for="word-clues">Words (and clues)</label>
+					<div class="word-clues">
+					</div>
+					<div class="text-center py-2">
+						<button class="add-word-clue btn btn-secondary w-100">
+							<svg class="bi bi-plus-lg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+								<path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+							</svg>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="col-md-5">
+			<button class="btn btn-primary wordsearch-reload mb-3">
+				Reload
+			</button>
+		
+			<button class="btn btn-secondary wordsearch-print mb-3" disabled>
+				Print
+			</button>
+		
+			<button class="btn btn-secondary wordsearch-export-config mb-3">
+				Export config
+			</button>
+			<a 
+				class="wordsearch-export-link d-none"
+				href=""
+				download="wordsearch_config.json">
+				config export link
+			</a>
+		
+			<!-- random subset -->
+			<div class="input-group random-subset-group">
+				<button class="random-subset btn btn-outline-secondary" data-on="false">
+					Random subset of
+				</button>
+				<input type="text" class="random-subset-count form-control" disabled/>
+				<span class="input-group-text">words</span>
+			</div>
+		</div>
+	</div>
+	
+	<div class="text-center printscreen-only">
+		<button class="btn btn-secondary wordsearch-screen">
+			Exit print
+		</button>
+	</div>
+	
+	<div class="wordsearch d-flex justify-content-center p-2">
+	</div>
+	
+	<h2 class="answers-header">Answers</h2>
+
+	<div class="bg-light my-2">
+		<ol class="answers">
+		</ol>
+	</div>
+</div>

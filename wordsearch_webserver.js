@@ -28,17 +28,6 @@ Promise.all([
 		// constants
 		const port = process.env.PORT || 80
 	
-		// cross origin request origins
-		const origins = [
-			// local testing (same device)
-			'http://localhost',	
-			'http://127.0.0.1',
-
-			// dreamhost
-			'http://wordsearch.dreamhosters.com',
-			'https://wordsearch.dreamhosters.com'
-		]
-	
 		let PUBLIC_DIR
 		if (process.env.IS_DREAMHOST) {
 			PUBLIC_DIR = './public'
@@ -46,31 +35,27 @@ Promise.all([
 		else {
 			// module syntax
 			// PUBLIC_DIR = script_dir()
-			PUBLIC_DIR = __dirname
+			
+			PUBLIC_DIR = `${__dirname}/public`
 		}
 		console.log(`DEBUG serving ${PUBLIC_DIR}/`)
-			
+		
 		// server instance
 		const server = express()
 
 		// enable cross-origin requests for same origin html imports
 		server.use(cors({
 			origin: function(origin,callback) {
-				if (origin != null && origins.indexOf(origin) == -1) {
-					console.log(`ERROR cross origin request failed for ${origin}`)
-					return callback(new Error('CORS for origin ' + origin + ' is not allowed access.'), false)
-				}
-				else {
-					return callback(null,true)
-				}
+				console.log(`DEBUG allow all origins including ${origin}`)
+				return callback(null,true)
 			}
 		}))
-	
+		
 		server.set('port', port)
 	
 		// serve website from public/
 		server.use(express.static(PUBLIC_DIR))
-	
+		
 		// route root path to wordsearch generator page
 		server.get('/', function(req,res,next) {
 			console.log(`INFO routing root path to /wordsearch_generator.html`)

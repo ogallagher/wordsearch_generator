@@ -5,225 +5,335 @@
 
 const INPUT_FILE = 0
 const INPUT_FORM = 1
-let wordsearch_input_type
-let wordsearch_is_random_subset
-let wordsearch_global
+
+const DEPENDENCIES_URL = '/webpage_dependencies.html'
+const WORDSEARCH_COMPONENT_URL = '/wordsearch_webcomponent.html'
+const DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR = '.wordsearch-container'
+
+// global vars corresponding to each wordsearch generator component by id
+let wordsearch_input_type = {}
+let wordsearch_is_random_subset = {}
+let wordsearch_global = {}
 
 let endpoint_cells = []
 
+let dependencies_promise = new Promise(function(resolve, reject) {
+	$.ajax({
+		method: 'GET',
+		url: DEPENDENCIES_URL,
+		dataType: 'html',
+		success: function(dependencies_html) {
+			$('head').append(dependencies_html)
+			resolve()
+		},
+		error: function(err) {
+			console.log(`ERROR failed to get dependencies at ${DEPENDENCIES_URL}`)
+			reject()
+		}
+	})
+})
+
+// load wordsearch web component and resolve the html as a string
+let wordsearch_component_promise = new Promise(function(resolve, reject) {
+	$.ajax({
+		method: 'GET',
+		url: WORDSEARCH_COMPONENT_URL,
+		dataType: 'html',
+		success: function(component_html) {
+			console.log(`DEBUG loaded wordsearch web component html of length ${component_html.length}`)
+			resolve(component_html)
+		},
+		error: function(err) {
+			console.log(`ERROR failed to get wordsearch web component at ${WORDSEARCH_COMPONENT_URL}`)
+			reject()
+		}
+	})
+})
+
 window.onload = function(e) {
-	set_wordsearch_input_type(INPUT_FILE)
-	set_wordsearch_is_random_subset(false)
+	let alphabets
 	
-	// handle input choice
-	$('#wordsearch-input-file').click(function() {
-		set_wordsearch_input_type(INPUT_FILE)
-	})
-	$('#wordsearch-input-form').click(function() {
-		set_wordsearch_input_type(INPUT_FORM)
-	})
-	
-	// handle alphabet choices list
-	let langs_jq = $('.languages')
-	
-	// show on focus
-	$('#language')
-	.on('focusin', function() {
-		// show alphabets
-		langs_jq.show()
-	})
-	.on('focusout', function(event) {
-		// potentially allow a language option to accept a click event before disappearing
-		setTimeout(() => {
-			langs_jq.hide()
-		}, 100)
-	})
-	
-	WordsearchGenerator.get_alphabet_aliases()
-	.then(function(alphabets) {
-		const alphabet_option_template = 
-		`<div class="language-option px-2">
-			<span class="alphabet-key"></span>
-			<span class="alphabet-aliases"></span>
-		</div>`
-		
-		// display alphabets in list
-		for (let alphabet_key in alphabets) {
-			// console.log(`debug loaded alphabet:\b${JSON.stringify(alphabet_key)}`)
-			let alphabet_jq = $(alphabet_option_template)
-			.attr('data-alphabet-key', alphabet_key)
-			
-			alphabet_jq.find('.alphabet-key').html(alphabet_key)
-			alphabet_jq.find('.alphabet-aliases').html(alphabets[alphabet_key].join(' '))
-			
-			langs_jq.append(alphabet_jq)
-			
-			// handle alphabet click
-			alphabet_jq.on('click', on_alphabet_option_click)
-		}
-	})
-	
-	// handle description file upload
-	let description_json
-	$('.wordsearch-file').on('change', function() {
-		let filereader = new FileReader()
-		filereader.onload = function() {
-			description_json = filereader.result
-			on_wordsearch_input_file(description_json)
-		}
-		filereader.readAsText($(this).prop('files')[0])
-	})
-	
-	// handle reload button
-	$('.wordsearch-reload').click(function() {
-		switch (wordsearch_input_type) {
-			case INPUT_FILE:
-				let config = JSON.parse(description_json)
-				
-				// use random subset count input if enabled
-				if (wordsearch_is_random_subset) {
-					let ui_subset_length = $('#random-subset-count').val()
-					if (ui_subset_length !== '') {
-						ui_subset_length = parseInt(ui_subset_length)
-						// console.log(`DEBUG ui subset length = ${ui_subset_length}`)
-						config['random_subset'] = ui_subset_length
-					}
-				}
-				
-				on_wordsearch_input_file(config)
-				break
-			
-			case INPUT_FORM:
-				on_wordsearch_input_form()
-				break
-		}
-	})
-	
-	// handle word-clue add button click
-	$('#add-word-clue').click(function() {
-		let datetime_str = new Date().toISOString()
-		let containerjq = $('#word-clues')
-		let rowjq = $(
-			`<div class="row word-clue mt-1 gx-1" data-when="${datetime_str}">
-				<div class="col">
-					<input type="text" placeholder="word" class="word-clue-word form-control"/>
-				</div>
-				<div class="col">
-					<input type="text" placeholder="clue (optional)" class="word-clue-clue form-control"/>
-				</div>
-				<div class="col-auto d-flex flex-column justify-content-center">
-					<button 
-						class="btn btn-danger word-clue-delete" data-when="${datetime_str}"
-						onclick="on_word_clue_delete_click(event)">
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" fill="currentColor" class="bi bi-dash-lg" viewBox="0 0 16 16">
-							<path fill-rule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z"/>
-						</svg>
-					</button>
-				</div>
+	// load wordsearch components into each container
+	dependencies_promise
+	.catch(function() {
+		$('body').append(
+			`<div class="wordsearch-component-error">
+				Failed to fetch wordsearch component dependencies
 			</div>`
 		)
-		containerjq.append(rowjq)
 	})
-	
-	// handle random subset button click
-	$('#random-subset').click(function() {
-		set_wordsearch_is_random_subset(!is_on($(this)))
-	})
-	
-	// handle print button
-	$('.wordsearch-print').click(function() {
-		// clean wordsearch
-		$('.wordsearch').addClass('printable')
-		
-		// hide config
-		$('.wordsearch-config').addClass('printable')
-		
-		// hide answers header
-		$('#answers-header').addClass('printable')
-		
-		// hide answers
-		$('.ws-word').addClass('printable')
-		
-		// show print-only
-		$('.printscreen-only').addClass('printable')
-	})
-	
-	// handle screen button
-	$('.wordsearch-screen').click(function() {
-		// mark wordsearch
-		$('.wordsearch').removeClass('printable')
-		
-		// show config
-		$('.wordsearch-config').removeClass('printable')
-		
-		// show answers header
-		$('#answers-header').removeClass('printable')
-		
-		// show answers
-		$('.ws-word').removeClass('printable')
-		
-		// hide print-only
-		$('.printscreen-only').removeClass('printable')
-	})
-	
-	// handle export config button
-	$('.wordsearch-export-config').click(function() {
-		if (wordsearch_global != undefined) {
-			let wordsearch_json_encoded = btoa(unescape(encodeURIComponent(
-				JSON.stringify(wordsearch_global.export_config())
-			)))
-			console.log(`DEBUG encoded export = ${wordsearch_json_encoded}`)
-			
-			$('.wordsearch-export-link')
-			.prop('href',`data:application/json;base64,${wordsearch_json_encoded}`)
-			.prop('download',`wordsearch_cfg_${new Date().toISOString()}.json`)
-			[0].click()
+	.then(() => {
+		if (WordsearchGenerator !== undefined) {
+			return WordsearchGenerator.get_alphabet_aliases()
 		}
+	})
+	.then(function(alphabet_aliases) {
+		alphabets = alphabet_aliases
+	})
+	.then(() => {
+		return wordsearch_component_promise
+	})
+	.catch(function() {
+		$('body').append(
+			`<div class="wordsearch-component-error">Failed to fetch wordsearch component</div>`
+		)
+	})
+	.then(function(wordsearch_html) {		
+		// get attributes from script tag
+		let script_jq = $(document.currentScript)
+		
+		let wordsearch_containers_selector = script_jq.attr('data-containers')
+		if (wordsearch_containers_selector == undefined) {
+			wordsearch_containers_selector = DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR
+		}
+		console.log(`INFO wordsearch containers selector = ${wordsearch_containers_selector}`)
+		
+		delete script_jq
+		
+		$(wordsearch_containers_selector).each(function(idx) {
+			console.log(`DEBUG load wordsearch generator component ${idx}`)
+			
+			// load component
+			let wordsearch_jq = $(wordsearch_html)
+			
+			// uniquely identify
+			let wordsearch_id = `wordsearch-component-${new Date().toISOString()}`
+			.replaceAll(':','-')
+			.replaceAll('.','-')
+			wordsearch_jq.attr('id', wordsearch_id)
+			
+			// append to container
+			$(this).append(wordsearch_jq)
+			
+			set_wordsearch_input_type(wordsearch_id, INPUT_FILE)
+			set_wordsearch_is_random_subset(wordsearch_id, false)
+			
+			// handle input choice
+			wordsearch_jq.find('.wordsearch-input-file').click(function() {
+				set_wordsearch_input_type(wordsearch_id, INPUT_FILE)
+			})
+			wordsearch_jq.find('.wordsearch-input-form').click(function() {
+				set_wordsearch_input_type(wordsearch_id, INPUT_FORM)
+			})
+	
+			// handle alphabet choices list
+			let langs_jq = wordsearch_jq.find('.languages')
+			
+			// show on focus
+			wordsearch_jq.find('.language')
+			.on('focusin', function() {
+				// show alphabets
+				langs_jq.show()
+			})
+			.on('focusout', function(event) {
+				// potentially allow a language option to accept a click event before disappearing
+				setTimeout(() => {
+					langs_jq.hide()
+				}, 100)
+			})
+			
+			const alphabet_option_template = 
+			`<div class="language-option px-2">
+				<span class="alphabet-key"></span>
+				<span class="alphabet-aliases"></span>
+			</div>`
+			
+			// display alphabets in list
+			for (let alphabet_key in alphabets) {
+				// console.log(`debug loaded alphabet:\b${JSON.stringify(alphabet_key)}`)
+				let alphabet_jq = $(alphabet_option_template)
+				.attr('data-alphabet-key', alphabet_key)
+				
+				alphabet_jq.find('.alphabet-key').html(alphabet_key)
+				alphabet_jq.find('.alphabet-aliases').html(alphabets[alphabet_key].join(' '))
+				
+				langs_jq.append(alphabet_jq)
+				
+				// handle alphabet click
+				alphabet_jq.on('click', function(event) {
+					on_alphabet_option_click(wordsearch_id, event)
+				})
+			}
+			
+			// handle description file upload
+			let description_json
+			wordsearch_jq.find('.wordsearch-file').on('change', function() {
+				let filereader = new FileReader()
+				filereader.onload = function() {
+					description_json = filereader.result
+					on_wordsearch_input_file(wordsearch_id, description_json)
+				}
+				filereader.readAsText($(this).prop('files')[0])
+			})
+			
+			// handle reload button
+			wordsearch_jq.find('.wordsearch-reload').click(function() {
+				// console.log(`DEBUG wordsearch reload button ${wordsearch_id}`)
+				switch (wordsearch_input_type[wordsearch_id]) {
+					case INPUT_FILE:
+						let config = description_json == undefined 
+							? undefined
+							: JSON.parse(description_json)
+						
+						if (config != undefined) {
+							// use random subset count input if enabled
+							if (wordsearch_is_random_subset) {
+								let ui_subset_length = wordsearch_jq.find('.random-subset-count').val()
+								if (ui_subset_length !== '') {
+									ui_subset_length = parseInt(ui_subset_length)
+									// console.log(`DEBUG ui subset length = ${ui_subset_length}`)
+									config['random_subset'] = ui_subset_length
+								}
+							}
+						
+							on_wordsearch_input_file(wordsearch_id, config)
+						}
+						else {
+							console.log(`ERROR wordsearch config file not defined`)
+						}
+						
+						break
+			
+					case INPUT_FORM:
+						on_wordsearch_input_form(wordsearch_id)
+						break
+				}
+			})
+	
+			// handle word-clue add button click
+			wordsearch_jq.find('.add-word-clue').click(function() {
+				let datetime_str = new Date().toISOString()
+				let containerjq = wordsearch_jq.find('.word-clues')
+				let rowjq = $(
+					`<div class="row word-clue mt-1 gx-1" data-when="${datetime_str}">
+						<div class="col">
+							<input type="text" placeholder="word" class="word-clue-word form-control"/>
+						</div>
+						<div class="col">
+							<input type="text" placeholder="clue (optional)" class="word-clue-clue form-control"/>
+						</div>
+						<div class="col-auto d-flex flex-column justify-content-center">
+							<button 
+								class="btn btn-danger word-clue-delete" 
+								data-wordsearch-id="${wordsearch_id}"
+								data-when="${datetime_str}"
+								onclick="on_word_clue_delete_click(event)">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" fill="currentColor" class="bi bi-dash-lg" viewBox="0 0 16 16">
+									<path fill-rule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z"/>
+								</svg>
+							</button>
+						</div>
+					</div>`
+				)
+				containerjq.append(rowjq)
+			})
+			
+			// handle random subset button click
+			wordsearch_jq.find('.random-subset').click(function() {
+				set_wordsearch_is_random_subset(wordsearch_id, !is_on($(this)))
+			})
+			
+			// handle print button
+			wordsearch_jq.find('.wordsearch-print').click(function() {
+				// clean wordsearch
+				wordsearch_jq.find('.wordsearch').addClass('printable')
+		
+				// hide config
+				wordsearch_jq.find('.wordsearch-config').addClass('printable')
+		
+				// hide answers header
+				wordsearch_jq.find('.answers-header').addClass('printable')
+		
+				// hide answers
+				wordsearch_jq.find('.ws-word').addClass('printable')
+		
+				// show print-only
+				wordsearch_jq.find('.printscreen-only').addClass('printable')
+			})
+			
+			// handle screen button
+			wordsearch_jq.find('.wordsearch-screen').click(function() {
+				// mark wordsearch
+				wordsearch_jq.find('.wordsearch').removeClass('printable')
+		
+				// show config
+				wordsearch_jq.find('.wordsearch-config').removeClass('printable')
+		
+				// show answers header
+				wordsearch_jq.find('.answers-header').removeClass('printable')
+		
+				// show answers
+				wordsearch_jq.find('.ws-word').removeClass('printable')
+		
+				// hide print-only
+				wordsearch_jq.find('.printscreen-only').removeClass('printable')
+			})
+			
+			// handle export config button
+			wordsearch_jq.find('.wordsearch-export-config').click(function() {
+				if (wordsearch_global[wordsearch_id] != undefined) {
+					let wordsearch_json_encoded = btoa(unescape(encodeURIComponent(
+						JSON.stringify(wordsearch_global[wordsearch_id].export_config())
+					)))
+					console.log(`DEBUG encoded export = ${wordsearch_json_encoded}`)
+			
+					wordsearch_jq.find('.wordsearch-export-link')
+					.prop('href',`data:application/json;base64,${wordsearch_json_encoded}`)
+					.prop('download',`wordsearch_cfg_${new Date().toISOString()}.json`)
+					[0].click()
+				}
+			})
+		})
 	})
 }
 
-function set_wordsearch_input_type(input_type) {
-	wordsearch_input_type = input_type
+function set_wordsearch_input_type(wordsearch_cmp_id, input_type) {
+	// console.log(`DEBUG ${wordsearch_cmp_id} set input type=${input_type}`)
+	let wordsearch_cmp = $(`#${wordsearch_cmp_id}`)
+	wordsearch_input_type[wordsearch_cmp_id] = input_type
 	
 	switch (input_type) {
 		case INPUT_FILE:
-			$('#wordsearch-input-file').removeClass('btn-outline-secondary').addClass('btn-secondary')
-			$('#wordsearch-input-form').removeClass('btn-secondary').addClass('btn-outline-secondary')
-			$('.wordsearch-file').show()
-			$('.wordsearch-form').hide()
+			wordsearch_cmp.find('.wordsearch-input-file').removeClass('btn-outline-secondary').addClass('btn-secondary')
+			wordsearch_cmp.find('.wordsearch-input-form').removeClass('btn-secondary').addClass('btn-outline-secondary')
+			wordsearch_cmp.find('.wordsearch-file').show()
+			wordsearch_cmp.find('.wordsearch-form').hide()
 			break
 			
 		case INPUT_FORM:
-			$('#wordsearch-input-file').removeClass('btn-secondary').addClass('btn-outline-secondary')
-			$('#wordsearch-input-form').removeClass('btn-outline-secondary').addClass('btn-secondary')
-			$('.wordsearch-file').hide()
-			$('.wordsearch-form').show()
+			wordsearch_cmp.find('.wordsearch-input-file').removeClass('btn-secondary').addClass('btn-outline-secondary')
+			wordsearch_cmp.find('.wordsearch-input-form').removeClass('btn-outline-secondary').addClass('btn-secondary')
+			wordsearch_cmp.find('.wordsearch-file').hide()
+			wordsearch_cmp.find('.wordsearch-form').show()
 			break
 	}
 }
 
-function set_wordsearch_is_random_subset(is_random, subset_length) {
-	wordsearch_is_random_subset = is_random
+function set_wordsearch_is_random_subset(wordsearch_cmp_id, is_random, subset_length) {
+	let wordsearch_cmp = $(`#${wordsearch_cmp_id}`)
+	wordsearch_is_random_subset[wordsearch_cmp_id] = is_random
 	
 	// update button data
-	$('#random-subset')
+	wordsearch_cmp.find('.random-subset')
 	.attr('data-on', is_random)
 	.addClass(is_random ? 'btn-secondary' : 'btn-outline-secondary')
 	.removeClass(is_random ? 'btn-outline-secondary' : 'btn-secondary')
 	
 	// update count input
 	if (is_random) {
-		$('#random-subset-count')
+		wordsearch_cmp.find('.random-subset-count')
 		.prop('disabled', false)
 		.val(subset_length)
 	}
 	else {
-		$('#random-subset-count').prop('disabled', true)
+		wordsearch_cmp.find('.random-subset-count')
+		.prop('disabled', true)
 	}
 }
 
-function on_wordsearch_input_file(wordsearch_json) {
+function on_wordsearch_input_file(wordsearch_cmp_id, wordsearch_json) {
 	if (wordsearch_json != undefined) {
+		console.log(`${wordsearch_cmp_id}:on_wordsearch_input_file`)
 		let description = typeof wordsearch_json === 'string' 
 			? JSON.parse(wordsearch_json)
 			: wordsearch_json
@@ -240,18 +350,12 @@ function on_wordsearch_input_file(wordsearch_json) {
 		)
 		
 		if (random_subset != undefined) {
-			set_wordsearch_is_random_subset(true, random_subset)
+			set_wordsearch_is_random_subset(wordsearch_cmp_id, true, random_subset)
 		}
 		
 		wordsearch.init_promise
-		/*
-		// load word-clues via driver
 		.then(() => {
-			return load_word_clues(wordsearch, description['words'])
-		})
-		*/
-		.then(() => {
-			display_wordsearch(wordsearch)
+			display_wordsearch(wordsearch, wordsearch_cmp_id)
 		})
 	}
 	else {
@@ -259,19 +363,22 @@ function on_wordsearch_input_file(wordsearch_json) {
 	}
 }
 
-function on_wordsearch_input_form() {
+function on_wordsearch_input_form(wordsearch_cmp_id) {
+	console.log(`${wordsearch_cmp_id}:on_wordsearch_input_form`)
+	let wordsearch_cmp = $(`#${wordsearch_cmp_id}`)
+	
 	try {
 		// load initial config
 		let wordsearch = new WordsearchGenerator(
-			$('#language').val().trim().toLowerCase(),
-			$('#case').val().trim().toLowerCase(),
-			parseInt($('#size').val().trim())
+			wordsearch_cmp.find('.language').val().trim().toLowerCase(),
+			wordsearch_cmp.find('.case').val().trim().toLowerCase(),
+			parseInt(wordsearch_cmp.find('.size').val().trim())
 		)
 		
 		wordsearch.init_promise.then(() => {
 			let word_clues = []
 			
-			$('.word-clue').each(function(idx) {
+			wordsearch_cmp.find('.word-clue').each(function(idx) {
 				// read word and clue from row
 				let rowjq = $(this)
 				
@@ -286,9 +393,9 @@ function on_wordsearch_input_form() {
 				}
 			})
 			.promise().done(() => {
-				load_word_clues(wordsearch, word_clues)
+				load_word_clues(wordsearch_cmp_id, wordsearch, word_clues)
 				
-				display_wordsearch(wordsearch)
+				display_wordsearch(wordsearch, wordsearch_cmp_id)
 			})
 		})
 	}
@@ -298,9 +405,11 @@ function on_wordsearch_input_form() {
 	}
 }
 
-function load_word_clues(wordsearch, word_clues, clue_delim=':') {
+function load_word_clues(wordsearch_cmp_id, wordsearch, word_clues, clue_delim=':') {
+	let wordsearch_cmp = $(`#${wordsearch_cmp_id}`)
+	
 	if (wordsearch_is_random_subset) {
-		let subset_count_jq = $('#random-subset-count')
+		let subset_count_jq = wordsearch_cmp.find('.random-subset-count')
 		if (subset_count_jq.val() == '') {
 			subset_count_jq.val(word_clues.length)
 		}
@@ -325,7 +434,7 @@ function load_word_clues(wordsearch, word_clues, clue_delim=':') {
 		}
 	}
 	else {
-		$('#random-subset-count').val('')
+		wordsearch_cmp.find('.random-subset-count').val('')
 	}
 	
 	for (let word_clue of word_clues) {
@@ -354,7 +463,9 @@ function load_word_clues(wordsearch, word_clues, clue_delim=':') {
 	return Promise.resolve()
 }
 
-function display_wordsearch(wordsearch) {
+function display_wordsearch(wordsearch, wordsearch_cmp_id) {
+	let wordsearch_cmp = $(`#${wordsearch_cmp_id}`)
+	console.log(`INFO display wordsearch in ${wordsearch_cmp_id}`)
 	// console.log(`DEBUG final grid:\n${wordsearch.grid_string()}`)
 	// console.log(`DEBUG clues:\n${wordsearch.clues.join('\n')}`)
 	
@@ -362,7 +473,7 @@ function display_wordsearch(wordsearch) {
 	endpoint_cells = []
 	
 	// wordsearch element
-	let wel = $('.wordsearch')
+	let wel = wordsearch_cmp.find('.wordsearch')
 	.html('')
 	
 	// table element
@@ -390,7 +501,7 @@ function display_wordsearch(wordsearch) {
 			)
 			
 			cel.click(function() {
-				on_cell_click($(this), wordsearch)
+				on_cell_click(wordsearch_cmp_id, $(this), wordsearch)
 			})
 			
 			rel.append(cel)
@@ -403,22 +514,18 @@ function display_wordsearch(wordsearch) {
 	
 	wel.append(tel)
 	
-	display_answers(wordsearch.words, wordsearch.clues)
+	display_answers(wordsearch_cmp_id, wordsearch.words, wordsearch.clues)
 	
 	// enable print view
-	$('.wordsearch-print').prop('disabled', false)
+	wordsearch_cmp.find('.wordsearch-print').prop('disabled', false)
 	
 	// update wordsearch reference
-	wordsearch_global = wordsearch
+	wordsearch_global[wordsearch_cmp_id] = wordsearch
 }
 
-function print_wordsearch() {
-	
-}
-
-function display_answers(words, clues) {
+function display_answers(wordsearch_cmp_id, words, clues) {
 	// show answer word-clues
-	let answersjq = $('.answers').html('')
+	let answersjq = $(`#${wordsearch_cmp_id}`).find('.answers').html('')
 	
 	for (let i=0; i < words.length; i++) {
 		let rowjq = $(
@@ -432,7 +539,8 @@ function display_answers(words, clues) {
 	}
 }
 
-function on_cell_click(cell, wordsearch) {
+function on_cell_click(wordsearch_cmp_id, cell, wordsearch) {
+	let wordsearch_cmp = $(`#${wordsearch_cmp_id}`)
 	// console.log(
 	// 	`DEBUG cell ${cell.attr('data-x')},${cell.attr('data-y')}=${
 	// 		cell.attr('data-word')
@@ -479,7 +587,7 @@ function on_cell_click(cell, wordsearch) {
 			
 				for (let x=ax,y=ay; x!=bx+dx || y!=by+dy; ) {
 					// console.log(`.ws-cell[data-x="${x}"][data-y="${y}"]`)
-					$(`.ws-cell[data-x="${x}"][data-y="${y}"]`)
+					wordsearch_cmp.find(`.ws-cell[data-x="${x}"][data-y="${y}"]`)
 					.attr('data-found',true)
 				
 					x += dx
@@ -488,7 +596,7 @@ function on_cell_click(cell, wordsearch) {
 			}
 			
 			// reveal answer
-			$(`.ws-answer[data-word-idx="${word_idx}"] > .ws-word`)
+			wordsearch_cmp.find(`.ws-answer[data-word-idx="${word_idx}"] > .ws-word`)
 			.attr('data-found', true)
 		}
 		else if (en > 1) {
@@ -517,15 +625,23 @@ function on_cell_click(cell, wordsearch) {
  */
 function on_word_clue_delete_click(event) {
 	let datetime_str = event.target.getAttribute('data-when')
-	$(`.word-clue[data-when="${datetime_str}"]`).remove()
+	let wordsearch_cmp_id = event.target.getAttribute('data-wordsearch-id')
+	// console.log(`DEBUG delete word-clue ${wordsearch_cmp_id}:${datetime_str}`)
+	
+	$(`#${wordsearch_cmp_id}`).find(`.word-clue[data-when="${datetime_str}"]`).remove()
 }
 
-function on_alphabet_option_click(event) {
+/**
+ * Handle alphabet option click.
+ * 
+ * @param {Object} event Click MouseEvent instance.
+ */
+function on_alphabet_option_click(wordsearch_cmp_id, event) {
 	let alphabet_option = event.target
 	let alphabet_key = alphabet_option.getAttribute('data-alphabet-key')
 	console.log(`info select alphabet ${alphabet_key}`)
 	
-	$('#language').val(alphabet_key)
+	$(`#${wordsearch_cmp_id}`).find('.language').val(alphabet_key)
 }
 
 function is_on(jq) {

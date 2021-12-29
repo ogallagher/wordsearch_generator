@@ -77,7 +77,25 @@ diameter
 
 ## Use
 
-### Webpage
+### Webpage Component
+
+Include the following in your `<head/>` tag:
+
+```html
+<script 
+	src="/wordsearch_webpage.js" type="text/javascript"
+	data-containers=".wordsearch-container">
+</script>
+```
+
+See `wordsearch_generator.html` for an example of how to insert a wordsearch generator dynamically
+into an external webpage. The [public webserver](https://wordsearch.dreamhosters.com) should
+allow the needed cross origin requests for the component to be provided.
+
+Note that [jquery](https://jquery.com) is a dependency that must already be present in the 
+parent webpage for the wordsearch generator component to work.
+
+### Webpage Driver
 
 To run the playable webpage version:
 
@@ -100,6 +118,9 @@ fields.
 Note that for additional difficulty an answer can be broken into a word and a clue,
 delimited with : in a description file (ex. `greeting:hello`), but providing
 a separate clue is optional.
+
+Also note that the webpage example `wordsearch_generator.html` has multiple generators to illustrate
+the ability to have more than one in the same single page.
 
 ### Command Line
 

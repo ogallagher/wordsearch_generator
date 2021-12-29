@@ -1,6 +1,8 @@
 /**
  * Owen Gallagher
  * 2021-11-28
+ * 
+ * TODO qualify all styles as being within .wordsearch-component container.
  */
 
 body {
@@ -10,6 +12,10 @@ body {
 
 .wordsearch {
 	font-family: monospace;
+}
+
+.wordsearch-component-error {
+	color: red;
 }
 
 .ws-row {

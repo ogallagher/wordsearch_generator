@@ -16,21 +16,24 @@ let fs
 	// directory where this file is
 let parent_dir
 
-Promise.all([
-	import('fs')
-])
-.then((modules) => {
-	fs = modules[0].default
-	parent_dir = __dirname
-	environment = ENV_BACKEND
-})
-.catch(() => {
-	fs = undefined
-	parent_dir = '.'
-	environment = ENV_FRONTEND
-})
-.finally(() => {
-	// console.log(`wordsearch_generator.js environment = ${environment}`)
+let environment_promise = new Promise(function(resolve) {
+	Promise.all([
+		import('fs')
+	])
+	.then((modules) => {
+		fs = modules[0].default
+		parent_dir = __dirname
+		environment = ENV_BACKEND
+	})
+	.catch(() => {
+		fs = undefined
+		parent_dir = '.'
+		environment = ENV_FRONTEND
+	})
+	.finally(() => {
+		console.log(`INFO wordsearch_generator.js environment = ${environment}`)
+		resolve()
+	})
 })
 
 // class
@@ -440,10 +443,12 @@ class WordsearchGenerator {
 	 * @returns Describe what it returns
 	 * @type String|Object|Array|Boolean|Number
 	 */
-	
 	static get_alphabet_aliases(path = ALPHABET_FILE) {
 		return new Promise(function(resolve, reject) {
-			WordsearchGenerator.load_alphabets_file(path)
+			environment_promise
+			.then(() => {
+				return WordsearchGenerator.load_alphabets_file(path)
+			})
 			.then((alphabets) => {
 				let aliases = alphabets[KEY_ALPHABET_ALIASES]
 				
@@ -453,12 +458,12 @@ class WordsearchGenerator {
 				resolve(aliases)
 			})
 			.catch(() => {
-				console.log(`error unable to get alphabet aliases from alphabets`)
+				console.log(`ERROR unable to get alphabet aliases`)
 				reject()
 			})
 		})
 	}
-
+	
 	/**
 	 * Get alphabet description given the language code.
 	 * 
@@ -512,7 +517,7 @@ class WordsearchGenerator {
 	}
 	
 	/**
-	 * Load alphabets file into a plain object.
+	 * Load alphabets file into a plain object. Note this depends on environment_promise.
 	 *
 	 * @param {String} path Path to the alphabets file.
 	 *
