@@ -31,9 +31,13 @@ let dependencies_promise = new Promise(function(resolve, reject) {
 		dataType: 'html',
 		success: function(dependencies_html) {
 			console.log(`DEBUG loaded wordsearch dependencies html of length ${dependencies_html.length}`)
-			$('head').append(dependencies_html)
-			.promise()
-			.then(resolve)
+			let dependencies_jq = $(dependencies_html)
+			
+			$('head').append(dependencies_jq)
+			
+			let scripts = $('script')
+			scripts[scripts.length-1].onload = on_dependencies_load
+			resolve()
 		},
 		error: function(err) {
 			console.log(`ERROR failed to get dependencies at ${url}`)
@@ -53,7 +57,7 @@ let wordsearch_component_promise = new Promise(function(resolve, reject) {
 		url: url,
 		dataType: 'html',
 		success: function(component_html) {
-			console.log(`DEBUG loaded wordsearch web component html of length ${component_html.length}`)
+			// console.log(`DEBUG loaded wordsearch web component html of length ${component_html.length}`)
 			resolve(component_html)
 		},
 		error: function(err) {
@@ -78,9 +82,11 @@ window.onload = function(e) {
 			</div>`
 		)
 	})
-	.then(function() {
-		return WordsearchGenerator.get_alphabet_aliases()
-	})
+}
+
+function on_dependencies_load() {
+	console.log('DEBUG on_dependencies_load()')
+	WordsearchGenerator.get_alphabet_aliases()
 	.catch(function(err) {
 		if (err) {
 			console.log(err)
