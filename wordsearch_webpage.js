@@ -11,6 +11,7 @@ const USE_WP_HOST_URL = true
 const WP_HOST_URL = 'https://wordsearch.dreamhosters.com'
 const DEPENDENCIES_URL = '/webpage_dependencies.html'
 const WORDSEARCH_COMPONENT_URL = '/wordsearch_webcomponent.html'
+const WORDSEARCH_CORE_URL = '/wordsearch_generator.js'
 const DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR = '.wordsearch-container'
 
 // global vars corresponding to each wordsearch generator component by id
@@ -21,29 +22,43 @@ let wordsearch_global = {}
 let endpoint_cells = []
 
 let dependencies_promise = new Promise(function(resolve, reject) {
-	let url = USE_WP_HOST_URL
-		? `${WP_HOST_URL}${DEPENDENCIES_URL}`
-		: DEPENDENCIES_URL
+	Promise.all([
+		// external/peripheral dependencies
+		new Promise(function(resolve_ext, reject_ext) {
+			let url = USE_WP_HOST_URL
+				? `${WP_HOST_URL}${DEPENDENCIES_URL}`
+				: DEPENDENCIES_URL
 	
-	$.ajax({
-		method: 'GET',
-		url: url,
-		dataType: 'html',
-		success: function(dependencies_html) {
-			console.log(`DEBUG loaded wordsearch dependencies html of length ${dependencies_html.length}`)
-			let dependencies_jq = $(dependencies_html)
+			$.ajax({
+				method: 'GET',
+				url: url,
+				dataType: 'html',
+				success: function(dependencies_html) {
+					console.log(`DEBUG loaded wordsearch dependencies html of length ${dependencies_html.length}`)
+					$('head').append(dependencies_html)
+					resolve_ext()
+				},
+				error: function(err) {
+					console.log(`ERROR failed to get dependencies at ${url}`)
+					reject()
+				}
+			})
+		}),
+		
+		// core dependencies
+		new Promise(function(resolve_core) {
+			let url = USE_WP_HOST_URL
+				? `${WP_HOST_URL}${WORDSEARCH_CORE_URL}`
+				: WORDSEARCH_CORE_URL
 			
-			$('head').append(dependencies_jq)
-			
-			let scripts = $('script')
-			scripts[scripts.length-1].onload = on_dependencies_load
-			resolve()
-		},
-		error: function(err) {
-			console.log(`ERROR failed to get dependencies at ${url}`)
-			reject()
-		}
-	})
+			$.getScript(WORDSEARCH_CORE_URL)
+			.done(function() {
+				on_core_load()
+				resolve_core()
+			})
+		})
+	])
+	.then(resolve)
 })
 
 // load wordsearch web component and resolve the html as a string
@@ -82,9 +97,12 @@ window.onload = function(e) {
 			</div>`
 		)
 	})
+	.then(function() {
+		console.log('INFO wordsearch dependencies load passed')
+	})
 }
 
-function on_dependencies_load() {
+function on_core_load() {
 	console.log('DEBUG on_dependencies_load()')
 	WordsearchGenerator.get_alphabet_aliases()
 	.catch(function(err) {

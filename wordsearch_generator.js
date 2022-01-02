@@ -16,7 +16,7 @@ const USE_WG_HOST_URL = true
 const WG_HOST_URL = 'https://wordsearch.dreamhosters.com'
 
 let fs
-	// directory where this file is
+// directory where this file is
 let parent_dir
 
 let environment_promise = new Promise(function(resolve) {
