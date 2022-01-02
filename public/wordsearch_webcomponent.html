@@ -1,7 +1,7 @@
 <div class="wordsearch-component">
 	<div class="row wordsearch-config">
-		<!-- input config/description method-->
 		<div class="col-md mb-3">
+			<!-- input config method-->
 			<div class="col" class="wordsearch-input-group">
 				<div class="input-group mb-3">
 					<button class="wordsearch-input-file btn btn-outline-secondary">
@@ -63,20 +63,32 @@
 			<button class="btn btn-secondary wordsearch-export-config mb-3">
 				Export config
 			</button>
-			<a 
-				class="wordsearch-export-link d-none"
+			<a class="wordsearch-export-link d-none mb-3"
 				href=""
 				download="wordsearch_config.json">
 				config export link
 			</a>
 		
 			<!-- random subset -->
-			<div class="input-group random-subset-group">
+			<div class="input-group random-subset-group mb-3">
 				<button class="random-subset btn btn-outline-secondary" data-on="false">
 					Random subset of
 				</button>
 				<input type="text" class="random-subset-count form-control" disabled/>
 				<span class="input-group-text">words</span>
+			</div>
+			
+			<!-- size and whitespace controls -->
+			<div class="input-group font-size-group mb-3">
+				<span class="input-group-text">Font size</span>
+				<span class="input-group-text font-size-label"></span>
+				<input type="range" class="font-size-control form-control" min="1" max="10" step="1"/>
+			</div>
+			
+			<div class="input-group whitespace-group mb-3">
+				<span class="input-group-text">Whitespace</span>
+				<span class="input-group-text whitespace-label"></span>
+				<input type="range" class="whitespace-control form-control" min="0" max="10" step="0.5"/>
 			</div>
 		</div>
 	</div>

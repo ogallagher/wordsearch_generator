@@ -14,6 +14,8 @@ const WORDSEARCH_COMPONENT_URL = '/wordsearch_webcomponent.html'
 const WORDSEARCH_CORE_URL = '/wordsearch_generator.js'
 const DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR = '.wordsearch-container'
 
+const REM_MIN = 5
+
 // global vars corresponding to each wordsearch generator component by id
 let wordsearch_input_type = {}
 let wordsearch_is_random_subset = {}
@@ -216,6 +218,48 @@ function on_core_load() {
 				filereader.readAsText($(this).prop('files')[0])
 			})
 			
+			// handle whitespace controls
+			let cell_padx = 16
+			let cell_padx_min = 0
+			let cell_padx_max = cell_padx * 2
+			wordsearch_jq.find('.whitespace-label').html(cell_padx)
+			wordsearch_jq.find('.whitespace-control')
+			.attr('min', cell_padx_min)
+			.attr('max', cell_padx_max)
+			.attr('step', (cell_padx_max - cell_padx_min) / 20)
+			.val(cell_padx)
+			.on('input', function() {
+				let new_cell_padx = parseFloat($(this).val())
+				
+				wordsearch_jq.find('.ws-cell')
+				.css('padding-left', new_cell_padx)
+				.css('padding-right', new_cell_padx)
+				
+				wordsearch_jq.find('.whitespace-label').html(Math.round(new_cell_padx))
+			})
+			
+			// handle font size controls
+			let cell_font = rem_to_px(2.25)
+			let font_min = 8
+			let font_max = cell_font * 2.5
+			
+			let answer_font = rem_to_px(1.5) / cell_font
+			
+			wordsearch_jq.find('.font-size-label').html(cell_font)
+			wordsearch_jq.find('.font-size-control')
+			.attr('min', font_min)
+			.attr('max', font_max)
+			.attr('step', (font_max - font_min) / 20)
+			.val(cell_font)
+			.on('input', function() {
+				let new_cell_font = parseFloat($(this).val())
+				
+				wordsearch_jq.find('.ws-cell').css('fontSize', new_cell_font)
+				wordsearch_jq.find('.ws-answer').css('fontSize', new_cell_font * answer_font)
+				
+				wordsearch_jq.find('.font-size-label').html(Math.round(new_cell_font))
+			})
+			
 			// handle reload button
 			wordsearch_jq.find('.wordsearch-reload').click(function() {
 				// console.log(`DEBUG wordsearch reload button ${wordsearch_id}`)
@@ -248,6 +292,14 @@ function on_core_load() {
 						on_wordsearch_input_form(wordsearch_id)
 						break
 				}
+				
+				// reset whitespace control
+				wordsearch_jq.find('.whitespace-label').html(cell_padx)
+				wordsearch_jq.find('.whitespace-control').val(cell_padx)
+				
+				// reset font size control
+				wordsearch_jq.find('.font-size-label').html(cell_font)
+				wordsearch_jq.find('.font-size-control').val(cell_font)
 			})
 	
 			// handle word-clue add button click
@@ -696,4 +748,18 @@ function on_alphabet_option_click(wordsearch_cmp_id, event) {
 
 function is_on(jq) {
 	return jq.attr('data-on') === 'true'
+}
+
+/**
+ * Return rem in px.
+ *
+ * @param {Number} rem Number of root-ems (default is 1).
+ *
+ * @returns Pixel size of root font character width times given rem.
+ * @type Number
+ */
+function rem_to_px(rem = 1) {
+	let rem_px_str = $(document.documentElement).css('fontSize')
+	console.log(`DEBUG rem in px = ${rem} * ${rem_px_str}`)
+	return rem * parseFloat(rem_px_str)
 }
