@@ -5,6 +5,8 @@
 	"alphabet_aliases": {
 		"//comment": "Primary key is ISO 2-char language code if it exists. Otherwise, the primary key is the full name in English.",
 		
+		"braille-8": ["점자-8"],
+		"braille-6": ["braille", "점자-6"],
 		"chess": ["ajedrez", "체스"],
 		"en": ["eng","english","inglés","영어"],
 		"es": ["esp","spa","spanish","español","스페인어"],
@@ -146,6 +148,30 @@
 		"upper_ranges": [
 			[13312,40912],
 			[19968,19888]
+		]
+	},
+	
+	"braille-6": {
+		"//comment": "Unicode 6-dot braille characters.",
+		
+		"ranges": [
+			[10240,10303]
+		],
+		
+		"upper_ranges": [
+			[10240,10303]
+		]
+	},
+	
+	"braille-8": {
+		"//comment": "All unicode 8-dot braille characters.",
+		
+		"ranges": [
+			[10240,10495]
+		],
+		
+		"upper_ranges": [
+			[10240,10495]
 		]
 	},
 	

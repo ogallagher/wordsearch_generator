@@ -21,6 +21,8 @@ issue and we can fix them by modifying `alphabets.json`.
 
 **한국어/Korean (ko)**
 
+**Braille (braille-6, braille-8)**
+
 **Chess (chess)**
 
 **Domino (domino)**
