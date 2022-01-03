@@ -1,0 +1,9 @@
+{
+	"language": "chess",
+	"size": 8,
+	"title": "Example Chess wordsearch",
+	"words": [
+		"♜♜♜♜",
+		"♛♛♛♛"
+	]
+}

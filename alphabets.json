@@ -5,6 +5,7 @@
 	"alphabet_aliases": {
 		"//comment": "Primary key is ISO 2-char language code if it exists. Otherwise, the primary key is the full name in English.",
 		
+		"chess": ["ajedrez", "체스"],
 		"en": ["eng","english","inglés","영어"],
 		"es": ["esp","spa","spanish","español","스페인어"],
 		"hiragana": ["ひらがな","平仮名","히라가나"],
@@ -145,6 +146,18 @@
 		"upper_ranges": [
 			[13312,40912],
 			[19968,19888]
+		]
+	},
+	
+	"chess": {
+		"//comment": "Basic black and white chess piece symbols. ♔-♟︎.",
+		
+		"ranges": [
+			[9812,9823]
+		],
+		
+		"upper_ranges": [
+			[9812,9823]
 		]
 	},
 	
