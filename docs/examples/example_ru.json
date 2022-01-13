@@ -1,0 +1,15 @@
+{
+	"language": "ru",
+	"case": "upper",
+	"size": 15,
+	"title": "Example Russian wordsearch",
+	"words": [
+		"ОГУРЕЦ:cucumber",
+		"САХАР:sugar",
+		"ЯБЛОКО:apple",
+		"САЛАТ:salad",
+		"ЧЕЛОВЕК:person",
+		"ТЯЖЁЛЫЙ:heavy",
+		"СЕМЬЯ:family"
+	]
+}

@@ -14,6 +14,7 @@
 		"ja": ["jpn","japanese","jap","japonés","일본어","日本語"],
 		"katakana": ["カタカナ","片仮名","가타카나"],
 		"ko": ["kor","korean","한국어"],
+		"ru": ["русский","russian","ruso","rus","러시아어","cyrillic"],
 		"zh": ["chi","chinese","漢語","중국어","chino","hanja","한자","kanji"],
 		"domino": ["domino","dominoes","도미노"]
 	},
@@ -134,6 +135,20 @@
 		
 		"upper_ranges": [
 			[44032,55203]
+		]
+	},
+	
+	"ru": {
+		"//comment": "russian русский. 33 modern russian letters since 1918 А-Я, а-я, Ёё, excluding accents",
+		
+		"ranges": [
+			[1072,1103],
+			[1105]
+		],
+		
+		"upper_ranges": [
+			[1040,1071],
+			[1025]
 		]
 	},
 	
