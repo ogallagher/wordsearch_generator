@@ -21,6 +21,8 @@ issue and we can fix them by modifying `alphabets.json`.
 
 **한국어/Korean (ko)**
 
+**Russian/Русский (ru)**
+
 **Braille (braille-6, braille-8)**
 
 **Chess (chess)**
@@ -44,6 +46,10 @@ issue and we can fix them by modifying `alphabets.json`.
 ### Chinese
 
 ![chinese example](docs/img/wordsearch\_webpage\_zh.png)
+
+### Russian
+
+![russian example](docs/img/wordsearch\_webpage\_ru.png)
 
 ### CLI, Korean
 
