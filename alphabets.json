@@ -8,8 +8,9 @@
 		"braille-8": ["점자-8"],
 		"braille-6": ["braille", "점자-6"],
 		"chess": ["ajedrez", "체스"],
-		"en": ["eng","english","inglés","영어"],
+		"en": ["eng","english","inglés","영어","fr-plain","french-plain","français-simple"],
 		"es": ["esp","spa","spanish","español","스페인어"],
+		"fr": ["fre","french","français","파랑스어"],
 		"hiragana": ["ひらがな","平仮名","히라가나"],
 		"ja": ["jpn","japanese","jap","japonés","일본어","日本語"],
 		"katakana": ["カタカナ","片仮名","가타카나"],
@@ -42,6 +43,20 @@
 		"upper_ranges": [
 			[65,90],
 			[193,201,205,211,218,220]
+		]
+	},
+	
+	"fr": {
+		"//comment": "français. a-z, àçéèêëîïôùûüÿ, A-Z, ÀÇÉÈÊËÎÏÔÙÛÜŸ, excluding ligatures. For french without diacritics (ex. àçê), use english.",
+		
+		"ranges": [
+			[97,122],
+			[224,231,233,232,234,235,238,239,244,249,251,252,255]
+		],
+		
+		"upper_ranges": [
+			[65,90],
+			[192,199,201,200,202,203,206,207,212,217,219,220,376]
 		]
 	},
 	

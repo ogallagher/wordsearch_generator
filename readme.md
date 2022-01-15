@@ -15,13 +15,15 @@ issue and we can fix them by modifying `alphabets.json`.
 
 **Español/Spanish (es)**
 
-**Hiragana/ひらがな, Japanese (hiragana)**
+**Français/French (fr)**
 
-**Katakana/カタカナ, Japanese (katakana)**
+**ひらがな/Hiragana, Japanese (hiragana)**
+
+**カタカナ/Katakana, Japanese (katakana)**
 
 **한국어/Korean (ko)**
 
-**Russian/Русский (ru)**
+**Русский/Russian (ru)**
 
 **Braille (braille-6, braille-8)**
 
