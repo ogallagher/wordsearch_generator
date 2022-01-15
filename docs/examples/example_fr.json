@@ -1,13 +1,14 @@
 {
-	"language": "es",
-	"case": "upper",
+	"language": "fr",
+	"case": "lower",
 	"size": 15,
-	"title": "Buscapalabras ejemplar de español",
+	"title": "Recherche de mot de exemple en français",
 	"words": [
-		"MANZANA:la fruta del otoño",
-		"CALAVERA:hueso de cabeza",
-		"TIJERAS:corta papel",
-		"BARCO:flota en agua",
-		"PÁJARO:plumas y picos"
+		"tête:head",
+		"oignon:onion",
+		"livre:book",
+		"écureuil:squirrel",
+		"drapeau:flag",
+		"citrouille:pumpkin"
 	]
 }
