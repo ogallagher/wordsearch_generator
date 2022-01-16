@@ -11,6 +11,8 @@ issue and we can fix them by modifying `alphabets.json`.
 
 **Chinese/漢語 (zh)**
 
+**Deutsch/German (de)**
+
 **English (en)**
 
 **Español/Spanish (es)**

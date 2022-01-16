@@ -8,6 +8,7 @@
 		"braille-8": ["점자-8"],
 		"braille-6": ["braille", "점자-6"],
 		"chess": ["ajedrez", "체스"],
+		"de": ["deu","deutsch","독일어","alemán"],
 		"en": ["eng","english","inglés","영어","fr-plain","french-plain","français-simple"],
 		"es": ["esp","spa","spanish","español","스페인어"],
 		"fr": ["fre","french","français","파랑스어"],
@@ -18,6 +19,20 @@
 		"ru": ["русский","russian","ruso","rus","러시아어","cyrillic"],
 		"zh": ["chi","chinese","漢語","중국어","chino","hanja","한자","kanji"],
 		"domino": ["domino","dominoes","도미노"]
+	},
+	
+	"de": {
+		"//comment": "deutsche. a-z, A-Z, ÄÖÜẞäöüß",
+		
+		"ranges": [
+			[97,122],
+			[228, 246, 252, 223]
+		],
+		
+		"upper_ranges": [
+			[65,90],
+			[196, 214, 220, 7838]
+		]
 	},
 	
 	"en": {

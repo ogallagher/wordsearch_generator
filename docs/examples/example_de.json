@@ -1,0 +1,13 @@
+{
+	"language": "de",
+	"case": "upper",
+	"size": 15,
+	"title": "Beispielwortsuche im Deutschen",
+	"words": [
+		"KRANKENWAGEN:AMBULANCE",
+		"KOPFKISSEN:PILLOW",
+		"FENSTER:WINDOW",
+		"STRAẞE:STREET",
+		"REGENSCHIRM:UMBRELLA"
+	]
+}
