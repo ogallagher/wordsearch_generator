@@ -39,6 +39,7 @@ import {
 */
 const wg = require('./wordsearch_generator.js')
 const WordsearchGenerator = wg.WordsearchGenerator
+const WIDTH_DEFAULT = wg.WIDTH_DEFAULT
 const WORD_CLUE_DELIM = wg.WORD_CLUE_DELIM
 const KEY_LANGUAGE = wg.KEY_LANGUAGE
 const KEY_CASE = wg.KEY_CASE
@@ -58,7 +59,7 @@ let word_clues
 // define wordsearch
 let wordsearch
 
-cli.question('create with file [f] or interactively [i]? ', (input_mode) => {
+cli.question('create with file (f) or interactively (i)? ', (input_mode) => {
 	if (input_mode == 'f') {
 		cli.question('wordsearch json description file: ', (input_file) => {
 			cli.close()
@@ -76,10 +77,10 @@ cli.question('create with file [f] or interactively [i]? ', (input_mode) => {
 	else {
 		WordsearchGenerator.get_alphabet_aliases()
 		.then(function(aliases) {
-			alphabet_options = JSON.stringify(aliases, null, 1)
+			alphabet_options = JSON.stringify(Object.keys(aliases), null, 1)
 			
 			cli.question(
-				`n${alphabet_options}\nwordsearch alphabet (default=${DEFAULT_ALPHABET}): `, 
+				`\n${alphabet_options}\nwordsearch alphabet (default=${DEFAULT_ALPHABET}): `, 
 				function(alphabet_key) {
 					if (alphabet_key == '') {
 						alphabet_key = DEFAULT_ALPHABET
@@ -87,15 +88,27 @@ cli.question('create with file [f] or interactively [i]? ', (input_mode) => {
 					
 					case_key = 'lower'
 					
-					cli.question('wordsearch width ', function(width) {
-						if (width != '') {
-							width = parseInt(width)
+					cli.question('wordsearch size (<size> or <width> <height>) ', function(size) {
+						let width = WIDTH_DEFAULT
+						let height = WIDTH_DEFAULT
+						if (size != '') {
+							size = size.split(/\D+/)
+							
+							width = parseInt(size[0])
+							height = width
+							
+							if (size.length > 1) {
+								// rectangle
+								height = parseInt(size[1])
+							}
 						}
+						
+						console.log(`INFO size = ${width} ${height}`)
 						
 						wordsearch = new WordsearchGenerator(
 							alphabet_key,
 							case_key,
-							width
+							[width, height]
 						)
 						wordsearch.init_promise
 						.then(on_alphabet_load)
@@ -117,7 +130,7 @@ function on_alphabet_load() {
 	
 	// test_random_cells(25)
 	
-	// console.log(`random grid:\n${wordsearch.grid_string()}`)
+	// console.log(`DEBUG random grid:\n${wordsearch.grid_string()}`)
 	
 	cli.question('how many words? ', (word_count_str) => {
 		word_count = 0
@@ -128,12 +141,12 @@ function on_alphabet_load() {
 			next_word_clue()
 			.then(() => {
 				cli.close()
-				
 				return load_word_clues(word_clues)
 			})
 			.then(print_wordsearch)
 		}
 		else {
+			cli.close()
 			print_wordsearch()
 		}
 	})

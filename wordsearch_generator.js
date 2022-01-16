@@ -34,7 +34,7 @@ let environment_promise = new Promise(function(resolve) {
 		environment = ENV_FRONTEND
 	})
 	.finally(() => {
-		console.log(`INFO wordsearch_generator.js environment = ${environment}`)
+		console.log(`DEBUG wordsearch_generator.js environment = ${environment}`)
 		resolve()
 	})
 })
@@ -89,7 +89,7 @@ class WordsearchGenerator {
 	 *
 	 * @param {String} language Language code string.
 	 * @param {String} alphabet_case Alphabet case (upper, lower).
-	 * @param {Number} width .
+	 * @param {Number, Array} width Puzzle width/height (square), or array of width and height (rectangle).
 	 * @param {Array} words .
 	 * @param {Number} random_subset .
 	 */
@@ -111,48 +111,59 @@ class WordsearchGenerator {
 		this.alphabet_case_key = case_key
 
 		this.title = title
-
-		this.grid = new Array(width)
-		for (let y = 0; y < width; y++) {
+		
+		// convert width to width,height
+		let height
+		if (width instanceof Array) {
+			let dimensions = width
+			width = dimensions[0]
+			height = dimensions[1]
+		}
+		else {
+			height = width
+		}
+		
+		this.grid = new Array(height)
+		for (let y = 0; y < height; y++) {
 			this.grid[y] = new Array(width)
 		}
-
+		
 		this.words = []
 		this.clues = []
-		this.word_cells = new Array(width)
-		for (let y = 0; y < width; y++) {
+		this.word_cells = new Array(height)
+		for (let y = 0; y < height; y++) {
 			this.word_cells[y] = new Array(width)
 		}
-
+		
 		// maps coordinates to indeces in words
 		this.point_to_word_idx = {}
-
+		
 		this.init_promise = WordsearchGenerator.get_alphabet(this.language, case_key)
-			// load alphabet
-			.then((alphabet) => {
-				this.alphabet = alphabet
-			})
-			.then(
-				// alphabet succeeds
-				() => {
-					// randomize cells
-					this.randomize_cells()
+		// load alphabet
+		.then((alphabet) => {
+			this.alphabet = alphabet
+		})
+		.then(
+			// alphabet succeeds
+			() => {
+				// randomize cells
+				this.randomize_cells()
 
-					if (words != undefined) {
-						// load words (and clues)
-						this.add_word_clues(words, random_subset)
-					}
-					// else, delegate words load to driver
-				},
-
-				// alphabet fails
-				(err) => {
-					if (err) {
-						console.log(`ERROR: ${err}`)
-					}
-					this.alphabet = undefined
+				if (words != undefined) {
+					// load words (and clues)
+					this.add_word_clues(words, random_subset)
 				}
-			)
+				// else, delegate words load to driver
+			},
+
+			// alphabet fails
+			(err) => {
+				if (err) {
+					console.log(`ERROR: ${err}`)
+				}
+				this.alphabet = undefined
+			}
+		)
 	}
 
 	/**
@@ -189,8 +200,13 @@ class WordsearchGenerator {
 	 * Fill in random content for all cells in grid.
 	 */
 	randomize_cells() {
-		for (let y = 0; y < this.grid.length; y++) {
-			for (let x = 0; x < this.grid.length; x++) {
+		let height = this.grid.length
+		let width = height > 0
+			? this.grid[0].length
+			: 0
+		
+		for (let y = 0; y < height; y++) {
+			for (let x = 0; x < width; x++) {
 				this.grid[y][x] = this.random_cell()
 			}
 		}
@@ -230,7 +246,7 @@ class WordsearchGenerator {
 
 				// convert to array
 				subset_idx = new Array(...subset_idx)
-					// convert to word-clues subset
+				// convert to word-clues subset
 				let subset = new Array(subset_length)
 				for (let i = 0; i < subset_idx.length; i++) {
 					subset[i] = word_clues[subset_idx[i]]
@@ -279,25 +295,28 @@ class WordsearchGenerator {
 		if (Math.random() < 0.5) {
 			word_arr.reverse()
 		}
-
-		let free_width = this.grid.length - word_arr.length + 1
-
-		// select direction
-		let direction = Math.random()
-
+		
+		let height = this.grid.length
+		let width = this.grid[0].length
+		let free_width = width - word_arr.length + 1
+		let free_height = height - word_arr.length + 1
+		console.log(`DEBUG ${word} free dimensions = ${free_width} ${free_height}`)
+		
 		let attempt = 0
 		let placed = false
 		while (!placed && attempt < max_attempts) {
+			// select direction
+			let direction = Math.random()
 			let wxys = new Array(word_arr.length)
 			
 			// place word in grid
-			if (direction < 1 / 3) {
+			if (direction < 1/3 && free_width > 0) {
 				// horizontal
-				let y = Math.floor(Math.random() * this.grid.length)
+				console.log(`DEBUG attempt to place ${word} horizontal`)
+				let y = Math.floor(Math.random() * height)
 				let x = Math.floor(Math.random() * free_width)
-
-				let xc, yc = y,
-					w, no_collide = true
+				
+				let xc, yc = y, w, no_collide = true
 				for (let c = 0; c < word_arr.length && no_collide; c++) {
 					w = word_arr[c]
 					xc = x + c
@@ -310,13 +329,14 @@ class WordsearchGenerator {
 					this.place_word(wxys, word, clue)
 					placed = true
 				}
-			} else if (direction < 2 / 3) {
+			} 
+			else if (direction < 2/3 && free_height > 0) {
 				// vertical
-				let y = Math.floor(Math.random() * free_width)
-				let x = Math.floor(Math.random() * this.grid.length)
+				console.log(`DEBUG attempt to place ${word} vertical`)
+				let y = Math.floor(Math.random() * free_height)
+				let x = Math.floor(Math.random() * width)
 				
-				let xc = x,
-					yc, w, no_collide = true
+				let xc = x, yc, w, no_collide = true
 				for (let c = 0; c < word_arr.length && no_collide; c++) {
 					w = word_arr[c]
 					yc = y + c
@@ -329,12 +349,14 @@ class WordsearchGenerator {
 					this.place_word(wxys, word, clue)
 					placed = true
 				}
-			} else {
+			} 
+			else if (free_width > 0 && free_height > 0) {
 				if (Math.random() < 0.5) {
 					// down right (up left)
-					let y = Math.floor(Math.random() * free_width)
+					console.log(`DEBUG attempt to place ${word} down-right`)
+					let y = Math.floor(Math.random() * free_height)
 					let x = Math.floor(Math.random() * free_width)
-
+					
 					let xc, yc, w, no_collide = true
 					for (let c = 0; c < word_arr.length && no_collide; c++) {
 						w = word_arr[c]
@@ -349,11 +371,13 @@ class WordsearchGenerator {
 						this.place_word(wxys, word, clue)
 						placed = true
 					}
-				} else {
+				} 
+				else {
 					// down left (up right)
-					let y = Math.floor(Math.random() * free_width)
-					let x = this.grid.length - Math.floor(Math.random() * free_width) - 1
-
+					console.log(`DEBUG attempt to place ${word} down-left`)
+					let y = Math.floor(Math.random() * free_height)
+					let x = width - Math.floor(Math.random() * free_width) - 1
+					
 					let xc, yc, w, no_collide = true
 					for (let c = 0; c < word_arr.length && no_collide; c++) {
 						w = word_arr[c]
@@ -369,6 +393,9 @@ class WordsearchGenerator {
 						placed = true
 					}
 				}
+			}
+			else {
+				console.log(`DEBUG direction ${Math.round(direction*10)/10} impossible; skip attempt`)
 			}
 
 			attempt++
@@ -754,6 +781,7 @@ if (typeof exports != 'undefined') {
 	exports.WordsearchGenerator = WordsearchGenerator
 
 	// export useful constants
+	exports.WIDTH_DEFAULT = WIDTH_DEFAULT
 	exports.WORD_CLUE_DELIM = WORD_CLUE_DELIM
 	exports.KEY_LANGUAGE = KEY_LANGUAGE
 	exports.KEY_CASE = KEY_CASE
@@ -765,6 +793,7 @@ if (typeof exports != 'undefined') {
 	// console.log(`DEBUG ${exports}`)
 } else {
 	// export scoped constants as class vars
+	WordsearchGenerator.WIDTH_DEFAULT = WIDTH_DEFAULT
 	WordsearchGenerator.WORD_CLUE_DELIM = WORD_CLUE_DELIM
 	WordsearchGenerator.KEY_LANGUAGE = KEY_LANGUAGE
 	WordsearchGenerator.KEY_CASE = KEY_CASE
