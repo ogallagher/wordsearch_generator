@@ -207,6 +207,12 @@ function on_core_load() {
 				})
 			}
 			
+			// set default wordsearch size
+			wordsearch_jq.find('.size-width')
+			.attr('placeholder', WordsearchGenerator.WIDTH_DEFAULT)
+			wordsearch_jq.find('.size-height')
+			.attr('placeholder', WordsearchGenerator.WIDTH_DEFAULT)
+			
 			// handle description file upload
 			let description_json
 			wordsearch_jq.find('.wordsearch-file').on('change', function() {
@@ -470,11 +476,23 @@ function on_wordsearch_input_form(wordsearch_cmp_id) {
 	let wordsearch_cmp = $(`#${wordsearch_cmp_id}`)
 	
 	try {
+		let width_str = wordsearch_cmp.find('.size-width').val().trim()
+		if (width_str == '') {
+			width_str = (WordsearchGenerator.WIDTH_DEFAULT).toString()
+		}
+		let height_str = wordsearch_cmp.find('.size-height').val().trim()
+		if (height_str == '') {
+			height_str = (WordsearchGenerator.WIDTH_DEFAULT).toString()
+		}
+		
 		// load initial config
 		let wordsearch = new WordsearchGenerator(
 			wordsearch_cmp.find('.language').val().trim().toLowerCase(),
 			wordsearch_cmp.find('.case').val().trim().toLowerCase(),
-			parseInt(wordsearch_cmp.find('.size').val().trim())
+			[
+				parseInt(width_str),
+				parseInt(height_str)
+			]
 		)
 		
 		wordsearch.init_promise.then(() => {
