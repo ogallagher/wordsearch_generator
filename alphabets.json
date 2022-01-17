@@ -21,8 +21,13 @@
 		"domino": ["domino","dominoes","도미노"]
 	},
 	
+	"default_prob_dist": {
+		"name": "uniform",
+		"description": "unform (default) probability distribution, allowing all characters to appear equally as often."
+	},
+	
 	"de": {
-		"//comment": "deutsche. a-z, A-Z, ÄÖÜẞäöüß",
+		"//comment": "german deutsche. a-z, A-Z, ÄÖÜẞäöüß",
 		
 		"ranges": [
 			[97,122],
@@ -48,7 +53,7 @@
 	},
 	
 	"es": {
-		"//comment": "español. a-z, áéíóúü, A-Z, ÁÉÍÓÚÜ.",
+		"//comment": "spanish español. a-z, áéíóúü, A-Z, ÁÉÍÓÚÜ.",
 		
 		"ranges": [
 			[97,122],
@@ -62,7 +67,7 @@
 	},
 	
 	"fr": {
-		"//comment": "français. a-z, àçéèêëîïôùûüÿ, A-Z, ÀÇÉÈÊËÎÏÔÙÛÜŸ, excluding ligatures. For french without diacritics (ex. àçê), use english.",
+		"//comment": "french français. a-z, àçéèêëîïôùûüÿ, A-Z, ÀÇÉÈÊËÎÏÔÙÛÜŸ, excluding ligatures. For french without diacritics (ex. àçê), use english.",
 		
 		"ranges": [
 			[97,122],
@@ -157,10 +162,19 @@
 	},
 	
 	"ko": {
-		"//comment": "한국어. 가-힣",
+		"//comment": "korean 한국어. 가-힣",
 		
 		"ranges": [
 			[44032,55203]
+		],
+		
+		"prob_dist": [
+			{
+				"name": "dictionary",
+				"description": "한국어 사전 빈도? korean dictionary frequency distribution? source = nlp.kookmin.ac.kr > /data/syldown.html > /data/syl-1.txt",
+				"filename": "ko_prob_dist.txt",
+				"dirname": "alphabet_prob_dists"
+			}
 		],
 		
 		"upper_ranges": [
@@ -221,7 +235,7 @@
 	},
 	
 	"chess": {
-		"//comment": "Basic black and white chess piece symbols. ♔-♟︎.",
+		"//comment": "basic black and white chess piece symbols. ♔-♟︎.",
 		
 		"ranges": [
 			[9812,9823]
@@ -233,7 +247,7 @@
 	},
 	
 	"domino": {
-		"//comment": "Unicode domino symbols. 🀰-🂓",
+		"//comment": "unicode domino symbols. 🀰-🂓",
 		
 		"ranges": [
 			[127024, 127123]

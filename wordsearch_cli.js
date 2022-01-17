@@ -46,6 +46,9 @@ const KEY_CASE = wg.KEY_CASE
 const KEY_SIZE = wg.KEY_SIZE
 const KEY_WORDS = wg.KEY_WORDS
 const KEY_RANDOM_SUBSET = wg.KEY_RANDOM_SUBSET
+const KEY_PROB_DIST = wg.KEY_PROB_DIST
+const KEY_PD_NAME = wg.KEY_PD_NAME
+const KEY_PD_FILE = wg.KEY_PD_FILE
 
 const DEFAULT_ALPHABET = 'en'
 
@@ -111,6 +114,7 @@ cli.question('create with file (f) or interactively (i)? ', (input_mode) => {
 							[width, height]
 						)
 						wordsearch.init_promise
+						.then(set_alphabet_prob_dist)
 						.then(on_alphabet_load)
 					})
 				}
@@ -119,20 +123,33 @@ cli.question('create with file (f) or interactively (i)? ', (input_mode) => {
 	}
 })
 
+function set_alphabet_prob_dist() {
+	return new Promise(function(resolve) {
+		prob_dists = wordsearch.alphabet[KEY_PROB_DIST]
+		
+		cli.question(
+			`select a probability distribution\n${
+				JSON.stringify(prob_dists,null,2)
+			}\ndistribution name (default=uniform): `,
+			(pd_name) => {
+				wordsearch.set_probability_distribution(pd_name)
+				.then(() => {
+					// randomize cells with new distribution
+					wordsearch.randomize_cells()
+					resolve()
+				})
+			}
+		)
+	})
+}
+
 function on_alphabet_load() {
-	console.log(
-		`DEBUG ${
-			wordsearch.language
-		} alphabet = ${
-			JSON.stringify(wordsearch.alphabet,null,2)
-		}`
-	)
-	
 	// test_random_cells(25)
 	
 	// console.log(`DEBUG random grid:\n${wordsearch.grid_string()}`)
 	
 	cli.question('how many words? ', (word_count_str) => {
+		word_count_str = word_count_str == '' ? '0' : word_count_str
 		word_count = 0
 		word_clues = new Array(parseInt(word_count_str))
 		

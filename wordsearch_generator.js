@@ -34,7 +34,7 @@ let environment_promise = new Promise(function(resolve) {
 		environment = ENV_FRONTEND
 	})
 	.finally(() => {
-		console.log(`DEBUG wordsearch_generator.js environment = ${environment}`)
+		console.log(`DEBUG wordsearch_generator.js env=${environment}, dir=${parent_dir}`)
 		resolve()
 	})
 })
@@ -45,9 +45,11 @@ const LANGUAGE_DEFAULT = 'en'
 const CASE_LOWER = 'lower'
 const CASE_UPPER = 'upper'
 const CASE_DEFAULT = CASE_LOWER
-const ALPHABET_FILE = 'alphabets.json'
 const WIDTH_DEFAULT = 10
 const WORD_CLUE_DELIM = ':'
+const ALPHABET_FILE = 'alphabets.json'
+const ALPHABET_PROB_DIST_DIR = 'alphabet_prob_dists'
+const PROB_DIST_UNIFORM = 'uniform'
 
 // alphabets.json keys
 
@@ -56,6 +58,13 @@ const KEY_ALPHABET_ALIASES  = 'alphabet_aliases'
 const KEY_RANGES = 'ranges'
 const KEY_LOWER_RANGES = KEY_RANGES
 const KEY_UPPER_RANGES = `upper_${KEY_RANGES}`
+const KEY_DEFAULT_PD = 'default_prob_dist'
+const KEY_PROB_DIST = 'prob_dist'
+const KEY_SELECTED_PROB_DIST = 'selected_prob_dist'
+const KEY_PD_NAME = 'name'
+const KEY_PD_DESC = 'description'
+const KEY_PD_FILE = 'filename'
+const KEY_PD_DIR = 'dirname'
 
 const KEY_COUNTS = 'counts'
 const KEY_PROBABILITIES = 'probabilities'
@@ -90,8 +99,8 @@ class WordsearchGenerator {
 	 * @param {String} language Language code string.
 	 * @param {String} alphabet_case Alphabet case (upper, lower).
 	 * @param {Number, Array} width Puzzle width/height (square), or array of width and height (rectangle).
-	 * @param {Array} words .
-	 * @param {Number} random_subset .
+	 * @param {Array} words Array of word[-clues], with word-clue delimiter WORD_CLUE_DELIM.
+	 * @param {Number} random_subset How many words to select from the population for each wordsearch.
 	 */
 	constructor(language = LANGUAGE_DEFAULT, alphabet_case = CASE_DEFAULT, width = WIDTH_DEFAULT, words, random_subset, title) {
 		this.language = language
@@ -169,30 +178,94 @@ class WordsearchGenerator {
 	/**
 	 * Generate random content for a single cell.
 	 * 
-	 * @returns Random content for a single cell (a letter, character, or syllable), or {null} on failure.
+	 * The uniform probability distribution assigns a cumulative probability for each char code set
+	 * in the selected case. The choice is done in two steps:
+	 * 	1. select char code set
+	 *	2. select char code from set
+	 * 
+	 * Custom probability distributions specify the probability for each character. The choice is
+	 * done in two steps:
+	 * 	1. select char index
+	 * 	2. convert char index to (code-set, index-in-code-set)
+	 * 
+	 * @returns Random content for a single cell (a letter, character, or syllable), or {null} on 
+	 * failure.
 	 * @type String
 	 */
 	random_cell() {
+		let pd_name = this.alphabet[KEY_SELECTED_PROB_DIST]
+		let probabilities = this.alphabet[KEY_PROBABILITIES]
 		let accum_probabilities = this.alphabet[KEY_ACCUM_PROBABILITIES]
-
-		let ap = 0
-		let code_set = undefined
-		do {
-			if (Math.random() < accum_probabilities[ap]) {
-				code_set = this.alphabet[this.alphabet_case_key][ap]
+		let code_sets = this.alphabet[this.alphabet_case_key]
+		
+		let p = Math.random()
+		if (pd_name == PROB_DIST_UNIFORM) {
+			// select code set index
+			let ap = 0
+			let code_set = undefined
+			do {
+				if (p < accum_probabilities[ap]) {
+					code_set = code_sets[ap]
+				}
+				
+				ap++
+			} while (code_set === undefined && ap <= accum_probabilities.length)
+			
+			// select code index in set
+			if (code_set !== undefined) {
+				let code = code_set.length == 2 
+					? Math.round(code_set[0] + (Math.random() * (code_set[1] - code_set[0]))) 
+					: code_set[Math.floor(Math.random() * code_set.length)]
+				
+				return WordsearchGenerator.code_to_char(code)
+			} 
+			else {
+				return null
 			}
-
-			ap++
-		} while (code_set === undefined && ap <= accum_probabilities.length)
-
-		if (code_set !== undefined) {
-			let code = code_set.length == 2 ?
-				Math.round(code_set[0] + (Math.random() * (code_set[1] - code_set[0]))) :
-				code_set[Math.floor(Math.random() * code_set.length)]
-
-			return WordsearchGenerator.code_to_char(code)
-		} else {
-			return null
+		}
+		else {
+			// select absolute code index
+			let ap_idx = 0
+			while (
+				ap_idx < accum_probabilities.length && 
+				// find index in accum_probabilities, skipping zeros
+				(p > accum_probabilities[ap_idx] || probabilities[ap_idx] == 0)
+			) {
+				ap_idx++
+			}
+			// console.log(`DEBUG p=${p} --> abs_code_idx=${ap_idx}`)
+			
+			// convert to (code set, index in code set)
+			let counts = this.alphabet[KEY_COUNTS]
+			let cs_idx = 0
+			
+			// offset still beyond domain of current code set
+			while (ap_idx >= counts[cs_idx]) {
+				// ap_idx becomes offset from new base
+				ap_idx -= counts[cs_idx]
+				// step to new code set base
+				cs_idx++
+			}
+			
+			let code_set = code_sets[cs_idx]
+			// console.log(`DEBUG abs_code_idx=${ap_idx} --> code_set_idx=${cs_idx}`)
+			if (code_set !== undefined) {
+				let code = code_set.length == 2
+					? code_set[0] + ap_idx
+					: code_set[ap_idx]
+				// console.log(
+				// 	`DEBUG code_set_idx=${cs_idx}, code_idx=${ap_idx} --> code=${code}`
+				// )
+				if (code !== undefined) {
+					return WordsearchGenerator.code_to_char(code)
+				}
+				else {
+					return null
+				}
+			}
+			else {
+				return null
+			}
 		}
 	}
 
@@ -462,6 +535,70 @@ class WordsearchGenerator {
 
 		return config
 	}
+	
+	/**
+	 * Select the probability distribution to use when randomizing wordsearch cells.
+	 * 
+	 * @param String pd_name The prob dist name/key to be selected from 
+	 * this.language[KEY_PROB_DIST].
+	 * 
+	 * @returns Promise resolves undefined.
+	 * @type Promise
+	 */
+	set_probability_distribution(pd_name) {
+		let self = this
+		
+		return new Promise(function(resolve) {
+			// set default if not specified
+			pd_name = (pd_name == '') ? PROB_DIST_UNIFORM : pd_name
+			
+			if (pd_name == PROB_DIST_UNIFORM) {
+				console.log('INFO use uniform default probability dist')
+				resolve()
+			}
+			else {
+				let prob_dist = self.alphabet[KEY_PROB_DIST].find((pd) => pd[KEY_PD_NAME] == pd_name)
+				if (prob_dist == undefined) {
+					console.log(`WARNING failed to find prob dist ${pd_name}; using default`)
+					resolve()
+				}
+				else {
+					// set defaults when not present
+					if (prob_dist[KEY_PD_DIR] == null) {
+						prob_dist[KEY_PD_DIR] = ALPHABET_PROB_DIST_DIR
+					}
+					
+					console.log(
+						`INFO use probability dist ${
+							pd_name
+						} --> ${
+							prob_dist[KEY_PD_DIR]
+						}/${
+							prob_dist[KEY_PD_FILE]
+						}`
+					)
+					
+					// update selected prob dist
+					self.alphabet[KEY_SELECTED_PROB_DIST] = prob_dist[KEY_PD_NAME]
+					
+					// update alphabet individual and cumulative probabilities
+					WordsearchGenerator.load_alphabet_probability_dist_file(
+						prob_dist[KEY_PD_FILE],
+						prob_dist[KEY_PD_DIR]
+					)
+					.catch(function() {
+						console.log(`ERROR failed to read prob dist file ${prob_dist[KEY_PD_FILE]}`)
+					})
+					.then(function(pd) {
+						// update probabilities
+						self.alphabet[KEY_PROBABILITIES] = pd[KEY_PROBABILITIES]
+						self.alphabet[KEY_ACCUM_PROBABILITIES] = pd[KEY_ACCUM_PROBABILITIES]
+					})
+					.finally(resolve)
+				}
+			}
+		})
+	}
 
 	// static methods
 	
@@ -544,7 +681,12 @@ class WordsearchGenerator {
 				}
 				
 				if (alphabet != null) {
-					WordsearchGenerator.load_alphabet(alphabet, case_key, path)
+					WordsearchGenerator.load_alphabet(
+						alphabet, 
+						case_key, 
+						path,
+						alphabets[KEY_DEFAULT_PD]
+					)
 					.then(resolve)
 					.catch(reject)
 				}
@@ -562,7 +704,7 @@ class WordsearchGenerator {
 	 * @param {String} path Path to the alphabets file.
 	 *
 	 * @returns Promise resolving a plain object describing character sets per language, or rejecting
-	 * empty on failure.
+	 * undefined on failure.
 	 * @type Promise
 	 */
 	static load_alphabets_file(path = ALPHABET_FILE) {
@@ -604,40 +746,100 @@ class WordsearchGenerator {
 	}
 	
 	/**
+	 * Load alphabet probability distribution file into an array. Note this depends on
+	 * environment_promise.
+	 *
+	 * @param {String} file Probability distribution filename.
+	 * @param {String} dir Relative path to parent directory (without final /).
+	 * 
+	 * @returns Resolves an an object with an array of normalized probabilities, each element 
+	 * corresponding to a character in the target alphabet, and an array of cumulative
+	 * probabilities. Rejects undefined on failure.
+	 * @type Promise
+	 */
+	static load_alphabet_probability_dist_file(file, dir = ALPHABET_PROB_DIST_DIR) {
+		return new Promise(function(resolve, reject) {
+			if (environment == ENV_FRONTEND) {
+				// load with ajax
+				let path = `${dir}/${file}`
+				$.ajax({
+					method: 'GET',
+					url: path,
+					dataType: 'text',
+					success: function(prob_dist_txt) {
+						// parse as array
+						WordsearchGenerator.parse_alphabet_probability_dist_str(prob_dist_txt)
+						.then(resolve)
+						.catch(reject)
+					},
+					error: function(err) {
+						console.log(`ERROR failed to get alphabet probability distribution file ${path}`)
+						console.log(err)
+						reject()
+					}
+				})
+			}
+			else if (environment == ENV_BACKEND) {
+				// load with nodejs fs module
+				let path = `${parent_dir}/${dir}/${file}`
+				fs.readFile(path, 'utf8', function(err, prob_dist_txt) {
+					if (err) {
+						console.log(`ERROR probability distribution file not found at ${path}`)
+						console.log(err)
+						reject()
+					}
+					else {
+						// parse as array
+						WordsearchGenerator.parse_alphabet_probability_dist_str(prob_dist_txt)
+						.then(resolve)
+						.catch(reject)
+					}
+				})
+			}
+			else {
+				console.log(`ERROR unable to load alphabet probability distribution file in unknown env ${environment}`)
+				reject()
+			}
+		})
+	}
+	
+	/**
 	 * Called by {get_alphabet}.
 	 */
-	static load_alphabet(alphabet, case_key, path) {
+	static load_alphabet(alphabet, case_key, path, default_prob_dist) {
 		return new Promise(function(resolve, reject) {
 			if (alphabet != undefined) {
+				// calculate uniform probability distribution
 				let ranges = alphabet[case_key]
 				let count_total = 0
 				let counts = []
-
+				
 				// count ranges
 				// determine relative size of each corresponding set to determine probability
 				for (let rset of ranges) {
 					let count
-
+					
 					if (rset.length == 2) {
 						// defined as min,max
 						count = rset[1] - rset[0] + 1
-					} else {
+					} 
+					else {
 						// defined as explicit collection a,b,...,z
 						count = rset.length
 					}
-
+					
 					counts.push(count)
 					count_total += count
 				}
 
 				alphabet[KEY_COUNTS] = counts
-
+				
 				let probabilities = counts.map((c) => {
 					return c / count_total
 				})
-
+				
 				alphabet[KEY_PROBABILITIES] = probabilities
-
+				
 				let accum_prob = 0
 				let accum_probabilities = new Array(probabilities.length)
 				for (let i = 0; i < accum_probabilities.length; i++) {
@@ -645,10 +847,86 @@ class WordsearchGenerator {
 					accum_probabilities[i] = accum_prob
 				}
 				alphabet[KEY_ACCUM_PROBABILITIES] = accum_probabilities
-
+				
+				// add uniform probability distribution to options
+				if (!(KEY_PROB_DIST in alphabet)) {
+					alphabet[KEY_PROB_DIST] = []
+				}
+				alphabet[KEY_PROB_DIST].splice(0, 0, default_prob_dist)
+				
+				// select uniform probability distribution
+				alphabet[KEY_SELECTED_PROB_DIST] = PROB_DIST_UNIFORM
+				
 				resolve(alphabet)
-			} else {
+			} 
+			else {
 				console.log(`ERROR alphabet not found for language ${language}`)
+				reject()
+			}
+		})
+	}
+	
+	/**
+	 * Parse alphabet probability distribution file content string as array of numbers.
+	 * Called by load_alphabet_probability_dist_file.
+	 * TODO don't normalize and instead include sum as part of return value.
+	 * 
+	 * @param {String} txt Text file content string.
+	 * @param {Number} min Minimum probability for any character. If otherwise the probability
+	 * of a given character is too small for Number precision, artificially set it to min.
+	 *
+	 * @returns Object[KEY_PROBABILITIES] array of normalized probabilities, one item per character 
+	 * in the alphabet, and Object[KEY_ACCUM_PROBABILITIES] array of cumulative probabilities.
+	 * Rejects undefined on failure.
+	 * @type Object
+	 */
+	static parse_alphabet_probability_dist_str(txt, min=0) {
+		return new Promise(function(resolve, reject) {
+			try {
+				let res = {}
+				
+				// parse
+				let sum = 0
+				let char_probs = txt.split('\n')
+				// convert to floats and update sum
+				.map(function(prob_str) {
+					let prob = parseFloat(prob_str)
+					if (!isNaN(prob)) {
+						sum += prob
+						return prob
+					}
+					else {
+						return undefined
+					}
+				})
+				// remove bad vals
+				.filter(cp => cp != undefined)
+				
+				console.log(`DEBUG ${char_probs.length} char probs accumulate to ${sum}`)
+				
+				// normalize
+				char_probs = char_probs.map(function(prob) {
+					let norm = prob/sum
+					return norm > 0 ? norm : min
+				})
+				
+				console.log(`DEBUG normalized alphabet prob dist ${sum} --> 1`)
+				res[KEY_PROBABILITIES] = char_probs
+				
+				// find cumulative
+				sum = 0
+				let char_probs_accum = char_probs.map(function(prob) {
+					sum += prob
+					return sum
+				})
+				res[KEY_ACCUM_PROBABILITIES] = char_probs_accum
+				
+				resolve(res)
+			}
+			catch (err) {
+				console.log(`ERROR failed to parse prob dist string\n${txt}`)
+				console.log(err)
+				
 				reject()
 			}
 		})
@@ -779,24 +1057,41 @@ class WordsearchGenerator {
 if (typeof exports != 'undefined') {
 	// export WordsearchGenerator class
 	exports.WordsearchGenerator = WordsearchGenerator
-
+	
 	// export useful constants
+	exports.environment_promise = environment_promise
+	
 	exports.WIDTH_DEFAULT = WIDTH_DEFAULT
 	exports.WORD_CLUE_DELIM = WORD_CLUE_DELIM
 	exports.KEY_LANGUAGE = KEY_LANGUAGE
 	exports.KEY_CASE = KEY_CASE
+	exports.KEY_PROB_DIST = KEY_PROB_DIST
+	exports.KEY_PD_NAME = KEY_PD_NAME
+	exports.KEY_PD_DESC = KEY_PD_DESC
+	exports.KEY_PD_FILE = KEY_PD_FILE
+	exports.KEY_PD_DIR = KEY_PD_DIR
+	
 	exports.KEY_SIZE = KEY_SIZE
 	exports.KEY_WORDS = KEY_WORDS
 	exports.KEY_RANDOM_SUBSET = KEY_RANDOM_SUBSET
 	exports.KEY_TITLE = KEY_TITLE
-
+	
 	// console.log(`DEBUG ${exports}`)
-} else {
+} 
+else {
 	// export scoped constants as class vars
+	WordsearchGenerator.environment_promise = environment_promise
+	
 	WordsearchGenerator.WIDTH_DEFAULT = WIDTH_DEFAULT
 	WordsearchGenerator.WORD_CLUE_DELIM = WORD_CLUE_DELIM
 	WordsearchGenerator.KEY_LANGUAGE = KEY_LANGUAGE
 	WordsearchGenerator.KEY_CASE = KEY_CASE
+	WordsearchGenerator.KEY_PROB_DIST = KEY_PROB_DIST
+	WordsearchGenerator.KEY_PD_NAME = KEY_PD_NAME
+	WordsearchGenerator.KEY_PD_DESC = KEY_PD_DESC
+	WordsearchGenerator.KEY_PD_FILE = KEY_PD_FILE
+	WordsearchGenerator.KEY_PD_DIR = KEY_PD_DIR
+	
 	WordsearchGenerator.KEY_SIZE = KEY_SIZE
 	WordsearchGenerator.KEY_WORDS = KEY_WORDS
 	WordsearchGenerator.KEY_RANDOM_SUBSET = KEY_RANDOM_SUBSET
