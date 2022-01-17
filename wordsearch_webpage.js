@@ -508,7 +508,8 @@ function on_wordsearch_input_form(wordsearch_cmp_id) {
 					if (clue === '') {
 						clue = word
 					}
-				
+					
+					console.log(`DEBUG word:clue ${word}:${clue}`)
 					word_clues.push(`${word}:${clue}`)
 				}
 			})
@@ -529,7 +530,9 @@ function load_word_clues(wordsearch_cmp_id, wordsearch, word_clues, clue_delim='
 	let wordsearch_cmp = $(`#${wordsearch_cmp_id}`)
 	
 	if (wordsearch_is_random_subset) {
-		let subset_count_jq = wordsearch_cmp.find('.random-subset-count')
+		console.log('DEBUG is random subset')
+		
+		let subset_count_jq = $(`#${wordsearch_cmp_id}`).find('.random-subset-count')
 		if (subset_count_jq.val() == '') {
 			subset_count_jq.val(word_clues.length)
 		}
@@ -557,6 +560,7 @@ function load_word_clues(wordsearch_cmp_id, wordsearch, word_clues, clue_delim='
 		wordsearch_cmp.find('.random-subset-count').val('')
 	}
 	
+	console.log(`DEBUG word_clues = \n${JSON.stringify(word_clues)}`)
 	for (let word_clue of word_clues) {
 		let array = word_clue.split(clue_delim)
 		
@@ -566,7 +570,9 @@ function load_word_clues(wordsearch_cmp_id, wordsearch, word_clues, clue_delim='
 			clue = array[1]
 		}
 		
-		if (WordsearchGenerator.string_to_array(word).length <= wordsearch.grid.length) {
+		let word_n = WordsearchGenerator.string_to_array(word).length
+		
+		if (word_n <= Math.max(wordsearch.grid.length, wordsearch.grid[0].length)) {
 			if (!wordsearch.add_word_clue(word,clue)) {
 				console.log(`ERROR failed to find a place for ${word}`)
 			}
