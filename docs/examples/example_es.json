@@ -3,11 +3,6 @@
 	"case": "upper",
 	"size": 15,
 	"title": "Buscapalabras ejemplar de español",
-	"words": [
-		"MANZANA:la fruta del otoño",
-		"CALAVERA:hueso de cabeza",
-		"TIJERAS:corta papel",
-		"BARCO:flota en agua",
-		"PÁJARO:plumas y picos"
-	]
+	"words": "docs/examples/example_es_words.dsv",
+	"words_delim": ":"
 }

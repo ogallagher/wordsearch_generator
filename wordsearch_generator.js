@@ -16,20 +16,26 @@ const USE_WG_HOST_URL = true
 const WG_HOST_URL = 'https://wordsearch.dreamhosters.com'
 
 let fs
+let dsv
 // directory where this file is
 let parent_dir
 
 let environment_promise = new Promise(function(resolve) {
 	Promise.all([
-		import('fs')
+		import('fs'),
+		import('d3-dsv')
 	])
 	.then((modules) => {
 		fs = modules[0].default
+		dsv = modules[1]
+		
 		parent_dir = __dirname
 		environment = ENV_BACKEND
 	})
 	.catch(() => {
 		fs = undefined
+		dsv = undefined
+		
 		parent_dir = '.'
 		environment = ENV_FRONTEND
 	})
@@ -76,6 +82,7 @@ const KEY_LANGUAGE = 'language'
 const KEY_CASE = 'case'
 const KEY_SIZE = 'size'
 const KEY_WORDS = 'words'
+const KEY_WORDS_DELIM = 'words_delim'
 const KEY_RANDOM_SUBSET = 'random_subset'
 const KEY_TITLE = 'title'
 
@@ -99,13 +106,14 @@ class WordsearchGenerator {
 	 * @param {String} language Language code string.
 	 * @param {String} alphabet_case Alphabet case (upper, lower).
 	 * @param {Number, Array} width Puzzle width/height (square), or array of width and height (rectangle).
-	 * @param {Array} words Array of word[-clues], with word-clue delimiter WORD_CLUE_DELIM.
+	 * @param {Array} words Array of word[-clues], with default word-clue delimiter WORD_CLUE_DELIM.
 	 * @param {Number} random_subset How many words to select from the population for each wordsearch.
+	 * @param {String} words_delim Delimiter between a word and a clue.
 	 */
-	constructor(language = LANGUAGE_DEFAULT, alphabet_case = CASE_DEFAULT, width = WIDTH_DEFAULT, words, random_subset, title) {
+	constructor(language = LANGUAGE_DEFAULT, alphabet_case = CASE_DEFAULT, width = WIDTH_DEFAULT, words, random_subset, title, words_delim) {
 		this.language = language
 		this.alphabet_case = alphabet_case
-
+		
 		let case_key
 		switch (alphabet_case) {
 			case CASE_UPPER:
@@ -157,10 +165,10 @@ class WordsearchGenerator {
 			() => {
 				// randomize cells
 				this.randomize_cells()
-
+				
 				if (words != undefined) {
 					// load words (and clues)
-					this.add_word_clues(words, random_subset)
+					return this.add_word_clues(words, random_subset, undefined, words_delim)
 				}
 				// else, delegate words load to driver
 			},
@@ -300,60 +308,99 @@ class WordsearchGenerator {
 
 	/**
 	 * Load words and clues in bulk.
+	 * TODO fix callers to handle Promise return type.
 	 *
-	 * @param {Array} word_clues Array of word or word-clue strings.
-	 * @param {Number} subset_length .
+	 * @param {Array,String} word_clues Array of word or word-clue strings, or a string path
+	 * to a words dsv file.
+	 * @param {Number} subset_length Size of a subset from the words population to include.
+	 * @param {Number} max_atempts Max attempts before giving up adding the word.
+	 * @param {String} words_delim Word-clue delimiter. Default WORD_CLUE_DELIM.
 	 *
-	 * @returns passes (placed words) and fails (skipped words).
-	 * @type Object
+	 * @returns Resolves passes (placed words) and fails (skipped words).
+	 * @type Promise
 	 */
-	add_word_clues(word_clues, subset_length, max_attempts) {
-		if (subset_length != undefined) {
-			// get random subset of words and clues
-			if (subset_length < word_clues.length && subset_length > 0) {
-				// set of word-clue indeces
-				let subset_idx = new Set()
-				while (subset_idx.size < subset_length) {
-					subset_idx.add(Math.floor(Math.random() * word_clues.length))
-				}
-
-				// convert to array
-				subset_idx = new Array(...subset_idx)
-				// convert to word-clues subset
-				let subset = new Array(subset_length)
-				for (let i = 0; i < subset_idx.length; i++) {
-					subset[i] = word_clues[subset_idx[i]]
-				}
-
-				// assign to word_clues
-				word_clues = subset
+	add_word_clues(word_clues, subset_length, max_attempts, words_delim) {
+		let self = this
+		
+		return new Promise(function(res_wc, rej_wc) {
+			if (typeof word_clues == 'string') {
+				// convert words file path to array of words/word-clues
+				WordsearchGenerator.load_words_file_dsv(word_clues, words_delim)
+				.then(res_wc)
+				.catch(rej_wc)
 			}
-		}
-
-		// add word-clues
-		let fails = [],
-			passes = []
-		for (let word_clue of word_clues) {
-			let array = word_clue.split(WORD_CLUE_DELIM)
-
-			let word = array[0]
-			let clue = (array.length == 2) ? array[1] : word
-
-			if (word.length <= this.grid.length) {
-				if (this.add_word_clue(word, clue, max_attempts)) {
-					passes.push(word)
-				} else {
-					fails.push(word)
-				}
-			} else {
-				fails.push(word)
+			else {
+				// resolve unchanged
+				res_wc(word_clues)
 			}
-		}
+		})
+		.then(
+			// pass
+			function(word_clues) {
+				if (subset_length != undefined) {
+					// get random subset of words and clues
+					if (subset_length < word_clues.length && subset_length > 0) {
+						// set of word-clue indeces
+						let subset_idx = new Set()
+						while (subset_idx.size < subset_length) {
+							subset_idx.add(Math.floor(Math.random() * word_clues.length))
+						}
 
-		return {
-			passes: passes,
-			fails: fails
-		}
+						// convert to array
+						subset_idx = new Array(...subset_idx)
+						// convert to word-clues subset
+						let subset = new Array(subset_length)
+						for (let i = 0; i < subset_idx.length; i++) {
+							subset[i] = word_clues[subset_idx[i]]
+						}
+
+						// assign to word_clues
+						word_clues = subset
+					}
+				}
+				
+				if (words_delim == undefined) {
+					words_delim = WORD_CLUE_DELIM
+				}
+				
+				// add word-clues
+				let fails = []
+				let passes = []
+				for (let word_clue of word_clues) {
+					let array = (word_clue instanceof Array)
+						// is already array
+						? word_clue
+						// is delimited string
+						: word_clue.split(words_delim)
+					
+					let word = array[0]
+					let clue = (array.length == 2) ? array[1] : word
+					
+					if (word.length <= self.grid.length) {
+						if (self.add_word_clue(word, clue, max_attempts)) {
+							passes.push(word)
+						} else {
+							fails.push(word)
+						}
+					} else {
+						fails.push(word)
+					}
+				}
+				
+				return Promise.resolve({
+					passes: passes,
+					fails: fails
+				})
+			},
+			// fail
+			function() {
+				console.log(`ERROR failed to load word-clues of type ${typeof word_clues}`)
+				return Promise.resolve({
+					passes: 0,
+					fails: 1
+				})
+			}
+		)
 	}
 
 	/**
@@ -746,64 +793,6 @@ class WordsearchGenerator {
 	}
 	
 	/**
-	 * Load alphabet probability distribution file into an array. Note this depends on
-	 * environment_promise.
-	 *
-	 * @param {String} file Probability distribution filename.
-	 * @param {String} dir Relative path to parent directory (without final /).
-	 * 
-	 * @returns Resolves an an object with an array of normalized probabilities, each element 
-	 * corresponding to a character in the target alphabet, and an array of cumulative
-	 * probabilities. Rejects undefined on failure.
-	 * @type Promise
-	 */
-	static load_alphabet_probability_dist_file(file, dir = ALPHABET_PROB_DIST_DIR) {
-		return new Promise(function(resolve, reject) {
-			if (environment == ENV_FRONTEND) {
-				// load with ajax
-				let path = `${dir}/${file}`
-				$.ajax({
-					method: 'GET',
-					url: path,
-					dataType: 'text',
-					success: function(prob_dist_txt) {
-						// parse as array
-						WordsearchGenerator.parse_alphabet_probability_dist_str(prob_dist_txt)
-						.then(resolve)
-						.catch(reject)
-					},
-					error: function(err) {
-						console.log(`ERROR failed to get alphabet probability distribution file ${path}`)
-						console.log(err)
-						reject()
-					}
-				})
-			}
-			else if (environment == ENV_BACKEND) {
-				// load with nodejs fs module
-				let path = `${parent_dir}/${dir}/${file}`
-				fs.readFile(path, 'utf8', function(err, prob_dist_txt) {
-					if (err) {
-						console.log(`ERROR probability distribution file not found at ${path}`)
-						console.log(err)
-						reject()
-					}
-					else {
-						// parse as array
-						WordsearchGenerator.parse_alphabet_probability_dist_str(prob_dist_txt)
-						.then(resolve)
-						.catch(reject)
-					}
-				})
-			}
-			else {
-				console.log(`ERROR unable to load alphabet probability distribution file in unknown env ${environment}`)
-				reject()
-			}
-		})
-	}
-	
-	/**
 	 * Called by {get_alphabet}.
 	 */
 	static load_alphabet(alphabet, case_key, path, default_prob_dist) {
@@ -861,6 +850,64 @@ class WordsearchGenerator {
 			} 
 			else {
 				console.log(`ERROR alphabet not found for language ${language}`)
+				reject()
+			}
+		})
+	}
+	
+	/**
+	 * Load alphabet probability distribution file into an array. Note this depends on
+	 * environment_promise.
+	 *
+	 * @param {String} file Probability distribution filename.
+	 * @param {String} dir Relative path to parent directory (without final /).
+	 * 
+	 * @returns Resolves an an object with an array of normalized probabilities, each element 
+	 * corresponding to a character in the target alphabet, and an array of cumulative
+	 * probabilities. Rejects undefined on failure.
+	 * @type Promise
+	 */
+	static load_alphabet_probability_dist_file(file, dir = ALPHABET_PROB_DIST_DIR) {
+		return new Promise(function(resolve, reject) {
+			if (environment == ENV_FRONTEND) {
+				// load with ajax
+				let path = `${dir}/${file}`
+				$.ajax({
+					method: 'GET',
+					url: path,
+					dataType: 'text',
+					success: function(prob_dist_txt) {
+						// parse as array
+						WordsearchGenerator.parse_alphabet_probability_dist_str(prob_dist_txt)
+						.then(resolve)
+						.catch(reject)
+					},
+					error: function(err) {
+						console.log(`ERROR failed to get alphabet probability distribution file ${path}`)
+						console.log(err)
+						reject()
+					}
+				})
+			}
+			else if (environment == ENV_BACKEND) {
+				// load with nodejs fs module
+				let path = `${parent_dir}/${dir}/${file}`
+				fs.readFile(path, 'utf8', function(err, prob_dist_txt) {
+					if (err) {
+						console.log(`ERROR probability distribution file not found at ${path}`)
+						console.log(err)
+						reject()
+					}
+					else {
+						// parse as array
+						WordsearchGenerator.parse_alphabet_probability_dist_str(prob_dist_txt)
+						.then(resolve)
+						.catch(reject)
+					}
+				})
+			}
+			else {
+				console.log(`ERROR unable to load alphabet probability distribution file in unknown env ${environment}`)
 				reject()
 			}
 		})
@@ -931,6 +978,46 @@ class WordsearchGenerator {
 			}
 		})
 	}
+	
+	/**
+	 * Describe what this method does
+	 * 
+	 * @param String path Path to words file.
+	 * @param String delimiter Column delimiter. Default is WORD_CLUE_DELIM.
+	 * 
+	 * @returns Resolves an array of words and word-clues. Each item is a 1- or 2-string array.
+	 * On failure, rejects undefined.
+	 * @type Promise
+	 */
+	static load_words_file_dsv(path, delimiter=WORD_CLUE_DELIM) {
+		return new Promise(function(resolve, reject) {
+			if (environment == ENV_BACKEND) {
+				fs.readFile(path, 'utf8', function(err, words_dsv) {
+					if (err) {
+						console.log(`ERROR failed to read words file ${path}`)
+						console.log(err)
+						reject()
+					}
+					else {
+						try {
+							words_dsv = dsv.dsvFormat(delimiter).parseRows(words_dsv)
+							console.log(`DEBUG parsed ${path} into ${words_dsv.length} word-clues`)
+							resolve(words_dsv)
+						}
+						catch (err) {
+							console.log(`ERROR failed to parse words file ${path}`)
+							console.log(err)
+							reject()
+						}
+					}
+				})
+			}
+			else {
+				console.log(`ERROR words file parsing only available in env=${ENV_BACKEND}`)
+				reject()
+			}
+		})
+	}
 
 	/**
 	 * Create WordsearchGenerator from config json file.
@@ -942,9 +1029,9 @@ class WordsearchGenerator {
 	 */
 	static import_config(config_json) {
 		// config is js object, parse json if necessary
-		let config = typeof config_json === 'string' || config_json instanceof Buffer ?
-			JSON.parse(config_json) :
-			config_json
+		let config = (typeof config_json === 'string' || config_json instanceof Buffer)
+			? JSON.parse(config_json)
+			: config_json
 		
 		let wordsearch = new WordsearchGenerator(
 			config[KEY_LANGUAGE],
@@ -952,7 +1039,8 @@ class WordsearchGenerator {
 			config[KEY_SIZE],
 			config[KEY_WORDS],
 			config[KEY_RANDOM_SUBSET],
-			config[KEY_TITLE]
+			config[KEY_TITLE],
+			config[KEY_WORDS_DELIM]
 		)
 
 		return wordsearch

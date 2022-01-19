@@ -2,10 +2,6 @@
 	"language": "braille-6",
 	"size": 10,
 	"title": "Example Braille wordsearch (6-dot, no contractions)",
-	"words": [
-		"⠍⠁⠝⠛⠕:mango (⠍⠁⠝⠛⠕)",
-		"⠉⠇⠁⠽:clay (⠉⠇⠁⠽)",
-		"⠉⠁⠝⠙⠇⠑:candle (⠉⠁⠝⠙⠇⠑)",
-		"⠏⠁⠝⠉⠁⠅⠑:pancake (⠏⠁⠝⠉⠁⠅⠑)"
-	]
+	"words": "docs/examples/example_braille_words.dsv",
+	"words_delim": "\t"
 }

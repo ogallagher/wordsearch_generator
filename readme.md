@@ -172,6 +172,46 @@ source ~/.bashrc
 wordsearch-cli
 ```
 
+## Wordsearch generator config file
+
+A wordsearch generator instance can be configured via JSON file (see `docs/examples/*.json`).
+Below is a list of supported attributes.
+
+### `language`
+
+The language/alphabet to use. Must be a string equal to one of the alphabet name keys or alias
+values in `alphabets.json:alphabet_aliases`.
+
+### `case`
+
+If the language has upper and lower case letters, this is used to specify which (`upper` or `lower`).
+
+### `random_subset`
+
+Treats the provided words list as a population from which to pick a random sample for each
+generated wordsearch, this parameter specifying the sample size.
+
+### `size`
+
+If a single integer, this specifies the square width and height of the wordsearch.
+
+If an array of 2 integers, this specifies the rectangular width and height of the wordsearch.
+
+### `title`
+
+Wordsearch title.
+
+### `words`
+
+If an array of strings, each string is either a word or a delimited word-clue pair.
+
+If a string, it is a path to a separate delimiter-separated-values (DSV) words file.
+
+### `words_delim`
+
+This can be used to customize the delimiter used to separate words and clues. This applies
+to both the embedded words list and the external DSV words file approaches.
+
 ## Develop
 
 ### Custom interface/environment

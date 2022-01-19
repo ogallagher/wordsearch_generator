@@ -62,66 +62,70 @@ let word_clues
 // define wordsearch
 let wordsearch
 
-cli.question('create with file (f) or interactively (i)? ', (input_mode) => {
-	if (input_mode == 'f') {
-		cli.question('wordsearch json description file: ', (input_file) => {
-			cli.close()
+wg.environment_promise.then(main)
+
+function main() {
+	cli.question('create with file (f) or interactively (i)? ', (input_mode) => {
+		if (input_mode == 'f') {
+			cli.question('wordsearch json description file: ', (input_file) => {
+				cli.close()
 			
-			fs.readFile(input_file, function(err, input_json) {
-				if (err) {
-					console.log(`ERROR wordsearch description file ${input_file} not found`)
-				}
-				else {
-					on_file_load(input_json)
-				}
-			})
-		})
-	}
-	else {
-		WordsearchGenerator.get_alphabet_aliases()
-		.then(function(aliases) {
-			alphabet_options = JSON.stringify(Object.keys(aliases), null, 1)
-			
-			cli.question(
-				`\n${alphabet_options}\nwordsearch alphabet (default=${DEFAULT_ALPHABET}): `, 
-				function(alphabet_key) {
-					if (alphabet_key == '') {
-						alphabet_key = DEFAULT_ALPHABET
+				fs.readFile(input_file, function(err, input_json) {
+					if (err) {
+						console.log(`ERROR wordsearch description file ${input_file} not found`)
 					}
-					
-					case_key = 'lower'
-					
-					cli.question('wordsearch size (<size> or <width> <height>) ', function(size) {
-						let width = WIDTH_DEFAULT
-						let height = WIDTH_DEFAULT
-						if (size != '') {
-							size = size.split(/\D+/)
-							
-							width = parseInt(size[0])
-							height = width
-							
-							if (size.length > 1) {
-								// rectangle
-								height = parseInt(size[1])
-							}
+					else {
+						on_file_load(input_json)
+					}
+				})
+			})
+		}
+		else {
+			WordsearchGenerator.get_alphabet_aliases()
+			.then(function(aliases) {
+				alphabet_options = JSON.stringify(Object.keys(aliases), null, 1)
+			
+				cli.question(
+					`\n${alphabet_options}\nwordsearch alphabet (default=${DEFAULT_ALPHABET}): `, 
+					function(alphabet_key) {
+						if (alphabet_key == '') {
+							alphabet_key = DEFAULT_ALPHABET
 						}
+					
+						case_key = 'lower'
+					
+						cli.question('wordsearch size (<size> or <width> <height>) ', function(size) {
+							let width = WIDTH_DEFAULT
+							let height = WIDTH_DEFAULT
+							if (size != '') {
+								size = size.split(/\D+/)
+							
+								width = parseInt(size[0])
+								height = width
+							
+								if (size.length > 1) {
+									// rectangle
+									height = parseInt(size[1])
+								}
+							}
 						
-						console.log(`INFO size = ${width} ${height}`)
+							console.log(`INFO size = ${width} ${height}`)
 						
-						wordsearch = new WordsearchGenerator(
-							alphabet_key,
-							case_key,
-							[width, height]
-						)
-						wordsearch.init_promise
-						.then(set_alphabet_prob_dist)
-						.then(on_alphabet_load)
-					})
-				}
-			)
-		})
-	}
-})
+							wordsearch = new WordsearchGenerator(
+								alphabet_key,
+								case_key,
+								[width, height]
+							)
+							wordsearch.init_promise
+							.then(set_alphabet_prob_dist)
+							.then(on_alphabet_load)
+						})
+					}
+				)
+			})
+		}
+	})
+}
 
 function set_alphabet_prob_dist() {
 	return new Promise(function(resolve) {
