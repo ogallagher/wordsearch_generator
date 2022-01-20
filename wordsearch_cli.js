@@ -69,7 +69,7 @@ function main() {
 		if (input_mode == 'f') {
 			cli.question('wordsearch json description file: ', (input_file) => {
 				cli.close()
-			
+				
 				fs.readFile(input_file, function(err, input_json) {
 					if (err) {
 						console.log(`ERROR wordsearch description file ${input_file} not found`)
@@ -84,7 +84,7 @@ function main() {
 			WordsearchGenerator.get_alphabet_aliases()
 			.then(function(aliases) {
 				alphabet_options = JSON.stringify(Object.keys(aliases), null, 1)
-			
+				
 				cli.question(
 					`\n${alphabet_options}\nwordsearch alphabet (default=${DEFAULT_ALPHABET}): `, 
 					function(alphabet_key) {
@@ -148,27 +148,46 @@ function set_alphabet_prob_dist() {
 }
 
 function on_alphabet_load() {
-	// test_random_cells(25)
-	
-	// console.log(`DEBUG random grid:\n${wordsearch.grid_string()}`)
-	
-	cli.question('how many words? ', (word_count_str) => {
-		word_count_str = word_count_str == '' ? '0' : word_count_str
-		word_count = 0
-		word_clues = new Array(parseInt(word_count_str))
+	cli.question('add words with file (f) or interactively (i)? ', function(input_mode) {
+		input_mode = input_mode == '' ? 'f' : input_mode
 		
-		if (word_clues.length > 0) {
-			console.log(`word${WORD_CLUE_DELIM}clue`)
-			next_word_clue()
-			.then(() => {
-				cli.close()
-				return load_word_clues(word_clues)
+		if (input_mode == 'f') {
+			cli.question(`word-clue delimiter (default=${WORD_CLUE_DELIM}) `, function(delim) {
+				delim = delim == '' ? WORD_CLUE_DELIM : delim
+				
+				cli.question('words dsv file: ', function(words_file_path) {
+					cli.close()
+					
+					wordsearch.add_word_clues(
+						words_file_path, 
+						wordsearch.random_subset, 
+						undefined, 
+						delim
+					)
+					.then(print_wordsearch)
+				})
 			})
-			.then(print_wordsearch)
 		}
 		else {
-			cli.close()
-			print_wordsearch()
+			cli.question('how many words? ', (word_count_str) => {
+				word_count_str = word_count_str == '' ? '0' : word_count_str
+				word_count = 0
+				word_clues = new Array(parseInt(word_count_str))
+		
+				if (word_clues.length > 0) {
+					console.log(`word${WORD_CLUE_DELIM}clue`)
+					next_word_clue()
+					.then(() => {
+						cli.close()
+						return load_word_clues(word_clues)
+					})
+					.then(print_wordsearch)
+				}
+				else {
+					cli.close()
+					print_wordsearch()
+				}
+			})
 		}
 	})
 }

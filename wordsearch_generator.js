@@ -89,19 +89,23 @@ const KEY_TITLE = 'title'
 class WordsearchGenerator {
 	/**
 	 * Constructor.
-	 *
+	 * TODO use width and height instance vars instead of this.grid.length and this.grid[0].length.
+	 * 
 	 * Instance vars:
-	 * 		language
-	 * 		alphabet_case
-	 *		alphabet_case_key
-	 * 		alphabet
-	 * 		init_promise
-	 *		title
-	 *		grid
-	 *		words
-	 *		clues
-	 *		word_cells
-	 *		point_to_word_idx
+	 * - language Language/alphabet name.
+	 * - alphabet_case Alphabet case string (upper/lower).
+	 * - alphabet_case_key Character code sets key corresponding to the alphabet case.
+	 * - alphabet Selected alphabet with all needed metadata.
+	 * - init_promise Promise whose resolution means the wordsearch generator is ready for use.
+	 * - title Wordsearch title.
+	 * - width
+	 * - height
+	 * - random_subset
+	 * - grid
+	 * - words
+	 * - clues
+	 * - word_cells
+	 * - point_to_word_idx
 	 *
 	 * @param {String} language Language code string.
 	 * @param {String} alphabet_case Alphabet case (upper, lower).
@@ -139,21 +143,12 @@ class WordsearchGenerator {
 		else {
 			height = width
 		}
+		this.width = width
+		this.height = height
 		
-		this.grid = new Array(height)
-		for (let y = 0; y < height; y++) {
-			this.grid[y] = new Array(width)
-		}
+		this.reset_word_clues()
 		
-		this.words = []
-		this.clues = []
-		this.word_cells = new Array(height)
-		for (let y = 0; y < height; y++) {
-			this.word_cells[y] = new Array(width)
-		}
-		
-		// maps coordinates to indeces in words
-		this.point_to_word_idx = {}
+		this.random_subset = random_subset
 		
 		this.init_promise = WordsearchGenerator.get_alphabet(this.language, case_key)
 		// load alphabet
@@ -181,6 +176,31 @@ class WordsearchGenerator {
 				this.alphabet = undefined
 			}
 		)
+	}
+	
+	/**
+	 * Clear the wordsearch words and clues without losing configuration.
+	 */
+	reset_word_clues() {
+		// wordsearch including word and filler chars
+		this.grid = new Array(this.height)
+		for (let y = 0; y < this.height; y++) {
+			this.grid[y] = new Array(this.width)
+		}
+		
+		// wordsearch only including word chars, for detecting collisions
+		this.word_cells = new Array(this.height)
+		for (let y = 0; y < this.height; y++) {
+			this.word_cells[y] = new Array(this.width)
+		}
+		
+		// array of contained words
+		this.words = []
+		// array of clues for each word
+		this.clues = []
+		
+		// maps coordinates to indeces in words for detecting found words
+		this.point_to_word_idx = {}
 	}
 
 	/**
@@ -308,7 +328,7 @@ class WordsearchGenerator {
 
 	/**
 	 * Load words and clues in bulk.
-	 * TODO fix callers to handle Promise return type.
+	 * TODO use random_subset instance var instead of method arg.
 	 *
 	 * @param {Array,String} word_clues Array of word or word-clue strings, or a string path
 	 * to a words dsv file.
@@ -536,6 +556,15 @@ class WordsearchGenerator {
 		}
 	}
 	
+	/**
+	 * Place the characters of a word in the wordsearch grid, also updating word_cells,
+	 * words, clues, and point_to_word_idx for answer detection.
+	 * Called by {add_word_clue}.
+	 * 
+	 * @param {Array} wxys Array arrays, each containing a character and its location.
+	 * @param {String} word Word to place.
+	 * @param {String} clue Clue for word.
+	 */
 	place_word(wxys, word, clue) {
 		// add word to grid and word_cells
 		let w, x, y
@@ -645,6 +674,15 @@ class WordsearchGenerator {
 				}
 			}
 		})
+	}
+	
+	/**
+	 * Set the wordsearch title.
+	 *
+	 * @param {String} title New wordsearch title.
+	 */
+	set_title(title) {
+		this.title = title
 	}
 
 	// static methods
