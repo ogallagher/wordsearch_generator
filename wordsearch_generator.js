@@ -110,7 +110,8 @@ class WordsearchGenerator {
 	 * @param {String} language Language code string.
 	 * @param {String} alphabet_case Alphabet case (upper, lower).
 	 * @param {Number, Array} width Puzzle width/height (square), or array of width and height (rectangle).
-	 * @param {Array} words Array of word[-clues], with default word-clue delimiter WORD_CLUE_DELIM.
+	 * @param {Array} words Array of word[-clue] strings with default word-clue delimiter WORD_CLUE_DELIM, or array of
+	 * word[-clue] arrays, or string path to words dsv file.
 	 * @param {Number} random_subset How many words to select from the population for each wordsearch.
 	 * @param {String} words_delim Delimiter between a word and a clue.
 	 */
@@ -330,8 +331,8 @@ class WordsearchGenerator {
 	 * Load words and clues in bulk.
 	 * TODO use random_subset instance var instead of method arg.
 	 *
-	 * @param {Array,String} word_clues Array of word or word-clue strings, or a string path
-	 * to a words dsv file.
+	 * @param {Array,String} word_clues Array of word or word-clue strings, or and array of
+	 * word or word-clue arrays, or a string path to a words dsv file.
 	 * @param {Number} subset_length Size of a subset from the words population to include.
 	 * @param {Number} max_atempts Max attempts before giving up adding the word.
 	 * @param {String} words_delim Word-clue delimiter. Default WORD_CLUE_DELIM.
@@ -1018,18 +1019,19 @@ class WordsearchGenerator {
 	}
 	
 	/**
-	 * Describe what this method does
+	 * Load a words file from the given path as an array of words and word-clues.
 	 * 
-	 * @param String path Path to words file.
+	 * @param String path Path to words file, or contents of file if used in frontend/browser.
 	 * @param String delimiter Column delimiter. Default is WORD_CLUE_DELIM.
 	 * 
 	 * @returns Resolves an array of words and word-clues. Each item is a 1- or 2-string array.
 	 * On failure, rejects undefined.
 	 * @type Promise
 	 */
-	static load_words_file_dsv(path, delimiter=WORD_CLUE_DELIM) {
+	static load_words_file_dsv(path_or_data, delimiter=WORD_CLUE_DELIM) {
 		return new Promise(function(resolve, reject) {
 			if (environment == ENV_BACKEND) {
+				let path = path_or_data
 				fs.readFile(path, 'utf8', function(err, words_dsv) {
 					if (err) {
 						console.log(`ERROR failed to read words file ${path}`)
@@ -1038,7 +1040,7 @@ class WordsearchGenerator {
 					}
 					else {
 						try {
-							words_dsv = dsv.dsvFormat(delimiter).parseRows(words_dsv)
+							let words_dsv = dsv.dsvFormat(delimiter).parseRows(words_dsv)
 							console.log(`DEBUG parsed ${path} into ${words_dsv.length} word-clues`)
 							resolve(words_dsv)
 						}
@@ -1049,6 +1051,19 @@ class WordsearchGenerator {
 						}
 					}
 				})
+			}
+			else if (environment == ENV_FRONTEND) {
+				let data = path_or_data
+				try {
+					let words_dsv = dsv.dsvFormat(delimiter).parseRows(data)
+					console.log(`DEBUG parsed ${data.substring(0,10)}... into ${words_dsv.length} word-clues`)
+					resolve(words_dsv)
+				}
+				catch (err) {
+					console.log(`ERROR failed to parse words file text of len ${data.length}`)
+					console.log(err)
+					reject()
+				}
 			}
 			else {
 				console.log(`ERROR words file parsing only available in env=${ENV_BACKEND}`)

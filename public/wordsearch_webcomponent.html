@@ -14,7 +14,7 @@
 			</div>
 			
 			<!-- file input -->
-			<input type="file" class="wordsearch-file form-control">
+			<input type="file" class="wordsearch-file form-control" accept=".json"/>
 			
 			<!-- form input -->
 			<div class="wordsearch-form">
@@ -72,7 +72,17 @@
 				download="wordsearch_config.json">
 				config export link
 			</a>
-		
+			
+			<!-- import words dsv file -->
+			<div class="input-group words-file-group mb-3">
+				<button 
+					class="words-file-button btn btn-outline-secondary input-group-text"
+					data-on="false">
+					Import words DSV file
+				</button>
+				<input type="file" class="words-file form-control" disabled/>
+			</div>
+			
 			<!-- random subset -->
 			<div class="input-group random-subset-group mb-3">
 				<button class="random-subset btn btn-outline-secondary" data-on="false">

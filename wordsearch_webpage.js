@@ -7,7 +7,9 @@ const current_script = document.currentScript
 const INPUT_FILE = 0
 const INPUT_FORM = 1
 
-const USE_WP_HOST_URL = true
+const D3_DSV_URL = 'https://cdn.jsdelivr.net/npm/d3-dsv@3'
+
+const USE_WP_HOST_URL = false
 const WP_HOST_URL = 'https://wordsearch.dreamhosters.com'
 const DEPENDENCIES_URL = '/webpage_dependencies.html'
 const WORDSEARCH_COMPONENT_URL = '/wordsearch_webcomponent.html'
@@ -18,8 +20,10 @@ const REM_MIN = 5
 
 // global vars corresponding to each wordsearch generator component by id
 let wordsearch_input_type = {}
+let wordsearch_use_words_file = {}
 let wordsearch_is_random_subset = {}
 let wordsearch_global = {}
+let wordsearch_word_clues = {}
 
 let endpoint_cells = []
 
@@ -55,6 +59,7 @@ let dependencies_promise = new Promise(function(resolve, reject) {
 			
 			$.getScript(WORDSEARCH_CORE_URL)
 			.done(function() {
+				ext_js_dependencies()
 				on_core_load()
 				resolve_core()
 			})
@@ -74,7 +79,6 @@ let wordsearch_component_promise = new Promise(function(resolve, reject) {
 		url: url,
 		dataType: 'html',
 		success: function(component_html) {
-			// console.log(`DEBUG loaded wordsearch web component html of length ${component_html.length}`)
 			resolve(component_html)
 		},
 		error: function(err) {
@@ -88,19 +92,36 @@ window.onload = function(e) {
 	let alphabets
 	
 	dependencies_promise
-	.catch(function(err) {
-		if (err) {
-			console.log(err)
+	.then(
+		function() {
+			console.log('INFO wordsearch dependencies load passed')
+		},
+		function(err) {
+			if (err) {
+				console.log(err)
+			}
+	
+			$('body').append(
+				`<div class="wordsearch-component-error">
+					Failed to fetch wordsearch component dependencies
+				</div>`
+			)
 		}
-		
-		$('body').append(
-			`<div class="wordsearch-component-error">
-				Failed to fetch wordsearch component dependencies
-			</div>`
-		)
-	})
-	.then(function() {
-		console.log('INFO wordsearch dependencies load passed')
+	)
+}
+
+function ext_js_dependencies() {
+	return new Promise(function(resolve, reject) {
+		let url = D3_DSV_URL
+		$.getScript(url)
+		.done(function() {
+			// alias d3 as dsv to match used variable in core
+			dsv = d3
+			delete d3
+		})
+		.fail(function() {
+			console.log('ERROR failed to load d3-dsv frontend dsv parser library')
+		})
 	})
 }
 
@@ -224,6 +245,21 @@ function on_core_load() {
 				filereader.readAsText($(this).prop('files')[0])
 			})
 			
+			// handle words file upload
+			wordsearch_jq.find('.words-file').on('change', function() {
+				let filereader = new FileReader()
+				filereader.onload = function() {
+					on_wordsearch_words_file(wordsearch_id, filereader.result)
+					.then((word_clues) => {
+						wordsearch_word_clues[wordsearch_id] = word_clues
+					})
+					.catch(() => {
+						wordsearch_word_clues[wordsearch_id] = undefined
+					})
+				}
+				filereader.readAsText($(this).prop('files')[0])
+			})
+			
 			// handle whitespace controls
 			let cell_padx = 16
 			let cell_padx_min = 0
@@ -277,7 +313,7 @@ function on_core_load() {
 						
 						if (config != undefined) {
 							// use random subset count input if enabled
-							if (wordsearch_is_random_subset) {
+							if (wordsearch_is_random_subset[wordsearch_id]) {
 								let ui_subset_length = wordsearch_jq.find('.random-subset-count').val()
 								if (ui_subset_length !== '') {
 									ui_subset_length = parseInt(ui_subset_length)
@@ -285,7 +321,7 @@ function on_core_load() {
 									config['random_subset'] = ui_subset_length
 								}
 							}
-						
+							
 							on_wordsearch_input_file(wordsearch_id, config)
 						}
 						else {
@@ -334,6 +370,11 @@ function on_core_load() {
 					</div>`
 				)
 				containerjq.append(rowjq)
+			})
+			
+			// handle words file button click
+			wordsearch_jq.find('.words-file-button').click(function() {
+				set_wordsearch_use_words_file(wordsearch_id, !is_on($(this)))
 			})
 			
 			// handle random subset button click
@@ -417,6 +458,25 @@ function set_wordsearch_input_type(wordsearch_cmp_id, input_type) {
 	}
 }
 
+function set_wordsearch_use_words_file(wordsearch_cmp_id, use_file) {
+	let wordsearch_cmp = $(`#${wordsearch_cmp_id}`)
+	wordsearch_use_words_file[wordsearch_cmp_id] = use_file
+	
+	// update button data
+	wordsearch_cmp.find('.words-file-button')
+	.attr('data-on', use_file)
+	.addClass(use_file ? 'btn-secondary' : 'btn-outline-secondary')
+	.removeClass(use_file ? 'btn-outline-secondary' : 'btn-secondary')
+	
+	// update words file input
+	wordsearch_cmp.find('.words-file')
+	.prop('disabled', !use_file)
+	
+	// update word-clues inputs
+	wordsearch_cmp.find('.word-clue input')
+	.prop('disabled', use_file)
+}
+
 function set_wordsearch_is_random_subset(wordsearch_cmp_id, is_random, subset_length) {
 	let wordsearch_cmp = $(`#${wordsearch_cmp_id}`)
 	wordsearch_is_random_subset[wordsearch_cmp_id] = is_random
@@ -441,18 +501,35 @@ function set_wordsearch_is_random_subset(wordsearch_cmp_id, is_random, subset_le
 
 function on_wordsearch_input_file(wordsearch_cmp_id, wordsearch_json) {
 	if (wordsearch_json != undefined) {
-		console.log(`${wordsearch_cmp_id}:on_wordsearch_input_file`)
+		console.log(`INFO ${wordsearch_cmp_id}:on_wordsearch_input_file`)
 		let description = typeof wordsearch_json === 'string' 
 			? JSON.parse(wordsearch_json)
 			: wordsearch_json
 		
 		let random_subset = description['random_subset']
 		
+		let use_words_file = wordsearch_use_words_file[wordsearch_cmp_id]
+		let word_clues = wordsearch_word_clues[wordsearch_cmp_id]
+		if (!use_words_file || word_clues == undefined) {
+			word_clues = description['words']
+			
+			/* 
+			Frontend constructor will attempt to parse string as words file data, but in this
+			case, a string is a dsv file path that is not usable in frontend env directly.
+			*/
+			if (typeof word_clues == 'string') {
+				console.log(
+					`WARNING unable to access words file ${word_clues} in webpage via path directly. Use the dsv file input instead.`
+				)
+				word_clues = undefined
+			}
+		}
+		
 		let wordsearch = new WordsearchGenerator(
 			description['language'],
 			description['case'],
 			description['size'],
-			description['words'],
+			word_clues,
 			random_subset,
 			description['title']
 		)
@@ -469,6 +546,27 @@ function on_wordsearch_input_file(wordsearch_cmp_id, wordsearch_json) {
 	else {
 		console.log('ERROR wordsearch description not defined')
 	}
+}
+
+function on_wordsearch_words_file(wordsearch_cmp_id, words_dsv) {
+	return new Promise(function(resolve, reject) {
+		if (words_dsv != undefined) {
+			console.log(`INFO ${wordsearch_cmp_id}:on_wordsearch_words_file`)
+			WordsearchGenerator.load_words_file_dsv(
+				words_dsv, 
+				WordsearchGenerator.WORD_CLUE_DELIM
+			)
+			.then(resolve)
+			.catch(() => {
+				console.log('ERROR failed to parse words file')
+				reject()
+			})
+		}
+		else {
+			console.log('ERROR wordsearch words dsv file not defined')
+			reject()
+		}
+	})
 }
 
 function on_wordsearch_input_form(wordsearch_cmp_id) {
@@ -496,24 +594,41 @@ function on_wordsearch_input_form(wordsearch_cmp_id) {
 		)
 		
 		wordsearch.init_promise.then(() => {
-			let word_clues = []
-			
-			wordsearch_cmp.find('.word-clue').each(function(idx) {
-				// read word and clue from row
-				let rowjq = $(this)
+			new Promise(function(res_words) {
+				let use_words_file = wordsearch_use_words_file[wordsearch_cmp_id]
+				let word_clues = wordsearch_word_clues[wordsearch_cmp_id]
 				
-				let word = rowjq.find('.word-clue-word').val()
-				let clue = rowjq.find('.word-clue-clue').val()
-				if (word !== '') {
-					if (clue === '') {
-						clue = word
-					}
+				if (use_words_file && word_clues != undefined) {
+					// use words file
+					console.log(`DEBUG use ${word_clues.length} word-clues from words file`)
+					res_words(word_clues)
+				}
+				else {
+					// use word-clue rows in form
+					word_clues = []
 					
-					console.log(`DEBUG word:clue ${word}:${clue}`)
-					word_clues.push(`${word}:${clue}`)
+					wordsearch_cmp.find('.word-clue').each(function(idx) {
+						// read word and clue from row
+						let rowjq = $(this)
+				
+						let word = rowjq.find('.word-clue-word').val()
+						let clue = rowjq.find('.word-clue-clue').val()
+						if (word !== '') {
+							if (clue === '') {
+								clue = word
+							}
+					
+							console.log(`DEBUG word:clue ${word}:${clue}`)
+							word_clues.push([word, clue])
+						}
+					})
+					.promise()
+					.done(() => {
+						res_words(word_clues)
+					})
 				}
 			})
-			.promise().done(() => {
+			.then(function(word_clues) {
 				load_word_clues(wordsearch_cmp_id, wordsearch, word_clues)
 				
 				display_wordsearch(wordsearch, wordsearch_cmp_id)
@@ -526,7 +641,17 @@ function on_wordsearch_input_form(wordsearch_cmp_id) {
 	}
 }
 
-function load_word_clues(wordsearch_cmp_id, wordsearch, word_clues, clue_delim=':') {
+/**
+ * Load a word-clue array into the specified wordsearch.
+ *
+ * @param {String} wordsearch_cmp_id .
+ * @param {WordsearchGenerator} wordsearch .
+ * @param {Array} word_clues Array of either word-clue arrays or delimited strings.
+ *
+ * @returns Resolves undefined.
+ * @type Promise
+ */
+function load_word_clues(wordsearch_cmp_id, wordsearch, word_clues) {
 	let wordsearch_cmp = $(`#${wordsearch_cmp_id}`)
 	
 	if (wordsearch_is_random_subset) {
@@ -562,7 +687,11 @@ function load_word_clues(wordsearch_cmp_id, wordsearch, word_clues, clue_delim='
 	
 	console.log(`DEBUG word_clues = \n${JSON.stringify(word_clues)}`)
 	for (let word_clue of word_clues) {
-		let array = word_clue.split(clue_delim)
+		let array = (word_clue instanceof Array)
+			// is already array
+			? word_clue
+			// is delimited string
+			: word_clue.split(WordsearchGenerator.WORD_CLUE_DELIM)
 		
 		let word = array[0]
 		let clue = word
