@@ -9,7 +9,7 @@ const INPUT_FORM = 1
 
 const D3_DSV_URL = 'https://cdn.jsdelivr.net/npm/d3-dsv@3'
 
-const USE_WP_HOST_URL = false
+const USE_WP_HOST_URL = true
 const WP_HOST_URL = 'https://wordsearch.dreamhosters.com'
 const DEPENDENCIES_URL = '/webpage_dependencies.html'
 const WORDSEARCH_COMPONENT_URL = '/wordsearch_webcomponent.html'
