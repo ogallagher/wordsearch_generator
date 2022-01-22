@@ -14,13 +14,17 @@ Wordsearch generator webserver.
 Promise.all([
 	import('express'),
 	import('cors'),
-	import('dotenv')
+	import('dotenv'),
+	import('fs'),
+	import('path')
 ])
 .then(function(modules) {
 	try {
 		const express = modules[0].default
 		const cors = modules[1].default
 		const dotenv = modules[2].default
+		const fs = modules[3].default
+		const path = modules[4].default
 
 		// load .env into process.env
 		dotenv.config()
@@ -62,6 +66,14 @@ Promise.all([
 			})
 		})
 		
+		// route api calls
+		server.get('/api/list_ex_cfg_files', function(req, res) {
+			list_ex_cfg_files()
+			.then((result) => {
+				res.json(result)
+			})
+		})
+		
 		// http server
 		server.listen(server.get('port'), on_start)
 	
@@ -69,6 +81,37 @@ Promise.all([
 		
 		function on_start() {
 			console.log('INFO server running')
+		}
+		
+		function list_ex_cfg_files() {
+			console.log(`INFO listing example config files`)
+  		  	
+			// Function to get current filenames
+			// in directory with specific extension
+			let ex_cfg_files_dir = path.join(PUBLIC_DIR, 'example_cfg_files')
+			
+			return new Promise(function(resolve, reject) {
+				fs.readdir(ex_cfg_files_dir, function(err, files) {
+					if (err) {
+						console.log(`ERROR failed to list files in ${ex_cfg_files_dir}`)
+						console.log(err)
+						reject()
+					}
+					else {
+						console.log(`INFO found ${files.length} example files`)
+						let ex_cfg_files = files
+						.map(function(file) {
+							if (path.extname(file) == '.json') {
+								console.log(`DEBUG\t${file}`)
+								return file
+							}
+						})
+						.filter(file => file != undefined)
+						
+						resolve(ex_cfg_files)
+					}
+				})
+			})
 		}
 	}
 	catch (err) {

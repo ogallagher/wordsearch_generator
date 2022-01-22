@@ -1,0 +1,10 @@
+.ex-cfg-file-option:hover {
+	background-color: white;
+}
+.ex-cfg-file-option .ex-cfg-file-name {
+	color: white;
+	pointer-events: none;
+}
+.ex-cfg-file-option:hover .ex-cfg-file-name {
+	color: black;
+}

@@ -9,7 +9,7 @@ const INPUT_FORM = 1
 
 const D3_DSV_URL = 'https://cdn.jsdelivr.net/npm/d3-dsv@3'
 
-const USE_WP_HOST_URL = true
+const USE_WP_HOST_URL = false
 const WP_HOST_URL = 'https://wordsearch.dreamhosters.com'
 const DEPENDENCIES_URL = '/webpage_dependencies.html'
 const WORDSEARCH_COMPONENT_URL = '/wordsearch_webcomponent.html'
@@ -27,7 +27,7 @@ let wordsearch_word_clues = {}
 
 let endpoint_cells = []
 
-let dependencies_promise = new Promise(function(resolve, reject) {
+let wordsearch_webpage_promise = new Promise(function(resolve, reject) {
 	Promise.all([
 		// external/peripheral dependencies
 		new Promise(function(resolve_ext, reject_ext) {
@@ -61,7 +61,7 @@ let dependencies_promise = new Promise(function(resolve, reject) {
 			.done(function() {
 				ext_js_dependencies()
 				on_core_load()
-				resolve_core()
+				.then(resolve_core)
 			})
 		})
 	])
@@ -91,10 +91,12 @@ let wordsearch_component_promise = new Promise(function(resolve, reject) {
 window.onload = function(e) {
 	let alphabets
 	
-	dependencies_promise
+	wordsearch_webpage_promise
 	.then(
 		function() {
-			console.log('INFO wordsearch dependencies load passed')
+			console.log('INFO wordsearch load passed')
+			
+			return Promise.resolve()
 		},
 		function(err) {
 			if (err) {
@@ -106,6 +108,8 @@ window.onload = function(e) {
 					Failed to fetch wordsearch component dependencies
 				</div>`
 			)
+			
+			return Promise.reject()
 		}
 	)
 }
@@ -127,7 +131,7 @@ function ext_js_dependencies() {
 
 function on_core_load() {
 	console.log('DEBUG on_dependencies_load()')
-	WordsearchGenerator.get_alphabet_aliases()
+	let p = WordsearchGenerator.get_alphabet_aliases()
 	.catch(function(err) {
 		if (err) {
 			console.log(err)
@@ -149,7 +153,7 @@ function on_core_load() {
 			`<div class="wordsearch-component-error">Failed to fetch wordsearch component</div>`
 		)
 	})
-	.then(function(wordsearch_html) {		
+	.then(function(wordsearch_html) {
 		// get attributes from script tag
 		// unsure why referencing document.currentScript here returns null
 		let script_jq = $(current_script)
@@ -433,7 +437,12 @@ function on_core_load() {
 				}
 			})
 		})
+		.promise().done(() => {
+			return Promise.resolve()
+		})
 	})
+	
+	return p
 }
 
 function set_wordsearch_input_type(wordsearch_cmp_id, input_type) {
@@ -445,14 +454,14 @@ function set_wordsearch_input_type(wordsearch_cmp_id, input_type) {
 		case INPUT_FILE:
 			wordsearch_cmp.find('.wordsearch-input-file').removeClass('btn-outline-secondary').addClass('btn-secondary')
 			wordsearch_cmp.find('.wordsearch-input-form').removeClass('btn-secondary').addClass('btn-outline-secondary')
-			wordsearch_cmp.find('.wordsearch-file').show()
+			wordsearch_cmp.find('.wordsearch-files').show()
 			wordsearch_cmp.find('.wordsearch-form').hide()
 			break
 			
 		case INPUT_FORM:
 			wordsearch_cmp.find('.wordsearch-input-file').removeClass('btn-secondary').addClass('btn-outline-secondary')
 			wordsearch_cmp.find('.wordsearch-input-form').removeClass('btn-outline-secondary').addClass('btn-secondary')
-			wordsearch_cmp.find('.wordsearch-file').hide()
+			wordsearch_cmp.find('.wordsearch-files').hide()
 			wordsearch_cmp.find('.wordsearch-form').show()
 			break
 	}
