@@ -19,6 +19,8 @@ issue and we can fix them by modifying `alphabets.json`.
 
 **Français/French (fr)**
 
+**עִבְרִית/Hebrew (he)**
+
 **ひらがな/Hiragana, Japanese (hiragana)**
 
 **カタカナ/Katakana, Japanese (katakana)**

@@ -12,6 +12,7 @@
 		"en": ["eng","english","inglés","영어","fr-plain","french-plain","français-simple"],
 		"es": ["esp","spa","spanish","español","스페인어"],
 		"fr": ["fre","french","français","파랑스어"],
+		"he": ["heb","hebrew","עִבְרִית"],
 		"hiragana": ["ひらがな","平仮名","히라가나"],
 		"ja": ["jpn","japanese","jap","japonés","일본어","日本語"],
 		"katakana": ["カタカナ","片仮名","가타카나"],
@@ -77,6 +78,18 @@
 		"upper_ranges": [
 			[65,90],
 			[192,199,201,200,202,203,206,207,212,217,219,220,376]
+		]
+	},
+	
+	"he": {
+		"//comment": "hebrew עִבְרִית alphabet, including 27 consonants ת-א (22 + 5 final sofit forms), excluding nequdot points and niqqud diacritics.",
+		
+		"ranges": [
+			[1488,1514]
+		],
+		
+		"upper_ranges": [
+			[1488,1514]
 		]
 	},
 	

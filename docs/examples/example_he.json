@@ -1,0 +1,16 @@
+{
+	"language": "he",
+	"case": "lower",
+	"size": 15,
+	"title": "Example Hebrew wordsearch",
+	"words": [
+		"בננה:banana",
+		"משפחה:family",
+		"חולצה:shirt",
+		"מוסיקה:music",
+		"עסוק:busy",
+		"לדבר:speak",
+		"הר:mountain",
+		"גמל:camel"
+	]
+}
