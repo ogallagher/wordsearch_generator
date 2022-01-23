@@ -756,11 +756,12 @@ function display_wordsearch(wordsearch, wordsearch_cmp_id) {
 		for (let cell of row) {
 			// cell element
 			let cel = $(
-				`<td 
-					class="ws-cell d-flex flex-column justify-content-center"
+				`<td class="ws-cell"
 					data-x="${x}" data-y="${y}" data-word="${cell}"
 					data-on="false">
-					<div>${cell}</div>
+					<div class="d-flex flex-column justify-content-center">
+						${cell}
+					</div>
 				</td>`
 			)
 			
