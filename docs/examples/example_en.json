@@ -3,10 +3,11 @@
 	"size": [15, 10],
 	"title": "Example English wordsearch",
 	"words": [
-		"apple:a fruit",
-		"skull:head bone",
-		"scissors:cuts paper",
-		"boat:floats on water",
-		"bird:feathers and beaks"
-	]
+		"apple,a fruit",
+		"skull,head bone",
+		"scissors,cuts paper",
+		"boat,floats on water",
+		"bird,feathers and beaks"
+	],
+	"words_delim": ","
 }

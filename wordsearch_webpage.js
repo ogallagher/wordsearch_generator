@@ -18,11 +18,24 @@ const DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR = '.wordsearch-container'
 
 const REM_MIN = 5
 
+const ESCAPE_CHAR = {
+	'b': '\b',
+	'f': '\f',
+	'n': '\n',
+	'r': '\r',
+	't': '\t',
+	'v': '\v',
+	'\'': '\'',
+	'"': '"',
+	'\\': '\\'
+}
+
 // global vars corresponding to each wordsearch generator component by id
 let wordsearch_input_type = {}
 let wordsearch_use_words_file = {}
 let wordsearch_is_random_subset = {}
 let wordsearch_global = {}
+// TODO rename to wordsearch_words_file
 let wordsearch_word_clues = {}
 let wordsearch_description_json = {}
 
@@ -61,7 +74,7 @@ let wordsearch_webpage_promise = new Promise(function(resolve, reject) {
 			$.getScript(WORDSEARCH_CORE_URL)
 			.done(function() {
 				ext_js_dependencies()
-				on_core_load()
+				wordsearch_webpage_main()
 				.then(resolve_core)
 			})
 		})
@@ -130,7 +143,7 @@ function ext_js_dependencies() {
 	})
 }
 
-function on_core_load() {
+function wordsearch_webpage_main() {
 	console.log('DEBUG on_dependencies_load()')
 	let p = WordsearchGenerator.get_alphabet_aliases()
 	.catch(function(err) {
@@ -193,7 +206,7 @@ function on_core_load() {
 			wordsearch_jq.find('.wordsearch-input-form').click(function() {
 				set_wordsearch_input_type(wordsearch_id, INPUT_FORM)
 			})
-	
+			
 			// handle alphabet choices list
 			let langs_jq = wordsearch_jq.find('.languages')
 			
@@ -253,17 +266,14 @@ function on_core_load() {
 			wordsearch_jq.find('.words-file').on('change', function() {
 				let filereader = new FileReader()
 				filereader.onload = function() {
-					// TODO save parsing for wordsearch reload, when word clue delim is known
-					on_wordsearch_words_file(wordsearch_id, filereader.result)
-					.then((word_clues) => {
-						wordsearch_word_clues[wordsearch_id] = word_clues
-					})
-					.catch(() => {
-						wordsearch_word_clues[wordsearch_id] = undefined
-					})
+					wordsearch_word_clues[wordsearch_id] = filereader.result
 				}
 				filereader.readAsText($(this).prop('files')[0])
 			})
+			
+			// handle word-clue delim input
+			wordsearch_jq.find('.words-file-delim')
+			.attr('placeholder', WordsearchGenerator.WORD_CLUE_DELIM)
 			
 			// handle whitespace controls
 			let cell_padx = 16
@@ -447,6 +457,7 @@ function on_core_load() {
 	return p
 }
 
+// TODO rename to set_wordsearch_config_type
 function set_wordsearch_input_type(wordsearch_cmp_id, input_type) {
 	// console.log(`DEBUG ${wordsearch_cmp_id} set input type=${input_type}`)
 	let wordsearch_cmp = $(`#${wordsearch_cmp_id}`)
@@ -483,6 +494,10 @@ function set_wordsearch_use_words_file(wordsearch_cmp_id, use_file) {
 	wordsearch_cmp.find('.words-file')
 	.prop('disabled', !use_file)
 	
+	// update word-clue delimiter input
+	wordsearch_cmp.find('.words-file-delim')
+	.prop('disabled', !use_file)
+	
 	// update word-clues inputs
 	wordsearch_cmp.find('.word-clue input')
 	.prop('disabled', use_file)
@@ -510,6 +525,7 @@ function set_wordsearch_is_random_subset(wordsearch_cmp_id, is_random, subset_le
 	}
 }
 
+// TODO rename to on_wordsearch_config_file
 function on_wordsearch_input_file(wordsearch_cmp_id, wordsearch_json) {
 	if (wordsearch_json != undefined) {
 		console.log(`INFO ${wordsearch_cmp_id}:on_wordsearch_input_file`)
@@ -517,40 +533,73 @@ function on_wordsearch_input_file(wordsearch_cmp_id, wordsearch_json) {
 			? JSON.parse(wordsearch_json)
 			: wordsearch_json
 		
-		let random_subset = description['random_subset']
+		let random_subset = description[WordsearchGenerator.KEY_RANDOM_SUBSET]
 		
 		let use_words_file = wordsearch_use_words_file[wordsearch_cmp_id]
-		let word_clues = wordsearch_word_clues[wordsearch_cmp_id]
-		if (!use_words_file || word_clues == undefined) {
-			word_clues = description['words']
+		
+		// get word-clue delimiter from config file
+		let words_delim = description[WordsearchGenerator.KEY_WORDS_DELIM]
+		if (words_delim == undefined || use_words_file) {
+			// get word-clue delimiter from delimiter input
+			words_delim = $(`#${wordsearch_cmp_id} .words-file-delim`).val()
 			
-			/* 
-			Frontend constructor will attempt to parse string as words file data, but in this
-			case, a string is a dsv file path that is not usable in frontend env directly.
-			*/
-			if (typeof word_clues == 'string') {
-				console.log(
-					`WARNING unable to access words file ${word_clues} in webpage via path directly. Use the dsv file input instead.`
-				)
-				word_clues = undefined
+			if (words_delim == '') {
+				// undefine to use default
+				words_delim = undefined
 			}
 		}
 		
-		let wordsearch = new WordsearchGenerator(
-			description['language'],
-			description['case'],
-			description['size'],
-			word_clues,
-			random_subset,
-			description['title']
-		)
+		new Promise(function(resolve) {
+			let word_clues = wordsearch_word_clues[wordsearch_cmp_id]
+			if (!use_words_file || word_clues == undefined) {
+				// use word-clues embedded in config file
+				word_clues = description[WordsearchGenerator.KEY_WORDS]
+				
+				/* 
+				Frontend constructor will attempt to parse string as words file data, but in this
+				case, a string is a dsv file path that is not usable in frontend env directly.
+				*/
+				if (typeof word_clues == 'string') {
+					console.log(
+						`WARNING unable to access words file ${
+							word_clues
+						} in webpage via path directly. Use the dsv file input instead.`
+					)
+					word_clues = undefined
+				}
+				
+				resolve(word_clues)
+			}
+			else {
+				// parse word-clues from dsv file
+				parse_wordsearch_words_file(word_clues, words_delim)
+				.then(resolve)
+				.catch(() => {
+					resolve(undefined)
+				})
+			}
+		})
+		.then((word_clues) => {
+			console.log('DEBUG init new wordsearch generator')
+			let wordsearch = new WordsearchGenerator(
+				description[WordsearchGenerator.KEY_LANGUAGE],
+				description[WordsearchGenerator.KEY_CASE],
+				description[WordsearchGenerator.KEY_SIZE],
+				word_clues,
+				random_subset,
+				description[WordsearchGenerator.KEY_TITLE],
+				words_delim
+			)
 		
-		if (random_subset != undefined) {
-			set_wordsearch_is_random_subset(wordsearch_cmp_id, true, random_subset)
-		}
-		
-		wordsearch.init_promise
-		.then(() => {
+			if (random_subset != undefined) {
+				set_wordsearch_is_random_subset(wordsearch_cmp_id, true, random_subset)
+			}
+			
+			return wordsearch.init_promise.then(() => {
+				return Promise.resolve(wordsearch)
+			})
+		})
+		.then((wordsearch) => {
 			display_wordsearch(wordsearch, wordsearch_cmp_id)
 		})
 	}
@@ -559,27 +608,7 @@ function on_wordsearch_input_file(wordsearch_cmp_id, wordsearch_json) {
 	}
 }
 
-function on_wordsearch_words_file(wordsearch_cmp_id, words_dsv) {
-	return new Promise(function(resolve, reject) {
-		if (words_dsv != undefined) {
-			console.log(`INFO ${wordsearch_cmp_id}:on_wordsearch_words_file`)
-			WordsearchGenerator.load_words_file_dsv(
-				words_dsv, 
-				WordsearchGenerator.WORD_CLUE_DELIM
-			)
-			.then(resolve)
-			.catch(() => {
-				console.log('ERROR failed to parse words file')
-				reject()
-			})
-		}
-		else {
-			console.log('ERROR wordsearch words dsv file not defined')
-			reject()
-		}
-	})
-}
-
+// TODO rename to on_wordsearch_config_form
 function on_wordsearch_input_form(wordsearch_cmp_id) {
 	console.log(`${wordsearch_cmp_id}:on_wordsearch_input_form`)
 	let wordsearch_cmp = $(`#${wordsearch_cmp_id}`)
@@ -609,10 +638,23 @@ function on_wordsearch_input_form(wordsearch_cmp_id) {
 				let use_words_file = wordsearch_use_words_file[wordsearch_cmp_id]
 				let word_clues = wordsearch_word_clues[wordsearch_cmp_id]
 				
-				if (use_words_file && word_clues != undefined) {
+				if (use_words_file && word_clues != undefined) {					
 					// use words file
-					console.log(`DEBUG use ${word_clues.length} word-clues from words file`)
-					res_words(word_clues)
+					console.log(`DEBUG use word-clues from words file ${word_clues}`)
+					
+					// get delimiter
+					let words_delim = wordsearch_cmp.find('.words-file-delim').val()
+					if (words_delim == '') {
+						// undefine to use default delimiter
+						words_delim = undefined
+					}
+					
+					// parse words file
+					parse_wordsearch_words_file(word_clues, words_delim)
+					.then(res_words)
+					.catch(() => {
+						res_words(undefined)
+					})
 				}
 				else {
 					// use word-clue rows in form
@@ -650,6 +692,13 @@ function on_wordsearch_input_form(wordsearch_cmp_id) {
 		console.log(err)
 		console.log(`ERROR wordsearch config is invalid: ${err}`)
 	}
+}
+
+function parse_wordsearch_words_file(words_dsv, words_delim) {
+	return WordsearchGenerator.load_words_file_dsv(
+		words_dsv,
+		unescape_backslashes(words_delim)
+	)
 }
 
 /**
@@ -927,4 +976,21 @@ function rem_to_px(rem = 1) {
 	let rem_px_str = $(document.documentElement).css('fontSize')
 	console.log(`DEBUG rem in px = ${rem} * ${rem_px_str}`)
 	return rem * parseFloat(rem_px_str)
+}
+
+function unescape_backslashes(str) {
+	// parse \\. as \.
+	// each item is [match, ...groups] w index property
+	let escapes = str.matchAll(/\\(.)/g)
+	
+	let arr = [...str]
+	let delta = 0
+	for (let escape of escapes) {
+		let char = ESCAPE_CHAR[escape[1]]
+		// replace escaped escape char with escaped char
+		arr.splice(escape.index + delta, 2, char)
+		delta -= 1
+	}
+	
+	return arr.join('')
 }

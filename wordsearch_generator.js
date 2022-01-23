@@ -1211,11 +1211,11 @@ if (typeof exports != 'undefined') {
 	exports.KEY_PD_DESC = KEY_PD_DESC
 	exports.KEY_PD_FILE = KEY_PD_FILE
 	exports.KEY_PD_DIR = KEY_PD_DIR
-	
 	exports.KEY_SIZE = KEY_SIZE
 	exports.KEY_WORDS = KEY_WORDS
 	exports.KEY_RANDOM_SUBSET = KEY_RANDOM_SUBSET
 	exports.KEY_TITLE = KEY_TITLE
+	exports.KEY_WORDS_DELIM = KEY_WORDS_DELIM
 	
 	// console.log(`DEBUG ${exports}`)
 } 
@@ -1232,11 +1232,11 @@ else {
 	WordsearchGenerator.KEY_PD_DESC = KEY_PD_DESC
 	WordsearchGenerator.KEY_PD_FILE = KEY_PD_FILE
 	WordsearchGenerator.KEY_PD_DIR = KEY_PD_DIR
-	
 	WordsearchGenerator.KEY_SIZE = KEY_SIZE
 	WordsearchGenerator.KEY_WORDS = KEY_WORDS
 	WordsearchGenerator.KEY_RANDOM_SUBSET = KEY_RANDOM_SUBSET
 	WordsearchGenerator.KEY_TITLE = KEY_TITLE
+	WordsearchGenerator.KEY_WORDS_DELIM = KEY_WORDS_DELIM
 
 	// console.log(`DEBUG no exports`)
 }
