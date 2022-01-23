@@ -801,6 +801,7 @@ class WordsearchGenerator {
 					method: 'GET',
 					url: path,
 					dataType: 'json',
+					cache: false,
 					success: function(alphabets) {
 						resolve(alphabets)
 					},
@@ -915,6 +916,7 @@ class WordsearchGenerator {
 					method: 'GET',
 					url: path,
 					dataType: 'text',
+					cache: false,
 					success: function(prob_dist_txt) {
 						// parse as array
 						WordsearchGenerator.parse_alphabet_probability_dist_str(prob_dist_txt)

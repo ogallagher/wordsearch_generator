@@ -92,6 +92,7 @@ let wordsearch_component_promise = new Promise(function(resolve, reject) {
 		method: 'GET',
 		url: url,
 		dataType: 'html',
+		cache: false,
 		success: function(component_html) {
 			resolve(component_html)
 		},
