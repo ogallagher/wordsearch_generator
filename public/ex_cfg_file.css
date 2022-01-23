@@ -1,3 +1,7 @@
+.ex-cfg-file-button[data-on="true"] {
+	text-decoration: underline;
+}
+
 .ex-cfg-file-option:hover {
 	background-color: white;
 }

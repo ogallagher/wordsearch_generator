@@ -44,6 +44,8 @@ Promise.all([
 		}
 		console.log(`DEBUG serving ${PUBLIC_DIR}/`)
 		
+		const EX_CFG_FILES_DIR = 'example_cfg_files'
+		
 		// server instance
 		const server = express()
 		
@@ -74,6 +76,25 @@ Promise.all([
 			})
 		})
 		
+		server.get('/api/ex_cfg_file', function(req, res) {
+			let file_path = path.join(PUBLIC_DIR, EX_CFG_FILES_DIR, req.query.filename)
+			fs.readFile(file_path, 'utf8', function(err, data) {
+				if (err) {
+					console.log(`ERROR failed to get cfg file ${file_path}`)
+					console.log(err)
+					res.json({
+						error: err
+					})
+				}
+				else {
+					console.log(`DEBUG read ex cfg file of length ${data.length}`)
+					res.json({
+						file: data
+					})
+				}
+			})
+		})
+		
 		// http server
 		server.listen(server.get('port'), on_start)
 	
@@ -88,14 +109,16 @@ Promise.all([
   		  	
 			// Function to get current filenames
 			// in directory with specific extension
-			let ex_cfg_files_dir = path.join(PUBLIC_DIR, 'example_cfg_files')
+			let ex_cfg_files_dir = path.join(PUBLIC_DIR, EX_CFG_FILES_DIR)
 			
 			return new Promise(function(resolve, reject) {
 				fs.readdir(ex_cfg_files_dir, function(err, files) {
 					if (err) {
 						console.log(`ERROR failed to list files in ${ex_cfg_files_dir}`)
 						console.log(err)
-						reject()
+						reject({
+							error: err
+						})
 					}
 					else {
 						console.log(`INFO found ${files.length} example files`)

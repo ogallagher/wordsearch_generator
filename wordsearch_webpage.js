@@ -9,7 +9,7 @@ const INPUT_FORM = 1
 
 const D3_DSV_URL = 'https://cdn.jsdelivr.net/npm/d3-dsv@3'
 
-const USE_WP_HOST_URL = false
+const USE_WP_HOST_URL = true
 const WP_HOST_URL = 'https://wordsearch.dreamhosters.com'
 const DEPENDENCIES_URL = '/webpage_dependencies.html'
 const WORDSEARCH_COMPONENT_URL = '/wordsearch_webcomponent.html'
@@ -24,6 +24,7 @@ let wordsearch_use_words_file = {}
 let wordsearch_is_random_subset = {}
 let wordsearch_global = {}
 let wordsearch_word_clues = {}
+let wordsearch_description_json = {}
 
 let endpoint_cells = []
 
@@ -239,12 +240,11 @@ function on_core_load() {
 			.attr('placeholder', WordsearchGenerator.WIDTH_DEFAULT)
 			
 			// handle description file upload
-			let description_json
 			wordsearch_jq.find('.wordsearch-file').on('change', function() {
 				let filereader = new FileReader()
 				filereader.onload = function() {
-					description_json = filereader.result
-					on_wordsearch_input_file(wordsearch_id, description_json)
+					wordsearch_description_json[wordsearch_id] = filereader.result
+					on_wordsearch_input_file(wordsearch_id, wordsearch_description_json[wordsearch_id])
 				}
 				filereader.readAsText($(this).prop('files')[0])
 			})
@@ -253,6 +253,7 @@ function on_core_load() {
 			wordsearch_jq.find('.words-file').on('change', function() {
 				let filereader = new FileReader()
 				filereader.onload = function() {
+					// TODO save parsing for wordsearch reload, when word clue delim is known
 					on_wordsearch_words_file(wordsearch_id, filereader.result)
 					.then((word_clues) => {
 						wordsearch_word_clues[wordsearch_id] = word_clues
@@ -311,6 +312,7 @@ function on_core_load() {
 				// console.log(`DEBUG wordsearch reload button ${wordsearch_id}`)
 				switch (wordsearch_input_type[wordsearch_id]) {
 					case INPUT_FILE:
+						let description_json = wordsearch_description_json[wordsearch_id]
 						let config = description_json == undefined 
 							? undefined
 							: JSON.parse(description_json)
