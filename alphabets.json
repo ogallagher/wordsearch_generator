@@ -1,6 +1,6 @@
 {
 	"//comment": 
-	"Each range is a either a range denoted by two extremes, or a set of options denoted by a list of length≠2.",
+	"Each range is a either a range of code points denoted by two extremes, or a set of code points denoted by a list of length≠2.",
 	
 	"alphabet_aliases": {
 		"//comment": "Primary key is ISO 2-char language code if it exists. Otherwise, the primary key is the full name in English.",
@@ -18,7 +18,7 @@
 		"katakana": ["カタカナ","片仮名","가타카나"],
 		"ko": ["kor","korean","한국어"],
 		"ru": ["русский","russian","ruso","rus","러시아어","cyrillic"],
-		"zh": ["chi","chinese","漢語","중국어","chino","hanja","한자","kanji"],
+		"zh": ["chi","chinese","漢語","중국어","chino","hanja","한자","kanji","taiwanese"],
 		"domino": ["domino","dominoes","도미노"]
 	},
 	
@@ -210,7 +210,7 @@
 	},
 	
 	"zh": {
-		"//comment": "chinese 漢語. cjk unified ideographs 4e00-9fd0, ext. A 3400-4db0, excluding other extensions.",
+		"//comment": "chinese 漢語. primary is cjk unified ideographs 4e00-9fd0, ext. A 3400-4db0, excluding other extensions.",
 		
 		"ranges": [
 			[19968,40912],
@@ -220,6 +220,19 @@
 		"upper_ranges": [
 			[13312,40912],
 			[19968,19888]
+		],
+		
+		"charsets": [
+			{
+				"name": "china top 4808",
+				"description": "source = https://zh.wikisource.org/wiki/常用國字標準字體表",
+				"filename": "zh_china_top_4808.txt"
+			},
+			{
+				"name": "taiwan top 8105",
+				"description": "source = https://zh.wikisource.org/wiki/通用规范汉字表",
+				"filename": "zh_taiwan_top_8105.txt"
+			}
 		]
 	},
 	

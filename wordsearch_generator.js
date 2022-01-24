@@ -55,7 +55,9 @@ const WIDTH_DEFAULT = 10
 const WORD_CLUE_DELIM = ':'
 const ALPHABET_FILE = 'alphabets.json'
 const ALPHABET_PROB_DIST_DIR = 'alphabet_prob_dists'
+const ALPHABET_CHARSET_DIR = 'alphabet_charsets'
 const PROB_DIST_UNIFORM = 'uniform'
+const TXT_COMMENT = '#'
 
 // alphabets.json keys
 
@@ -902,7 +904,7 @@ class WordsearchGenerator {
 	 * @param {String} file Probability distribution filename.
 	 * @param {String} dir Relative path to parent directory (without final /).
 	 * 
-	 * @returns Resolves an an object with an array of normalized probabilities, each element 
+	 * @returns Resolves an object with an array of normalized probabilities, each element 
 	 * corresponding to a character in the target alphabet, and an array of cumulative
 	 * probabilities. Rejects undefined on failure.
 	 * @type Promise
@@ -958,15 +960,16 @@ class WordsearchGenerator {
 	 * Parse alphabet probability distribution file content string as array of numbers.
 	 * Called by load_alphabet_probability_dist_file.
 	 * TODO don't normalize and instead include sum as part of return value.
+	 * TODO handle TXT_COMMENT lines
 	 * 
 	 * @param {String} txt Text file content string.
 	 * @param {Number} min Minimum probability for any character. If otherwise the probability
 	 * of a given character is too small for Number precision, artificially set it to min.
 	 *
-	 * @returns Object[KEY_PROBABILITIES] array of normalized probabilities, one item per character 
+	 * @returns Resolves Object[KEY_PROBABILITIES] array of normalized probabilities, one item per character 
 	 * in the alphabet, and Object[KEY_ACCUM_PROBABILITIES] array of cumulative probabilities.
 	 * Rejects undefined on failure.
-	 * @type Object
+	 * @type Promise
 	 */
 	static parse_alphabet_probability_dist_str(txt, min=0) {
 		return new Promise(function(resolve, reject) {
@@ -1015,6 +1018,90 @@ class WordsearchGenerator {
 				console.log(`ERROR failed to parse prob dist string\n${txt}`)
 				console.log(err)
 				
+				reject()
+			}
+		})
+	}
+	
+	/**
+	 * Load alphabet charset file into an array of character code points. Note this depends on
+	 * environment_promise.
+	 * 
+	 * @param {String} file Charset filename.
+	 * @param {String} dir Relative path to parent directory (without final /).
+	 * 
+	 * @returns Resolves an array of code points. Rejects undefined on failure.
+	 * @type Promise
+	 */
+	static load_alphabet_charset_file(file, dir = ALPHABET_CHARSET_DIR) {
+		return new Promise(function(resolve, reject) {
+			if (environment == ENV_FRONTEND) {
+				// load with ajax
+				let path = `${dir}/${file}`
+				$.ajax({
+					method: 'GET',
+					url: path,
+					dataType: 'text',
+					cache: false,
+					error: function(err) {
+						console.log(`ERROR failed to get alphabet charset file ${path}`)
+						console.log(err)
+						reject()
+					},
+					success: function(charset_txt) {
+						// parse as array
+						WordsearchGenerator.parse_charset_str(charset_txt)
+						.then(resolve)
+						.catch(reject)
+					}
+				})
+			}
+			else if (environment == ENV_BACKEND) {
+				// load with nodejs fs module
+				let path = `${parent_dir}/${dir}/${file}`
+				fs.readFile(path, 'utf8', function(err, charset_txt) {
+					if (err) {
+						console.log(`ERROR charset file not found at ${path}`)
+						console.log(err)
+						reject()
+					}
+					else {
+						// parse as array
+						WordsearchGenerator.parse_charset_str(charset_txt)
+						.then(resolve)
+						.catch(reject)
+					}
+				})
+			}
+			else {
+				console.log(`ERROR unable to load alphabet charset file in unknown env ${environment}`)
+				reject()
+			}
+		})
+	}
+	
+	/**
+	 * Parse alphabet charset file content string, converting from array of chars to array of codes.
+	 * Called by load_alphabet_charset_file.
+	 * 
+	 * @param {String} txt Text file content string.
+	 *
+	 * @returns Resolves array of unicode points. Rejects undefined on failure.
+	 * @type Promise
+	 */
+	static parse_charset_str(txt, delim = '\n') {
+		return new Promise(function(resolve, reject) {
+			try {
+				let arr = txt
+					.split(delim)
+					.filter((c) => (c == '' || c.charAt(0) == TXT_COMMENT) ? undefined : c)
+					.map(WordsearchGenerator.char_to_code)
+				console.log(`DEBUG parsed charset of size ${arr.length}`)
+				
+				resolve(arr)
+			}
+			catch (err) {
+				console.log(`ERROR charset parse failed\n${err}`)
 				reject()
 			}
 		})
