@@ -960,7 +960,6 @@ class WordsearchGenerator {
 	 * Parse alphabet probability distribution file content string as array of numbers.
 	 * Called by load_alphabet_probability_dist_file.
 	 * TODO don't normalize and instead include sum as part of return value.
-	 * TODO handle TXT_COMMENT lines
 	 * 
 	 * @param {String} txt Text file content string.
 	 * @param {Number} min Minimum probability for any character. If otherwise the probability
