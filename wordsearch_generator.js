@@ -821,7 +821,7 @@ class WordsearchGenerator {
 	 * @returns Promise: resolve alphabet description, or reject if the language is not supported.
 	 * @type Object
 	 */
-	static get_alphabet(language, case_key = CASE_DEFAULT, path = ALPHABET_FILE) {
+	static get_alphabet(language, case_key = KEY_RANGES, path = ALPHABET_FILE) {
 		if (USE_WG_HOST_URL && environment == ENV_FRONTEND) {
 			path = `${WG_HOST_URL}/${path}`
 			console.log(`DEBUG alphabet file path w host = ${path}`)
@@ -1396,6 +1396,9 @@ if (typeof exports != 'undefined') {
 	exports.KEY_PD_FILE = KEY_PD_FILE
 	exports.KEY_PD_DIR = KEY_PD_DIR
 	exports.KEY_CHARSET = KEY_CHARSET
+	exports.CHARSET_DEFAULT = CHARSET_DEFAULT
+	exports.KEY_CS_NAME = KEY_CS_NAME
+	exports.KEY_CS_DESC = KEY_CS_DESC
 	exports.KEY_SIZE = KEY_SIZE
 	exports.KEY_WORDS = KEY_WORDS
 	exports.KEY_RANDOM_SUBSET = KEY_RANDOM_SUBSET
@@ -1420,8 +1423,11 @@ else {
 	WordsearchGenerator.KEY_PD_NAME = KEY_PD_NAME
 	WordsearchGenerator.KEY_PD_DESC = KEY_PD_DESC
 	WordsearchGenerator.KEY_PD_FILE = KEY_PD_FILE
-	WordsearchGenerator.KEY_CHARSET = KEY_CHARSET
 	WordsearchGenerator.KEY_PD_DIR = KEY_PD_DIR
+	WordsearchGenerator.KEY_CHARSET = KEY_CHARSET
+	WordsearchGenerator.CHARSET_DEFAULT = CHARSET_DEFAULT
+	WordsearchGenerator.KEY_CS_NAME = KEY_CS_NAME
+	WordsearchGenerator.KEY_CS_DESC = KEY_CS_DESC
 	WordsearchGenerator.KEY_SIZE = KEY_SIZE
 	WordsearchGenerator.KEY_WORDS = KEY_WORDS
 	WordsearchGenerator.KEY_RANDOM_SUBSET = KEY_RANDOM_SUBSET

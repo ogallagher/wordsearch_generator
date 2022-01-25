@@ -30,6 +30,8 @@ const ESCAPE_CHAR = {
 	'\\': '\\'
 }
 
+let alphabets
+
 // global vars corresponding to each wordsearch generator component by id
 let wordsearch_input_type = {}
 let wordsearch_use_words_file = {}
@@ -104,8 +106,6 @@ let wordsearch_component_promise = new Promise(function(resolve, reject) {
 })
 
 window.onload = function(e) {
-	let alphabets
-	
 	wordsearch_webpage_promise
 	.then(
 		function() {
@@ -145,7 +145,7 @@ function ext_js_dependencies() {
 }
 
 function wordsearch_webpage_main() {
-	console.log('DEBUG on_dependencies_load()')
+	console.log('DEBUG wordsearch_webpage_main')
 	let p = WordsearchGenerator.get_alphabet_aliases()
 	.catch(function(err) {
 		if (err) {
@@ -212,7 +212,7 @@ function wordsearch_webpage_main() {
 			let langs_jq = wordsearch_jq.find('.languages')
 			
 			// show on focus
-			wordsearch_jq.find('.language')
+			let lang_jq = wordsearch_jq.find('.language')
 			.on('focusin', function() {
 				// show alphabets
 				langs_jq.show()
@@ -221,7 +221,7 @@ function wordsearch_webpage_main() {
 				// potentially allow a language option to accept a click event before disappearing
 				setTimeout(() => {
 					langs_jq.hide()
-				}, 100)
+				}, 150)
 			})
 			
 			const alphabet_option_template = 
@@ -246,6 +246,28 @@ function wordsearch_webpage_main() {
 					on_alphabet_option_click(wordsearch_id, event)
 				})
 			}
+			
+			// handle charset options
+			let charsets_jq = wordsearch_jq.find('.charset-options')
+			// populated on alphabet update
+			
+			wordsearch_jq.find('.charset')
+			// default alphabet
+			.val('en')
+			// show on focus
+			.on('focusin', function() {
+				// show charsets
+				charsets_jq.show()
+			})
+			.on('focusout', function() {
+				// potentially allow a charset to accept click before disappearing
+				setTimeout(() => {
+					charsets_jq.hide()
+				}, 150)
+			})
+			
+			// load initial charsets
+			load_charsets(wordsearch_id, lang_jq.val())
 			
 			// set default wordsearch size
 			wordsearch_jq.find('.size-width')
@@ -631,7 +653,17 @@ function on_wordsearch_input_form(wordsearch_cmp_id) {
 			[
 				parseInt(width_str),
 				parseInt(height_str)
-			]
+			],
+			// words
+			undefined,
+			// random subset
+			undefined,
+			// title
+			undefined,
+			// word-clue delimiter
+			undefined,
+			// charset
+			wordsearch_cmp.find('.charset').val()
 		)
 		
 		wordsearch.init_promise.then(() => {
@@ -951,6 +983,7 @@ function on_word_clue_delete_click(event) {
 /**
  * Handle alphabet option click.
  * 
+ * @param {String} wordsearch_cmp_id
  * @param {Object} event Click MouseEvent instance.
  */
 function on_alphabet_option_click(wordsearch_cmp_id, event) {
@@ -958,7 +991,81 @@ function on_alphabet_option_click(wordsearch_cmp_id, event) {
 	let alphabet_key = alphabet_option.getAttribute('data-alphabet-key')
 	console.log(`info select alphabet ${alphabet_key}`)
 	
+	// update alphabet
 	$(`#${wordsearch_cmp_id}`).find('.language').val(alphabet_key)
+	
+	load_charsets(wordsearch_cmp_id, alphabet_key)
+}
+
+function load_charsets(wordsearch_cmp_id, alphabet_key) {
+	let wordsearch_jq = $(`#${wordsearch_cmp_id}`)
+	
+	// updates available charsets list
+	WordsearchGenerator.get_alphabet(alphabet_key)
+	.then(
+		// pass
+		(alphabet) => {
+			let charsets = alphabet[WordsearchGenerator.KEY_CHARSET]
+			if (charsets == undefined) {
+				charsets = []
+			}
+			return Promise.resolve(charsets)
+		},
+		// fail
+		(err) => {
+			console.log(`ERROR failed to resolve charsets for ${alphabet_key}\n${err}`)
+			return Promise.resolve([])
+		}
+	)
+	.then((charsets) => {
+		// add default
+		let csdefault = {}
+		csdefault[WordsearchGenerator.KEY_CS_NAME] = WordsearchGenerator.CHARSET_DEFAULT
+		csdefault[WordsearchGenerator.KEY_CS_DESC] = 'default character set'
+		
+		charsets.splice(0, 0, csdefault)
+		console.log(`DEBUG loaded ${charsets.length} ${alphabet_key} charsets`)
+		
+		// update available charsets
+		const charset_opt_temp = 
+		`<div class="charset-option px-2">
+			<span class="charset-name"></span>
+			<span class="charset-description"></span>
+		</div>`
+		
+		let charset_cont = wordsearch_jq.find('.charset-options').empty()
+		for (let charset of charsets) {
+			let charset_jq = $(charset_opt_temp)
+			.attr('data-charset-name', charset[WordsearchGenerator.KEY_CS_NAME])
+			
+			charset_jq.find('.charset-name').html(charset[WordsearchGenerator.KEY_CS_NAME])
+			charset_jq.find('.charset-description').html(charset[WordsearchGenerator.KEY_CS_DESC])
+			
+			charset_cont.append(charset_jq)
+			
+			// handle click
+			charset_jq.on('click', function(event) {
+				on_charset_option_click(wordsearch_cmp_id, event)
+			})
+		}
+		
+		// select default
+		wordsearch_jq.find('.charset').val(charsets[0][WordsearchGenerator.KEY_CS_NAME])
+	})
+}
+
+/**
+ * Handle charset option click.
+ *
+ * @param {String} wordsearch_cmp_id
+ * @param {Object} event Click MouseEvent instance.
+ */
+function on_charset_option_click(wordsearch_cmp_id, event) {
+	let charset_option = event.target
+	let charset_name = charset_option.getAttribute('data-charset-name')
+	
+	// update charset val
+	$(`#${wordsearch_cmp_id}`).find('.charset').val(charset_name)
 }
 
 function is_on(jq) {

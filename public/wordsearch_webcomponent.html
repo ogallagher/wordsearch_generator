@@ -21,27 +21,37 @@
 			<!-- form input -->
 			<div class="wordsearch-form">
 				<div class="mb-3">
-					<label class="h3" for="language">Language</label>
-					<input type="text" class="language form-control" name="language" value="en"/>
+					<div class="input-group">
+						<span class="input-group-text" for="language">language</span>
+						<input type="text" class="language form-control" name="language" value="en"/>
+					</div>
 					<div class="languages form-text mt-1" style="display: none;">
 						<!-- language options loaded by wordsearch_webpage.js -->
 					</div>
 				</div>
 				
 				<div class="mb-3">
-					<label class="h3" for="case">Case</label>
+					<div class="input-group">
+						<span class="input-group-text">character set</span>
+						<input type="text" class="charset form-control" value="default"/>
+					</div>
+					<div class="charset-options form-text mt-1" style="display: none;">
+						<!-- charset options loaded by wordsearch_webpage.js -->
+					</div>
+				</div>
+				
+				<div class="mb-3 input-group">
+					<span class="input-group-text" for="case">case</span>
 					<input type="text" class="case form-control" name="case" value="lower"/>
 				</div>
 				
-				<div class="mb-3">
-					<label class="h3" for="size">Size</label>
-					<div class="input-group size" name="size">
-						<span class="input-group-text">width</span>
-						<input type="text" class="form-control size-width" value="10"/>
-						<span class="input-group-text">height</span>
-						<input type="text" class="form-control size-height" value="10"/>
-					</div>
+				<div class="mb-3 input-group size" name="size">
+					<span class="input-group-text">width</span>
+					<input type="text" class="form-control size-width" value="10"/>
+					<span class="input-group-text">height</span>
+					<input type="text" class="form-control size-height" value="10"/>
 				</div>
+				
 				<div>
 					<label class="h3" for="word-clues">Words (and clues)</label>
 					<div class="word-clues">

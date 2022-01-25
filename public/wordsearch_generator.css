@@ -82,6 +82,21 @@ body {
 	pointer-events: none;
 }
 
+.charset-option:hover {
+	background-color: white;
+}
+.charset-option .charset-name {
+	color: white;
+	pointer-events: none;
+}
+.charset-option:hover .charset-name {
+	color: black;
+}
+.charset-option .charset-description {
+	color: gray;
+	pointer-events: none;
+}
+
 /**
  * printer friendly styles
  */
