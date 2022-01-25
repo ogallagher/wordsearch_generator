@@ -1,0 +1,13 @@
+{
+	"language": "zh",
+	"title": "Example Chinese wordsearch.",
+	"size": 15,
+	"words": [
+		"字典:dictionary (zìdiǎn)",
+		"大象:elephant (dà xiàng)",
+		"重要的:important (zhòngyào de)",
+		"日历:calendar (rìlì)",
+		"香蕉:banana (xiāngjiāo)"
+	],
+	"selected_charset": "china top 4808"
+}

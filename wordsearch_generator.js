@@ -123,8 +123,9 @@ class WordsearchGenerator {
 	 * word[-clue] arrays, or string path to words dsv file.
 	 * @param {Number} random_subset How many words to select from the population for each wordsearch.
 	 * @param {String} words_delim Delimiter between a word and a clue.
+	 * @param {String} selected_charset Name of the selected character set.
 	 */
-	constructor(language = LANGUAGE_DEFAULT, alphabet_case = CASE_DEFAULT, width = WIDTH_DEFAULT, words, random_subset, title, words_delim) {
+	constructor(language = LANGUAGE_DEFAULT, alphabet_case = CASE_DEFAULT, width = WIDTH_DEFAULT, words, random_subset, title, words_delim, selected_charset) {
 		this.language = language
 		this.alphabet_case = alphabet_case
 		
@@ -167,17 +168,21 @@ class WordsearchGenerator {
 		})
 		.then(
 			// alphabet succeeds
+			// select charset
 			() => {
-				// randomize cells
-				this.randomize_cells()
+				return this.set_charset(selected_charset)
+				.then(() => {
+					// randomize cells
+					this.randomize_cells()
 				
-				if (words != undefined) {
-					// load words (and clues)
-					return this.add_word_clues(words, random_subset, undefined, words_delim)
-				}
-				// else, delegate words load to driver
+					if (words != undefined) {
+						// load words (and clues)
+						return this.add_word_clues(words, random_subset, undefined, words_delim)
+					}
+					// else, delegate words load to driver
+				})
 			},
-
+			
 			// alphabet fails
 			(err) => {
 				if (err) {
@@ -215,6 +220,9 @@ class WordsearchGenerator {
 
 	/**
 	 * Generate random content for a single cell.
+	 *
+	 * For charsets other than the default (default uses collection of ranges) are collections of
+	 * code points, from which a random code is selected.
 	 * 
 	 * The uniform probability distribution assigns a cumulative probability for each char code set
 	 * in the selected case. The choice is done in two steps:
@@ -1264,7 +1272,8 @@ class WordsearchGenerator {
 			config[KEY_WORDS],
 			config[KEY_RANDOM_SUBSET],
 			config[KEY_TITLE],
-			config[KEY_WORDS_DELIM]
+			config[KEY_WORDS_DELIM],
+			config[KEY_SELECTED_CHARSET]
 		)
 
 		return wordsearch
