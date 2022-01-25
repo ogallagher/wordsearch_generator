@@ -49,6 +49,7 @@ const KEY_RANDOM_SUBSET = wg.KEY_RANDOM_SUBSET
 const KEY_PROB_DIST = wg.KEY_PROB_DIST
 const KEY_PD_NAME = wg.KEY_PD_NAME
 const KEY_PD_FILE = wg.KEY_PD_FILE
+const KEY_CHARSET = wg.KEY_CHARSET
 
 const DEFAULT_ALPHABET = 'en'
 
@@ -116,7 +117,9 @@ function main() {
 								case_key,
 								[width, height]
 							)
+							
 							wordsearch.init_promise
+							.then(set_alphabet_charset)
 							.then(set_alphabet_prob_dist)
 							.then(on_alphabet_load)
 						})
@@ -142,6 +145,25 @@ function set_alphabet_prob_dist() {
 					wordsearch.randomize_cells()
 					resolve()
 				})
+			}
+		)
+	})
+}
+
+function set_alphabet_charset() {
+	return new Promise(function(resolve) {
+		charsets = wordsearch.alphabet[KEY_CHARSET]
+		
+		// add default as visible option
+		charsets.splice(0, 0, 'default')
+		
+		cli.question(
+			`select a charset\n${
+				JSON.stringify(charsets, null, 2)
+			}\ncharset (default=default): `,
+			(charset_name) => {
+				wordsearch.set_charset(charset_name)
+				.then(resolve)
 			}
 		)
 	})

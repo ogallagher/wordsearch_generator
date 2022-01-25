@@ -57,6 +57,7 @@ const ALPHABET_FILE = 'alphabets.json'
 const ALPHABET_PROB_DIST_DIR = 'alphabet_prob_dists'
 const ALPHABET_CHARSET_DIR = 'alphabet_charsets'
 const PROB_DIST_UNIFORM = 'uniform'
+const CHARSET_DEFAULT = 'default'
 const TXT_COMMENT = '#'
 
 // alphabets.json keys
@@ -73,6 +74,12 @@ const KEY_PD_NAME = 'name'
 const KEY_PD_DESC = 'description'
 const KEY_PD_FILE = 'filename'
 const KEY_PD_DIR = 'dirname'
+const KEY_CHARSET = 'charsets'
+const KEY_SELECTED_CHARSET = 'selected_charset'
+const KEY_CS_NAME = KEY_PD_NAME
+const KEY_CS_DESC = KEY_PD_DESC
+const KEY_CS_FILE = KEY_PD_FILE
+const KEY_CS_DIR = KEY_PD_DIR
 
 const KEY_COUNTS = 'counts'
 const KEY_PROBABILITIES = 'probabilities'
@@ -224,79 +231,91 @@ class WordsearchGenerator {
 	 * @type String
 	 */
 	random_cell() {
+		let charset = this.alphabet[KEY_SELECTED_CHARSET]
 		let pd_name = this.alphabet[KEY_SELECTED_PROB_DIST]
-		let probabilities = this.alphabet[KEY_PROBABILITIES]
-		let accum_probabilities = this.alphabet[KEY_ACCUM_PROBABILITIES]
-		let code_sets = this.alphabet[this.alphabet_case_key]
 		
 		let p = Math.random()
-		if (pd_name == PROB_DIST_UNIFORM) {
-			// select code set index
-			let ap = 0
-			let code_set = undefined
-			do {
-				if (p < accum_probabilities[ap]) {
-					code_set = code_sets[ap]
-				}
+		
+		if (charset == CHARSET_DEFAULT || charset == undefined) {
+			let probabilities = this.alphabet[KEY_PROBABILITIES]
+			let accum_probabilities = this.alphabet[KEY_ACCUM_PROBABILITIES]
+			let code_sets = this.alphabet[this.alphabet_case_key]
+			
+			if (pd_name == PROB_DIST_UNIFORM) {
+				// select code set index
+				let ap = 0
+				let code_set = undefined
+				do {
+					if (p < accum_probabilities[ap]) {
+						code_set = code_sets[ap]
+					}
 				
-				ap++
-			} while (code_set === undefined && ap <= accum_probabilities.length)
+					ap++
+				} while (code_set === undefined && ap <= accum_probabilities.length)
 			
-			// select code index in set
-			if (code_set !== undefined) {
-				let code = code_set.length == 2 
-					? Math.round(code_set[0] + (Math.random() * (code_set[1] - code_set[0]))) 
-					: code_set[Math.floor(Math.random() * code_set.length)]
+				// select code index in set
+				if (code_set !== undefined) {
+					let code = code_set.length == 2 
+						? Math.round(code_set[0] + (Math.random() * (code_set[1] - code_set[0]))) 
+						: code_set[Math.floor(Math.random() * code_set.length)]
 				
-				return WordsearchGenerator.code_to_char(code)
-			} 
-			else {
-				return null
-			}
-		}
-		else {
-			// select absolute code index
-			let ap_idx = 0
-			while (
-				ap_idx < accum_probabilities.length && 
-				// find index in accum_probabilities, skipping zeros
-				(p > accum_probabilities[ap_idx] || probabilities[ap_idx] == 0)
-			) {
-				ap_idx++
-			}
-			// console.log(`DEBUG p=${p} --> abs_code_idx=${ap_idx}`)
-			
-			// convert to (code set, index in code set)
-			let counts = this.alphabet[KEY_COUNTS]
-			let cs_idx = 0
-			
-			// offset still beyond domain of current code set
-			while (ap_idx >= counts[cs_idx]) {
-				// ap_idx becomes offset from new base
-				ap_idx -= counts[cs_idx]
-				// step to new code set base
-				cs_idx++
-			}
-			
-			let code_set = code_sets[cs_idx]
-			// console.log(`DEBUG abs_code_idx=${ap_idx} --> code_set_idx=${cs_idx}`)
-			if (code_set !== undefined) {
-				let code = code_set.length == 2
-					? code_set[0] + ap_idx
-					: code_set[ap_idx]
-				// console.log(
-				// 	`DEBUG code_set_idx=${cs_idx}, code_idx=${ap_idx} --> code=${code}`
-				// )
-				if (code !== undefined) {
 					return WordsearchGenerator.code_to_char(code)
-				}
+				} 
 				else {
 					return null
 				}
 			}
 			else {
-				return null
+				// select absolute code index
+				let ap_idx = 0
+				while (
+					ap_idx < accum_probabilities.length && 
+					// find index in accum_probabilities, skipping zeros
+					(p > accum_probabilities[ap_idx] || probabilities[ap_idx] == 0)
+				) {
+					ap_idx++
+				}
+				// console.log(`DEBUG p=${p} --> abs_code_idx=${ap_idx}`)
+			
+				// convert to (code set, index in code set)
+				let counts = this.alphabet[KEY_COUNTS]
+				let cs_idx = 0
+			
+				// offset still beyond domain of current code set
+				while (ap_idx >= counts[cs_idx]) {
+					// ap_idx becomes offset from new base
+					ap_idx -= counts[cs_idx]
+					// step to new code set base
+					cs_idx++
+				}
+			
+				let code_set = code_sets[cs_idx]
+				// console.log(`DEBUG abs_code_idx=${ap_idx} --> code_set_idx=${cs_idx}`)
+				if (code_set !== undefined) {
+					let code = code_set.length == 2
+						? code_set[0] + ap_idx
+						: code_set[ap_idx]
+					// console.log(
+					// 	`DEBUG code_set_idx=${cs_idx}, code_idx=${ap_idx} --> code=${code}`
+					// )
+					if (code !== undefined) {
+						return WordsearchGenerator.code_to_char(code)
+					}
+					else {
+						return null
+					}
+				}
+				else {
+					return null
+				}
 			}
+		}
+		else if (charset instanceof Array) {
+			let code = charset[Math.floor(Math.random() * charset.length)]
+			return WordsearchGenerator.code_to_char(code)
+		}
+		else {
+			console.log(`ERROR unsupported charset value ${charset} of type ${typeof charset}`)
 		}
 	}
 
@@ -618,7 +637,7 @@ class WordsearchGenerator {
 	/**
 	 * Select the probability distribution to use when randomizing wordsearch cells.
 	 * 
-	 * @param String pd_name The prob dist name/key to be selected from 
+	 * @param {String} pd_name The prob dist name/key to be selected from 
 	 * this.language[KEY_PROB_DIST].
 	 * 
 	 * @returns Promise resolves undefined.
@@ -686,6 +705,67 @@ class WordsearchGenerator {
 	 */
 	set_title(title) {
 		this.title = title
+	}
+	
+	/**
+	 * Set wordsearch charset.
+	 * 
+	 * @param {String} cs_name
+	 *
+	 * @returns Promise resolves undefined.
+	 * @type Promise
+	 */
+	set_charset(cs_name) {
+		let self = this
+		
+		return new Promise(function(resolve) {
+			// blank and default are undefined
+			cs_name = (cs_name == '' || cs_name == undefined) ? CHARSET_DEFAULT : cs_name
+			
+			if (cs_name == CHARSET_DEFAULT) {
+				console.log('INFO use default charset from ranges')
+				self.alphabet[KEY_SELECTED_CHARSET] = CHARSET_DEFAULT
+				resolve()
+			}
+			else {
+				let charset = self.alphabet[KEY_CHARSET].find((cs) => cs[KEY_CS_NAME] == cs_name)
+				
+				if (charset == undefined) {
+					console.log(`WARNING failed to find prob dist ${pd_name}; abort charset change`)
+					resolve()
+				}
+				else {
+					// set defaults when not present
+					if (charset[KEY_CS_DIR] == null) {
+						charset[KEY_CS_DIR] = ALPHABET_CHARSET_DIR
+					}
+					
+					console.log(
+						`INFO use charset ${
+							cs_name
+						} --> ${
+							charset[KEY_CS_DIR]
+						}/${
+							charset[KEY_CS_FILE]
+						}`
+					)
+					
+					// update alphabet
+					WordsearchGenerator.load_alphabet_charset_file(
+						charset[KEY_CS_FILE],
+						charset[KEY_CS_DIR]
+					)
+					.catch(function() {
+						console.log(`ERROR failed to read charset file ${charset[KEY_CS_FILE]}`)
+					})
+					.then(function(cs_codes) {
+						// assign array of code points to selected charset member
+						self.alphabet[KEY_SELECTED_CHARSET] = cs_codes
+					})
+					.finally(resolve)
+				}
+			}
+		})
 	}
 
 	// static methods
@@ -887,6 +967,9 @@ class WordsearchGenerator {
 				
 				// select uniform probability distribution
 				alphabet[KEY_SELECTED_PROB_DIST] = PROB_DIST_UNIFORM
+				
+				// select default charset
+				alphabet[KEY_SELECTED_CHARSET] = CHARSET_DEFAULT
 				
 				resolve(alphabet)
 			} 
@@ -1299,6 +1382,11 @@ if (typeof exports != 'undefined') {
 	exports.KEY_PD_DESC = KEY_PD_DESC
 	exports.KEY_PD_FILE = KEY_PD_FILE
 	exports.KEY_PD_DIR = KEY_PD_DIR
+	exports.KEY_PD_NAME = KEY_PD_NAME
+	exports.KEY_PD_DESC = KEY_PD_DESC
+	exports.KEY_PD_FILE = KEY_PD_FILE
+	exports.KEY_PD_DIR = KEY_PD_DIR
+	exports.KEY_CHARSET = KEY_CHARSET
 	exports.KEY_SIZE = KEY_SIZE
 	exports.KEY_WORDS = KEY_WORDS
 	exports.KEY_RANDOM_SUBSET = KEY_RANDOM_SUBSET
@@ -1319,6 +1407,11 @@ else {
 	WordsearchGenerator.KEY_PD_NAME = KEY_PD_NAME
 	WordsearchGenerator.KEY_PD_DESC = KEY_PD_DESC
 	WordsearchGenerator.KEY_PD_FILE = KEY_PD_FILE
+	WordsearchGenerator.KEY_PD_DIR = KEY_PD_DIR
+	WordsearchGenerator.KEY_PD_NAME = KEY_PD_NAME
+	WordsearchGenerator.KEY_PD_DESC = KEY_PD_DESC
+	WordsearchGenerator.KEY_PD_FILE = KEY_PD_FILE
+	WordsearchGenerator.KEY_CHARSET = KEY_CHARSET
 	WordsearchGenerator.KEY_PD_DIR = KEY_PD_DIR
 	WordsearchGenerator.KEY_SIZE = KEY_SIZE
 	WordsearchGenerator.KEY_WORDS = KEY_WORDS
