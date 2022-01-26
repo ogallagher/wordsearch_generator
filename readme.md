@@ -100,12 +100,16 @@ Include the following in your `<head/>` tag:
 ```html
 <script 
 	src="https://wordsearch.dreamhosters.com/wordsearch_webpage.js" type="text/javascript"
-	data-containers=".wordsearch-container">
+	data-containers=".wordsearch-container"
+	data-use-host="true">
 </script>
 ```
 
 The `data-containers` attribute is a way to customize the css selector used to identify container
 tags in which each wordsearch generator will be loaded.
+
+The `data-use-host` attribute (default="true") should only `false` when hosting a (modified) copy 
+of this script within the same webserver that hosts the parent webpage.
 
 See `wordsearch_generator.html` for an example of how to insert a wordsearch generator dynamically
 into an external webpage. The [public webserver](https://wordsearch.dreamhosters.com) should

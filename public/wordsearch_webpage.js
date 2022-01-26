@@ -9,7 +9,7 @@ const INPUT_FORM = 1
 
 const D3_DSV_URL = 'https://cdn.jsdelivr.net/npm/d3-dsv@3'
 
-const USE_WP_HOST_URL = true
+let USE_WP_HOST_URL = true
 const WP_HOST_URL = 'https://wordsearch.dreamhosters.com'
 const DEPENDENCIES_URL = '/webpage_dependencies.html'
 const WORDSEARCH_COMPONENT_URL = '/wordsearch_webcomponent.html'
@@ -44,6 +44,13 @@ let wordsearch_description_json = {}
 let endpoint_cells = []
 
 let wordsearch_webpage_promise = new Promise(function(resolve, reject) {
+	// update whether to use host in url
+	let use_host_attr = $(current_script).attr('data-use-host')
+	if (use_host_attr === 'false') {
+		USE_WP_HOST_URL = false
+	}
+	console.log(`DEBUG set use-host=${USE_WP_HOST_URL}`)
+	
 	Promise.all([
 		// external/peripheral dependencies
 		new Promise(function(resolve_ext, reject_ext) {
@@ -1068,8 +1075,8 @@ function on_charset_option_click(wordsearch_cmp_id, event) {
 	$(`#${wordsearch_cmp_id}`).find('.charset').val(charset_name)
 }
 
-function is_on(jq) {
-	return jq.attr('data-on') === 'true'
+function is_on(jq, on_attr = 'data-on') {
+	return jq.attr(on_attr) === 'true'
 }
 
 /**
