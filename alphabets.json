@@ -24,7 +24,7 @@
 	
 	"default_prob_dist": {
 		"name": "uniform",
-		"description": "unform (default) probability distribution, allowing all characters to appear equally as often."
+		"description": "uniform (default) probability distribution, allowing all characters to appear equally as often."
 	},
 	
 	"de": {
@@ -232,6 +232,16 @@
 				"name": "taiwan top 8105",
 				"description": "source = https://zh.wikisource.org/wiki/通用规范汉字表",
 				"filename": "zh_taiwan_top_8105.txt"
+			},
+			{
+				"name": "china modern top 3000",
+				"description": "source = http://lingua.mtsu.edu/chinese-computing/statistics/char/list.php?Which=MO",
+				"filename": "zh_china_junda_mo_3000.txt",
+				"prob_dist": {
+					"name": "natural",
+					"description": "calculated based on relative frequency in corpus of modern chinese texts",
+					"filename": "zh_china_junda_mo_3000.txt"
+				}
 			}
 		]
 	},

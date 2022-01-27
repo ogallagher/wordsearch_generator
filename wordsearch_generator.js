@@ -648,8 +648,8 @@ class WordsearchGenerator {
 	/**
 	 * Select the probability distribution to use when randomizing wordsearch cells.
 	 * 
-	 * @param {String} pd_name The prob dist name/key to be selected from 
-	 * this.language[KEY_PROB_DIST].
+	 * @param {String,Object} pd_name The prob dist name/key to be selected from 
+	 * this.language[KEY_PROB_DIST], or the prob dist object itself.
 	 * 
 	 * @returns Promise resolves undefined.
 	 * @type Promise
@@ -668,7 +668,14 @@ class WordsearchGenerator {
 				resolve()
 			}
 			else {
-				let prob_dist = self.alphabet[KEY_PROB_DIST].find((pd) => pd[KEY_PD_NAME] == pd_name)
+				let prob_dist = (typeof pd_name == 'string')
+					// get prob dist obj from name
+					? self.alphabet[KEY_PROB_DIST].find((pd) => pd[KEY_PD_NAME] == pd_name)
+					// prob dist obj already provided
+					: pd_name
+				
+				pd_name = prob_dist[KEY_PD_NAME]
+				
 				if (prob_dist == undefined) {
 					console.log(`WARNING failed to find prob dist ${pd_name}; using default`)
 					resolve()
@@ -763,19 +770,34 @@ class WordsearchGenerator {
 						}`
 					)
 					
-					// update alphabet
-					WordsearchGenerator.load_alphabet_charset_file(
-						charset[KEY_CS_FILE],
-						charset[KEY_CS_DIR]
-					)
-					.catch(function() {
-						console.log(`ERROR failed to read charset file ${charset[KEY_CS_FILE]}`)
-					})
-					.then(function(cs_codes) {
-						// assign array of code points to selected charset member
-						self.alphabet[KEY_SELECTED_CHARSET] = cs_codes
-					})
-					.finally(resolve)
+					let p = [
+						// update alphabet charset
+						WordsearchGenerator.load_alphabet_charset_file(
+							charset[KEY_CS_FILE],
+							charset[KEY_CS_DIR]
+						)
+						.then(
+							// pass
+							function(cs_codes) {
+								// assign array of code points to selected charset member
+								self.alphabet[KEY_SELECTED_CHARSET] = cs_codes
+							},
+							// fail
+							function() {
+								console.log(`ERROR failed to read charset file ${charset[KEY_CS_FILE]}`)
+							}
+						)
+					]
+					
+					// check if charset defines prob dist
+					let prob_dist = charset[KEY_PROB_DIST]
+					if (prob_dist != undefined) {
+						// update alphabet prob dist
+						p.push(self.set_probability_distribution(prob_dist))
+					}
+					
+					// resolve on charset, prob dist updates
+					Promise.all(p).then(resolve)
 				}
 			}
 		})
@@ -1074,19 +1096,14 @@ class WordsearchGenerator {
 				// parse
 				let sum = 0
 				let char_probs = txt.split('\n')
+				// remove empty lines, comments
+				.filter((c) => (c != '' && c.charAt(0) != TXT_COMMENT))
 				// convert to floats and update sum
 				.map(function(prob_str) {
 					let prob = parseFloat(prob_str)
-					if (!isNaN(prob)) {
-						sum += prob
-						return prob
-					}
-					else {
-						return undefined
-					}
+					sum += prob
+					return prob
 				})
-				// remove bad vals
-				.filter(cp => cp != undefined)
 				
 				console.log(`DEBUG ${char_probs.length} char probs accumulate to ${sum}`)
 				
@@ -1189,7 +1206,7 @@ class WordsearchGenerator {
 			try {
 				let arr = txt
 					.split(delim)
-					.filter((c) => (c == '' || c.charAt(0) == TXT_COMMENT) ? undefined : c)
+					.filter((c) => (c != '' && c.charAt(0) != TXT_COMMENT))
 					.map(WordsearchGenerator.char_to_code)
 				console.log(`DEBUG parsed charset of size ${arr.length}`)
 				

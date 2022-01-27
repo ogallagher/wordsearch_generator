@@ -69,26 +69,36 @@ let wordsearch_webpage_promise = new Promise(function(resolve, reject) {
 				},
 				error: function(err) {
 					console.log(`ERROR failed to get dependencies at ${url}`)
-					reject()
+					reject_ext()
 				}
 			})
 		}),
 		
 		// core dependencies
-		new Promise(function(resolve_core) {
+		new Promise(function(resolve_core, reject_core) {
 			let url = USE_WP_HOST_URL
 				? `${WP_HOST_URL}${WORDSEARCH_CORE_URL}`
 				: WORDSEARCH_CORE_URL
 			
-			$.getScript(WORDSEARCH_CORE_URL)
-			.done(function() {
-				ext_js_dependencies()
-				wordsearch_webpage_main()
-				.then(resolve_core)
+			$.ajax({
+				method: 'GET',
+				url: url,
+				dataType: 'script',
+				cache: false,
+				success: function() {
+					ext_js_dependencies()
+					wordsearch_webpage_main()
+					.then(resolve_core)
+				},
+				error: function(err) {
+					console.log(`ERROR failed to fetch wordsearch generator`)
+					reject_core()
+				}
 			})
 		})
 	])
 	.then(resolve)
+	.catch(reject)
 })
 
 // load wordsearch web component and resolve the html as a string

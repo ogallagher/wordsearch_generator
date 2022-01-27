@@ -46,7 +46,9 @@ const KEY_CASE = wg.KEY_CASE
 const KEY_SIZE = wg.KEY_SIZE
 const KEY_WORDS = wg.KEY_WORDS
 const KEY_RANDOM_SUBSET = wg.KEY_RANDOM_SUBSET
+const KEY_SELECTED_PROB_DIST = wg.KEY_SELECTED_PROB_DIST
 const KEY_PROB_DIST = wg.KEY_PROB_DIST
+const PROB_DIST_UNIFORM = wg.PROB_DIST_UNIFORM
 const KEY_PD_NAME = wg.KEY_PD_NAME
 const KEY_PD_FILE = wg.KEY_PD_FILE
 const KEY_CHARSET = wg.KEY_CHARSET
@@ -135,17 +137,23 @@ function main() {
 
 function set_alphabet_prob_dist() {
 	return new Promise(function(resolve) {
-		prob_dists = wordsearch.alphabet[KEY_PROB_DIST]
+		// only select from prob dists if charset doesn't define one itself
+		if (wordsearch.get_selected_prob_dist() == PROB_DIST_UNIFORM) {
+			prob_dists = wordsearch.alphabet[KEY_PROB_DIST]
 		
-		cli.question(
-			`select a probability distribution\n${
-				JSON.stringify(prob_dists,null,2)
-			}\ndistribution name (default=uniform): `,
-			(pd_name) => {
-				wordsearch.set_probability_distribution(pd_name)
-				.then(resolve)
-			}
-		)
+			cli.question(
+				`select a probability distribution\n${
+					JSON.stringify(prob_dists,null,2)
+				}\ndistribution name (default=uniform): `,
+				(pd_name) => {
+					wordsearch.set_probability_distribution(pd_name)
+					.then(resolve)
+				}
+			)
+		}
+		else {
+			resolve()
+		}
 	})
 }
 
