@@ -124,8 +124,9 @@ class WordsearchGenerator {
 	 * @param {Number} random_subset How many words to select from the population for each wordsearch.
 	 * @param {String} words_delim Delimiter between a word and a clue.
 	 * @param {String} selected_charset Name of the selected character set.
+	 * @param {String} selected_prob_dist Name of the selected probability distribution.
 	 */
-	constructor(language = LANGUAGE_DEFAULT, alphabet_case = CASE_DEFAULT, width = WIDTH_DEFAULT, words, random_subset, title, words_delim, selected_charset) {
+	constructor(language = LANGUAGE_DEFAULT, alphabet_case = CASE_DEFAULT, width = WIDTH_DEFAULT, words, random_subset, title, words_delim, selected_charset, selected_prob_dist) {
 		this.language = language
 		this.alphabet_case = alphabet_case
 		
@@ -172,9 +173,12 @@ class WordsearchGenerator {
 			() => {
 				return this.set_charset(selected_charset)
 				.then(() => {
+					return this.set_probability_distribution(selected_prob_dist)
+				})
+				.then(() => {
 					// randomize cells
 					this.randomize_cells()
-				
+					
 					if (words != undefined) {
 						// load words (and clues)
 						return this.add_word_clues(words, random_subset, undefined, words_delim)
@@ -245,6 +249,7 @@ class WordsearchGenerator {
 		let p = Math.random()
 		
 		if (charset == CHARSET_DEFAULT || charset == undefined) {
+			// TODO why are these arrays always [1] in browser?
 			let probabilities = this.alphabet[KEY_PROBABILITIES]
 			let accum_probabilities = this.alphabet[KEY_ACCUM_PROBABILITIES]
 			let code_sets = this.alphabet[this.alphabet_case_key]
@@ -283,7 +288,6 @@ class WordsearchGenerator {
 				) {
 					ap_idx++
 				}
-				// console.log(`DEBUG p=${p} --> abs_code_idx=${ap_idx}`)
 			
 				// convert to (code set, index in code set)
 				let counts = this.alphabet[KEY_COUNTS]
@@ -296,9 +300,9 @@ class WordsearchGenerator {
 					// step to new code set base
 					cs_idx++
 				}
-			
+				// console.log(`DEBUG p=${p} --> abs_code_idx=${ap_idx} --> code_set_idx=${cs_idx}`)
+				
 				let code_set = code_sets[cs_idx]
-				// console.log(`DEBUG abs_code_idx=${ap_idx} --> code_set_idx=${cs_idx}`)
 				if (code_set !== undefined) {
 					let code = code_set.length == 2
 						? code_set[0] + ap_idx
@@ -331,13 +335,8 @@ class WordsearchGenerator {
 	 * Fill in random content for all cells in grid.
 	 */
 	randomize_cells() {
-		let height = this.grid.length
-		let width = height > 0
-			? this.grid[0].length
-			: 0
-		
-		for (let y = 0; y < height; y++) {
-			for (let x = 0; x < width; x++) {
+		for (let y = 0; y < this.height; y++) {
+			for (let x = 0; x < this.width; x++) {
 				this.grid[y][x] = this.random_cell()
 			}
 		}
@@ -642,6 +641,10 @@ class WordsearchGenerator {
 		return config
 	}
 	
+	get_selected_prob_dist() {
+		return this.alphabet[KEY_SELECTED_PROB_DIST]
+	}
+	
 	/**
 	 * Select the probability distribution to use when randomizing wordsearch cells.
 	 * 
@@ -654,12 +657,14 @@ class WordsearchGenerator {
 	set_probability_distribution(pd_name) {
 		let self = this
 		
-		return new Promise(function(resolve) {
-			// set default if not specified
-			pd_name = (pd_name == '') ? PROB_DIST_UNIFORM : pd_name
-			
-			if (pd_name == PROB_DIST_UNIFORM) {
+		return new Promise(function(resolve) {			
+			if (pd_name == undefined || pd_name == '') {
+				console.log('INFO use existing probability dist')
+				resolve()
+			}
+			else if (pd_name == PROB_DIST_UNIFORM) {
 				console.log('INFO use uniform default probability dist')
+				self.alphabet[KEY_SELECTED_PROB_DIST] = PROB_DIST_UNIFORM
 				resolve()
 			}
 			else {

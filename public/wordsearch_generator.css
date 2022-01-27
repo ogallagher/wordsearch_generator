@@ -97,6 +97,21 @@ body {
 	pointer-events: none;
 }
 
+.prob-dist-option:hover {
+	background-color: white;
+}
+.prob-dist-option .prob-dist-name {
+	color: white;
+	pointer-events: none;
+}
+.prob-dist-option:hover .prob-dist-name {
+	color: black;
+}
+.prob-dist-option .prob-dist-description {
+	color: gray;
+	pointer-events: none;
+}
+
 /**
  * printer friendly styles
  */

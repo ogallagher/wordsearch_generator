@@ -121,6 +121,9 @@ function main() {
 							wordsearch.init_promise
 							.then(set_alphabet_charset)
 							.then(set_alphabet_prob_dist)
+							.then(() => {
+								wordsearch.randomize_cells()
+							})
 							.then(on_alphabet_load)
 						})
 					}
@@ -140,11 +143,7 @@ function set_alphabet_prob_dist() {
 			}\ndistribution name (default=uniform): `,
 			(pd_name) => {
 				wordsearch.set_probability_distribution(pd_name)
-				.then(() => {
-					// randomize cells with new distribution
-					wordsearch.randomize_cells()
-					resolve()
-				})
+				.then(resolve)
 			}
 		)
 	})
@@ -153,6 +152,9 @@ function set_alphabet_prob_dist() {
 function set_alphabet_charset() {
 	return new Promise(function(resolve) {
 		charsets = wordsearch.alphabet[KEY_CHARSET]
+		if (charsets == undefined) {
+			charsets = []
+		}
 		
 		// add default as visible option
 		charsets.splice(0, 0, 'default')

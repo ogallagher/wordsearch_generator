@@ -254,27 +254,38 @@ function wordsearch_webpage_main() {
 				})
 			}
 			
-			// handle charset options
-			let charsets_jq = wordsearch_jq.find('.charset-options')
-			// populated on alphabet update
-			
+			// charset display
 			wordsearch_jq.find('.charset')
-			// default alphabet
-			.val('en')
 			// show on focus
 			.on('focusin', function() {
 				// show charsets
-				charsets_jq.show()
+				wordsearch_jq.find('.charset-options').show()
 			})
+			// hide on unfocus
 			.on('focusout', function() {
 				// potentially allow a charset to accept click before disappearing
 				setTimeout(() => {
-					charsets_jq.hide()
+					wordsearch_jq.find('.charset-options').hide()
 				}, 150)
 			})
 			
-			// load initial charsets
-			load_charsets(wordsearch_id, lang_jq.val())
+			// prob dist display
+			wordsearch_jq.find('.prob-dist')
+			// show on focus
+			.on('focusin', function() {
+				// show prob dists
+				wordsearch_jq.find('.prob-dist-options').show()
+			})
+			// hide on unfocus
+			.on('focusout', function() {
+				// potentially allow a prob dist to accept click before disappearing
+				setTimeout(() => {
+					wordsearch_jq.find('.prob-dist-options').hide()
+				}, 150)
+			})
+			
+			// load initial charsets and prob dists
+			load_charsets_prob_dists(wordsearch_id, lang_jq.val())
 			
 			// set default wordsearch size
 			wordsearch_jq.find('.size-width')
@@ -670,7 +681,9 @@ function on_wordsearch_input_form(wordsearch_cmp_id) {
 			// word-clue delimiter
 			undefined,
 			// charset
-			wordsearch_cmp.find('.charset').val()
+			wordsearch_cmp.find('.charset').val(),
+			// prob dist
+			wordsearch_cmp.find('.prob-dist').val()
 		)
 		
 		wordsearch.init_promise.then(() => {
@@ -821,8 +834,6 @@ function load_word_clues(wordsearch_cmp_id, wordsearch, word_clues) {
 function display_wordsearch(wordsearch, wordsearch_cmp_id) {
 	let wordsearch_cmp = $(`#${wordsearch_cmp_id}`)
 	console.log(`INFO display wordsearch in ${wordsearch_cmp_id}`)
-	// console.log(`DEBUG final grid:\n${wordsearch.grid_string()}`)
-	// console.log(`DEBUG clues:\n${wordsearch.clues.join('\n')}`)
 	
 	// clear endpoint_cells
 	endpoint_cells = []
@@ -1001,13 +1012,13 @@ function on_alphabet_option_click(wordsearch_cmp_id, event) {
 	// update alphabet
 	$(`#${wordsearch_cmp_id}`).find('.language').val(alphabet_key)
 	
-	load_charsets(wordsearch_cmp_id, alphabet_key)
+	load_charsets_prob_dists(wordsearch_cmp_id, alphabet_key)
 }
 
-function load_charsets(wordsearch_cmp_id, alphabet_key) {
+function load_charsets_prob_dists(wordsearch_cmp_id, alphabet_key) {
 	let wordsearch_jq = $(`#${wordsearch_cmp_id}`)
 	
-	// updates available charsets list
+	// updates available charsets and prob dists lists
 	WordsearchGenerator.get_alphabet(alphabet_key)
 	.then(
 		// pass
@@ -1016,22 +1027,32 @@ function load_charsets(wordsearch_cmp_id, alphabet_key) {
 			if (charsets == undefined) {
 				charsets = []
 			}
-			return Promise.resolve(charsets)
+			
+			let prob_dists = alphabet[WordsearchGenerator.KEY_PROB_DIST]
+			
+			return Promise.resolve({
+				charsets: charsets, 
+				prob_dists: prob_dists
+			})
 		},
 		// fail
 		(err) => {
-			console.log(`ERROR failed to resolve charsets for ${alphabet_key}\n${err}`)
-			return Promise.resolve([])
+			console.log(`ERROR failed to resolve charsets, prob dists for ${alphabet_key}\n${err}`)
+			return Promise.resolve({
+				charsets: []
+			})
 		}
 	)
-	.then((charsets) => {
-		// add default
+	.then(({charsets, prob_dists}) => {
+		// add default charset
 		let csdefault = {}
 		csdefault[WordsearchGenerator.KEY_CS_NAME] = WordsearchGenerator.CHARSET_DEFAULT
 		csdefault[WordsearchGenerator.KEY_CS_DESC] = 'default character set'
 		
 		charsets.splice(0, 0, csdefault)
 		console.log(`DEBUG loaded ${charsets.length} ${alphabet_key} charsets`)
+		
+		console.log(`DEBUG loaded ${prob_dists.length} ${alphabet_key} prob dists`)
 		
 		// update available charsets
 		const charset_opt_temp = 
@@ -1056,8 +1077,40 @@ function load_charsets(wordsearch_cmp_id, alphabet_key) {
 			})
 		}
 		
-		// select default
+		// select default charset
 		wordsearch_jq.find('.charset').val(charsets[0][WordsearchGenerator.KEY_CS_NAME])
+		
+		if (prob_dists == undefined || prob_dists.length == 0) {
+			// select default prob dist and disable
+			wordsearch_jq.find('.prob-dist').val('default').attr('disabled', true)
+		}
+		else {
+			// update available prob dists
+			const pd_temp = 
+			`<div class="prob-dist-option px-2">
+				<span class="prob-dist-name"></span>
+				<span class="prob-dist-description"></span>
+			</div>`
+			
+			let pd_cont = wordsearch_jq.find('.prob-dist-options').empty()
+			for (let pd of prob_dists) {
+				let pd_jq = $(pd_temp)
+				.attr('data-prob-dist-name', pd[WordsearchGenerator.KEY_PD_NAME])
+			
+				pd_jq.find('.prob-dist-name').html(pd[WordsearchGenerator.KEY_PD_NAME])
+				pd_jq.find('.prob-dist-description').html(pd[WordsearchGenerator.KEY_PD_DESC])
+			
+				pd_cont.append(pd_jq)
+			
+				// handle click
+				pd_jq.on('click', function(event) {
+					on_prob_dist_option_click(wordsearch_cmp_id, event)
+				})
+			}
+		
+			// select default prob dist
+			wordsearch_jq.find('.prob-dist').val(prob_dists[0][WordsearchGenerator.KEY_PD_NAME])
+		}
 	})
 }
 
@@ -1073,6 +1126,20 @@ function on_charset_option_click(wordsearch_cmp_id, event) {
 	
 	// update charset val
 	$(`#${wordsearch_cmp_id}`).find('.charset').val(charset_name)
+}
+
+/**
+ * Handle prob dist option click.
+ *
+ * @param {String} wordsearch_cmp_id
+ * @param {Object} event Click MouseEvent instance.
+ */
+function on_prob_dist_option_click(wordsearch_cmp_id, event) {
+	let pd_option = event.target
+	let pd_name = pd_option.getAttribute('data-prob-dist-name')
+	
+	// update prob dist val
+	$(`#${wordsearch_cmp_id}`).find('.prob-dist').val(pd_name)
 }
 
 function is_on(jq, on_attr = 'data-on') {
