@@ -224,23 +224,33 @@
 		
 		"charsets": [
 			{
-				"name": "china top 4808",
-				"description": "source = https://zh.wikisource.org/wiki/常用國字標準字體表",
+				"name": "china 4808",
+				"description": "source = zh.wikisource.org/wiki/常用國字標準字體表",
 				"filename": "zh_china_top_4808.txt"
 			},
 			{
-				"name": "taiwan top 8105",
-				"description": "source = https://zh.wikisource.org/wiki/通用规范汉字表",
+				"name": "taiwan 8105",
+				"description": "source = zh.wikisource.org/wiki/通用规范汉字表",
 				"filename": "zh_taiwan_top_8105.txt"
 			},
 			{
-				"name": "china modern top 3000",
-				"description": "source = http://lingua.mtsu.edu/chinese-computing/statistics/char/list.php?Which=MO",
+				"name": "china modern 3000",
+				"description": "source = lingua.mtsu.edu/chinese-computing/statistics/char/list.php?Which=MO",
 				"filename": "zh_china_junda_mo_3000.txt",
 				"prob_dist": {
 					"name": "natural",
 					"description": "calculated based on relative frequency in corpus of modern chinese texts",
 					"filename": "zh_china_junda_mo_3000.txt"
+				}
+			},
+			{
+				"name": "taiwan 1994 3000",
+				"description": "source = technology.chtsai.org/charfreq/94charfreq.html",
+				"filename": "zh_taiwan_chihhaotsai_94_3000.txt",
+				"prob_dist": {
+					"name": "natural",
+					"description": "relative frequencies calculated in 1994",
+					"filename": "zh_taiwan_chihhaotsai_94_3000.txt"
 				}
 			}
 		]
