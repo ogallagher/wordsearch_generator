@@ -14,6 +14,7 @@ let ex_cfg_files_fetch_promise = new Promise(function(resolve, reject) {
 	let url = USE_WP_HOST_URL
 		? `${WP_HOST_URL}${EX_CFG_FILES_PATH}`
 		: EX_CFG_FILES_PATH
+	console.log(`DEBUG fetch ex cfg files list at ${url}`)
 	
 	$.ajax({
 		method: 'GET',
@@ -35,6 +36,7 @@ let ex_cfg_file_cmp_promise = new Promise(function(resolve, reject) {
 	let url = USE_WP_HOST_URL
 		? `${WP_HOST_URL}${EX_CFG_FILE_CMP_PATH}`
 		: EX_CFG_FILE_CMP_PATH
+	console.log(`DEBUG fetch ex cfg file cmp at ${url}`)
 	
 	$.ajax({
 		method: 'GET',
@@ -97,19 +99,21 @@ function set_use_ex_cfg(use_ex_cfg, wordsearch_id) {
 	.attr('data-on', use_ex_cfg)
 }
 
-Promise.all([
-	// defined in wordsearch_webpage.js
-	wordsearch_webpage_promise,
-	ex_cfg_files_fetch_promise,
-	ex_cfg_file_cmp_promise
-])
+// defined in wordsearch_webpage.js
+wordsearch_webpage_promise
+.then(() => {
+	return Promise.all([
+		ex_cfg_files_fetch_promise,
+		ex_cfg_file_cmp_promise
+	])
+})
 .catch(() => {
 	console.log('ERROR failed to load example config file chooser')
 })
 // add example config file selector to each wordsearch generator
-.then(function(ww_cff_cfc) {
-	let cfg_files = ww_cff_cfc[1]
-	let cmp_html = ww_cff_cfc[2]
+.then(function(cff_cfc) {
+	let cfg_files = cff_cfc[0]
+	let cmp_html = cff_cfc[1]
 	console.log(`DEBUG loaded ex cfg file component of length ${cmp_html.length}`)
 	
 	// convert to jq elements

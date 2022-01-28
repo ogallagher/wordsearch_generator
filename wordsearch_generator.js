@@ -674,13 +674,13 @@ class WordsearchGenerator {
 					// prob dist obj already provided
 					: pd_name
 				
-				pd_name = prob_dist[KEY_PD_NAME]
-				
 				if (prob_dist == undefined) {
-					console.log(`WARNING failed to find prob dist ${pd_name}; using default`)
+					console.log(`WARNING failed to find prob dist ${pd_name}; skip update`)
 					resolve()
 				}
 				else {
+					pd_name = prob_dist[KEY_PD_NAME]
+					
 					// set defaults when not present
 					if (prob_dist[KEY_PD_DIR] == null) {
 						prob_dist[KEY_PD_DIR] = ALPHABET_PROB_DIST_DIR
@@ -1409,6 +1409,7 @@ if (typeof exports != 'undefined') {
 	exports.KEY_LANGUAGE = KEY_LANGUAGE
 	exports.KEY_CASE = KEY_CASE
 	exports.KEY_PROB_DIST = KEY_PROB_DIST
+	exports.PROB_DIST_UNIFORM = PROB_DIST_UNIFORM
 	exports.KEY_PD_NAME = KEY_PD_NAME
 	exports.KEY_PD_DESC = KEY_PD_DESC
 	exports.KEY_PD_FILE = KEY_PD_FILE
@@ -1438,6 +1439,7 @@ else {
 	WordsearchGenerator.KEY_LANGUAGE = KEY_LANGUAGE
 	WordsearchGenerator.KEY_CASE = KEY_CASE
 	WordsearchGenerator.KEY_PROB_DIST = KEY_PROB_DIST
+	WordsearchGenerator.PROB_DIST_UNIFORM = PROB_DIST_UNIFORM
 	WordsearchGenerator.KEY_PD_NAME = KEY_PD_NAME
 	WordsearchGenerator.KEY_PD_DESC = KEY_PD_DESC
 	WordsearchGenerator.KEY_PD_FILE = KEY_PD_FILE

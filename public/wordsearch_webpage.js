@@ -1073,10 +1073,25 @@ function load_charsets_prob_dists(wordsearch_cmp_id, alphabet_key) {
 		
 		let charset_cont = wordsearch_jq.find('.charset-options').empty()
 		for (let charset of charsets) {
+			let charset_name = charset[WordsearchGenerator.KEY_CS_NAME]
 			let charset_jq = $(charset_opt_temp)
-			.attr('data-charset-name', charset[WordsearchGenerator.KEY_CS_NAME])
+			.attr('data-charset-name', charset_name)
 			
-			charset_jq.find('.charset-name').html(charset[WordsearchGenerator.KEY_CS_NAME])
+			// handle prob dist assigned to charset
+			let charset_pd = charset[WordsearchGenerator.KEY_PROB_DIST]
+			if (charset_pd != undefined) {
+				// charset has specified prob dist
+				charset_pd = charset_pd[WordsearchGenerator.KEY_PD_NAME]
+			}
+			else if (charset_name != WordsearchGenerator.CHARSET_DEFAULT) {
+				// charset has implied uniform prob dist
+				charset_pd = WordsearchGenerator.PROB_DIST_UNIFORM
+			}
+			// else, charset is default and selects from alphabet[prob_dist]
+			
+			charset_jq.attr('data-prob-dist-name', charset_pd)
+			
+			charset_jq.find('.charset-name').html(charset_name)
 			charset_jq.find('.charset-description').html(charset[WordsearchGenerator.KEY_CS_DESC])
 			
 			charset_cont.append(charset_jq)
@@ -1088,11 +1103,14 @@ function load_charsets_prob_dists(wordsearch_cmp_id, alphabet_key) {
 		}
 		
 		// select default charset
-		wordsearch_jq.find('.charset').val(charsets[0][WordsearchGenerator.KEY_CS_NAME])
+		wordsearch_jq.find('.charset')
+		.val(charsets[0][WordsearchGenerator.KEY_CS_NAME])
 		
 		if (prob_dists == undefined || prob_dists.length == 0) {
-			// select default prob dist and disable
-			wordsearch_jq.find('.prob-dist').val('default').attr('disabled', true)
+			// select uniform prob dist and disable
+			wordsearch_jq.find('.prob-dist')
+			.val(WordsearchGenerator.PROB_DIST_UNIFORM)
+			.attr('disabled', true)
 		}
 		else {
 			// update available prob dists
@@ -1118,8 +1136,10 @@ function load_charsets_prob_dists(wordsearch_cmp_id, alphabet_key) {
 				})
 			}
 		
-			// select default prob dist
-			wordsearch_jq.find('.prob-dist').val(prob_dists[0][WordsearchGenerator.KEY_PD_NAME])
+			// select uniform prob dist and enable
+			wordsearch_jq.find('.prob-dist')
+			.val(prob_dists[0][WordsearchGenerator.KEY_PD_NAME])
+			.attr('disabled', false)
 		}
 	})
 }
@@ -1133,9 +1153,24 @@ function load_charsets_prob_dists(wordsearch_cmp_id, alphabet_key) {
 function on_charset_option_click(wordsearch_cmp_id, event) {
 	let charset_option = event.target
 	let charset_name = charset_option.getAttribute('data-charset-name')
+	let wordsearch_jq = $(`#${wordsearch_cmp_id}`)
 	
 	// update charset val
-	$(`#${wordsearch_cmp_id}`).find('.charset').val(charset_name)
+	wordsearch_jq.find('.charset').val(charset_name)
+	
+	// update prob dist val
+	let charset_pd = charset_option.getAttribute('data-prob-dist-name')
+	if (charset_pd != null) {
+		console.log(`DEBUG charset prob dist = ${charset_pd}`)
+		wordsearch_jq.find('.prob-dist')
+		.val(charset_pd)
+		.attr('disabled', true)
+	}
+	else {
+		wordsearch_jq.find('.prob-dist')
+		.val(WordsearchGenerator.PROB_DIST_UNIFORM)
+		.attr('disabled', false)
+	}
 }
 
 /**
