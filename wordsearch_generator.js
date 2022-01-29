@@ -1241,7 +1241,7 @@ class WordsearchGenerator {
 					}
 					else {
 						try {
-							let words_dsv = dsv.dsvFormat(delimiter).parseRows(words_dsv)
+							words_dsv = dsv.dsvFormat(delimiter).parseRows(words_dsv)
 							console.log(`DEBUG parsed ${path} into ${words_dsv.length} word-clues`)
 							resolve(words_dsv)
 						}
