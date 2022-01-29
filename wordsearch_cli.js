@@ -24,17 +24,7 @@ const rl = require('readline')
 
 /* this doesn't work with NV_MAJOR < 14
 import { 
-	
-	WordsearchGenerator,
-	
-	WORD_CLUE_DELIM,
-	
-	KEY_LANGUAGE,
-	KEY_CASE,
-	KEY_SIZE,
-	KEY_WORDS,
-	KEY_RANDOM_SUBSET
-	
+	etc
 } from './wordsearch_generator.cjs'
 */
 const wg = require('./wordsearch_generator.js')

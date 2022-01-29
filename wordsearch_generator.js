@@ -17,17 +17,20 @@ const WG_HOST_URL = 'https://wordsearch.dreamhosters.com'
 
 let fs
 let dsv
+let path
 // directory where this file is
 let parent_dir
 
 let environment_promise = new Promise(function(resolve) {
 	Promise.all([
 		import('fs'),
-		import('d3-dsv')
+		import('d3-dsv'),
+		import('path')
 	])
 	.then((modules) => {
 		fs = modules[0].default
 		dsv = modules[1]
+		path = modules[2].default
 		
 		parent_dir = __dirname
 		environment = ENV_BACKEND
@@ -35,6 +38,7 @@ let environment_promise = new Promise(function(resolve) {
 	.catch(() => {
 		fs = undefined
 		dsv = undefined
+		path = undefined
 		
 		parent_dir = '.'
 		environment = ENV_FRONTEND
@@ -813,16 +817,16 @@ class WordsearchGenerator {
 	 * @returns Resolve alphabet aliases, or reject on failure.
 	 * @type Promise
 	 */
-	static get_alphabet_aliases(path = ALPHABET_FILE) {
+	static get_alphabet_aliases(filepath = ALPHABET_FILE) {
 		if (USE_WG_HOST_URL && environment == ENV_FRONTEND) {
-			path = `${WG_HOST_URL}/${path}`
-			console.log(`DEBUG alphabet file path w host = ${path}`)
+			filepath = `${WG_HOST_URL}/${filepath}`
+			console.log(`DEBUG alphabet file path w host = ${filepath}`)
 		}
 		
 		return new Promise(function(resolve, reject) {
 			environment_promise
 			.then(() => {
-				return WordsearchGenerator.load_alphabets_file(path)
+				return WordsearchGenerator.load_alphabets_file(filepath)
 			})
 			.then((alphabets) => {
 				let aliases = alphabets[KEY_ALPHABET_ALIASES]
@@ -843,19 +847,19 @@ class WordsearchGenerator {
 	 * Get alphabet description given the language code.
 	 * 
 	 * @param {String} language Language code.
-	 * @param {String} path Path to alphabets file.
+	 * @param {String} filepath Path to alphabets file.
 	 * 
 	 * @returns Promise: resolve alphabet description, or reject if the language is not supported.
 	 * @type Object
 	 */
-	static get_alphabet(language, case_key = KEY_RANGES, path = ALPHABET_FILE) {
+	static get_alphabet(language, case_key = KEY_RANGES, filepath = ALPHABET_FILE) {
 		if (USE_WG_HOST_URL && environment == ENV_FRONTEND) {
-			path = `${WG_HOST_URL}/${path}`
-			console.log(`DEBUG alphabet file path w host = ${path}`)
+			filepath = `${WG_HOST_URL}/${filepath}`
+			console.log(`DEBUG alphabet file path w host = ${filepath}`)
 		}
 		
 		return new Promise(function(resolve, reject) {	
-			WordsearchGenerator.load_alphabets_file(path)
+			WordsearchGenerator.load_alphabets_file(filepath)
 			.catch(reject)
 			.then((alphabets) => {
 				let lang_aliases = alphabets[KEY_ALPHABET_ALIASES]
@@ -887,7 +891,7 @@ class WordsearchGenerator {
 					WordsearchGenerator.load_alphabet(
 						alphabet, 
 						case_key, 
-						path,
+						filepath,
 						alphabets[KEY_DEFAULT_PD]
 					)
 					.then(resolve)
@@ -904,26 +908,26 @@ class WordsearchGenerator {
 	/**
 	 * Load alphabets file into a plain object. Note this depends on environment_promise.
 	 *
-	 * @param {String} path Path to the alphabets file.
+	 * @param {String} filepath Path to the alphabets file.
 	 *
 	 * @returns Promise resolving a plain object describing character sets per language, or rejecting
 	 * undefined on failure.
 	 * @type Promise
 	 */
-	static load_alphabets_file(path = ALPHABET_FILE) {
+	static load_alphabets_file(filepath = ALPHABET_FILE) {
 		return new Promise(function(resolve, reject) {
 			if (environment == ENV_FRONTEND) {
 				// load with ajax
 				$.ajax({
 					method: 'GET',
-					url: path,
+					url: filepath,
 					dataType: 'json',
 					cache: false,
 					success: function(alphabets) {
 						resolve(alphabets)
 					},
 					error: function(err) {
-						console.log(`ERROR failed to get alphabets file ${path}`)
+						console.log(`ERROR failed to get alphabets file ${filepath}`)
 						console.log(err)
 						reject()
 					}
@@ -931,9 +935,10 @@ class WordsearchGenerator {
 			} 
 			else if (environment == ENV_BACKEND) {
 				// load with nodejs fs module
-				fs.readFile(`${parent_dir}/${path}`, function(err, alphabets_json) {
+				filepath = WordsearchGenerator.rel_path_to_abs_path(filepath)
+				fs.readFile(filepath, function(err, alphabets_json) {
 					if (err) {
-						console.log(`ERROR alphabets file not found at ${path}`)
+						console.log(`ERROR alphabets file not found at ${filepath}`)
 						console.log(err)
 						reject()
 					} 
@@ -952,7 +957,7 @@ class WordsearchGenerator {
 	/**
 	 * Called by {get_alphabet}.
 	 */
-	static load_alphabet(alphabet, case_key, path, default_prob_dist) {
+	static load_alphabet(alphabet, case_key, filepath, default_prob_dist) {
 		return new Promise(function(resolve, reject) {
 			if (alphabet != undefined) {
 				// calculate uniform probability distribution
@@ -1031,10 +1036,10 @@ class WordsearchGenerator {
 		return new Promise(function(resolve, reject) {
 			if (environment == ENV_FRONTEND) {
 				// load with ajax
-				let path = `${dir}/${file}`
+				let filepath = `${dir}/${file}`
 				$.ajax({
 					method: 'GET',
-					url: path,
+					url: filepath,
 					dataType: 'text',
 					cache: false,
 					success: function(prob_dist_txt) {
@@ -1044,7 +1049,7 @@ class WordsearchGenerator {
 						.catch(reject)
 					},
 					error: function(err) {
-						console.log(`ERROR failed to get alphabet probability distribution file ${path}`)
+						console.log(`ERROR failed to get alphabet probability distribution file ${filepath}`)
 						console.log(err)
 						reject()
 					}
@@ -1052,10 +1057,10 @@ class WordsearchGenerator {
 			}
 			else if (environment == ENV_BACKEND) {
 				// load with nodejs fs module
-				let path = `${parent_dir}/${dir}/${file}`
-				fs.readFile(path, 'utf8', function(err, prob_dist_txt) {
+				let filepath = path.join(parent_dir, dir, file)
+				fs.readFile(filepath, 'utf8', function(err, prob_dist_txt) {
 					if (err) {
-						console.log(`ERROR probability distribution file not found at ${path}`)
+						console.log(`ERROR probability distribution file not found at ${filepath}`)
 						console.log(err)
 						reject()
 					}
@@ -1149,14 +1154,14 @@ class WordsearchGenerator {
 		return new Promise(function(resolve, reject) {
 			if (environment == ENV_FRONTEND) {
 				// load with ajax
-				let path = `${dir}/${file}`
+				let filepath = `${dir}/${file}`
 				$.ajax({
 					method: 'GET',
-					url: path,
+					url: filepath,
 					dataType: 'text',
 					cache: false,
 					error: function(err) {
-						console.log(`ERROR failed to get alphabet charset file ${path}`)
+						console.log(`ERROR failed to get alphabet charset file ${filepath}`)
 						console.log(err)
 						reject()
 					},
@@ -1170,10 +1175,10 @@ class WordsearchGenerator {
 			}
 			else if (environment == ENV_BACKEND) {
 				// load with nodejs fs module
-				let path = `${parent_dir}/${dir}/${file}`
-				fs.readFile(path, 'utf8', function(err, charset_txt) {
+				let filepath = path.join(parent_dir, dir, file)
+				fs.readFile(filepath, 'utf8', function(err, charset_txt) {
 					if (err) {
-						console.log(`ERROR charset file not found at ${path}`)
+						console.log(`ERROR charset file not found at ${filepath}`)
 						console.log(err)
 						reject()
 					}
@@ -1222,7 +1227,7 @@ class WordsearchGenerator {
 	/**
 	 * Load a words file from the given path as an array of words and word-clues.
 	 * 
-	 * @param String path Path to words file, or contents of file if used in frontend/browser.
+	 * @param String path_or_data Path to words file, or contents of file if used in frontend/browser.
 	 * @param String delimiter Column delimiter. Default is WORD_CLUE_DELIM.
 	 * 
 	 * @returns Resolves an array of words and word-clues. Each item is a 1- or 2-string array.
@@ -1232,21 +1237,26 @@ class WordsearchGenerator {
 	static load_words_file_dsv(path_or_data, delimiter=WORD_CLUE_DELIM) {
 		return new Promise(function(resolve, reject) {
 			if (environment == ENV_BACKEND) {
-				let path = path_or_data
-				fs.readFile(path, 'utf8', function(err, words_dsv) {
+				let filepath = path_or_data
+				if (!path.isAbsolute(filepath)) {
+					// make relative to parent dir
+					filepath = WordsearchGenerator.rel_path_to_abs_path(filepath)
+				}
+				
+				fs.readFile(filepath, 'utf8', function(err, words_dsv) {
 					if (err) {
-						console.log(`ERROR failed to read words file ${path}`)
+						console.log(`ERROR failed to read words file ${filepath}`)
 						console.log(err)
 						reject()
 					}
 					else {
 						try {
 							words_dsv = dsv.dsvFormat(delimiter).parseRows(words_dsv)
-							console.log(`DEBUG parsed ${path} into ${words_dsv.length} word-clues`)
+							console.log(`DEBUG parsed ${filepath} into ${words_dsv.length} word-clues`)
 							resolve(words_dsv)
 						}
 						catch (err) {
-							console.log(`ERROR failed to parse words file ${path}`)
+							console.log(`ERROR failed to parse words file ${filepath}`)
 							console.log(err)
 							reject()
 						}
@@ -1394,6 +1404,32 @@ class WordsearchGenerator {
 		// We can pass over low surrogates now as the second component
 		// in a pair which we have already processed
 		return false
+	}
+	
+	/**
+	 * Convert relative path to absolute path (relative to a given absolute dir_path).
+	 *
+	 * @param {String} rel_path Relative path to convert.
+	 * @param {String} dir_path Absolute path to the parent dir. Default is parent_dir.
+	 *
+	 * @returns Absolute path, or {false} if not done in a supported environment.
+	 * @type String|Boolean
+	 */
+	static rel_path_to_abs_path(rel_path, dir_path = parent_dir) {
+		if (environment == ENV_BACKEND) {
+			if (path.isAbsolute(rel_path)) {
+				console.log(`WARNING ${rel_path} already absolute`)
+				return rel_path
+			}
+			else {
+				let abs_path = path.join(dir_path, rel_path)
+				console.log(`DEBUG convert ${rel_path} to ${abs_path}`)
+				return abs_path
+			}
+		}
+		else {
+			return false
+		}
 	}
 }
 
