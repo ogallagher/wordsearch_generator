@@ -19,6 +19,7 @@ const NV_MAJOR = parseInt(NODE_VERSION.substr(1, NODE_VERSION.indexOf('.')))
 // common syntax
 const fs = require('fs')
 const rl = require('readline')
+const temp_logger = require('./temp_js_logger')
 
 // local imports
 
@@ -52,7 +53,18 @@ const cli = rl.createInterface({
 let word_count = 0
 let word_clues
 
-// define wordsearch
+// init logging
+temp_logger.config({
+	level: 'info',
+	with_timestamp: false,
+	caller_name: 'wordsearch_cli',
+	with_lineno: true,
+	parse_level_prefix: true,
+	with_level: true,
+	with_always_level_name: false
+})
+
+// declare wordsearch
 let wordsearch
 
 wg.environment_promise.then(main)
