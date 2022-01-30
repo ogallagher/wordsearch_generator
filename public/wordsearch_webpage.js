@@ -89,7 +89,8 @@ let wordsearch_webpage_promise = new Promise(function(resolve, reject) {
 				success: function() {
 					// init logging
 					TempLogger.config({
-						level: 'info',
+						level: 'debug',
+						level_gui: 'warning',
 						with_timestamp: false,
 						caller_name: 'wordsearch_webpage',
 						with_lineno: true,
