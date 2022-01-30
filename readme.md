@@ -2,6 +2,8 @@
 
 Generates custom wordsearch puzzles with multiple supported languages.
 
+[demo 2021-01-29](https://user-images.githubusercontent.com/17031438/151677759-e20610bc-27a1-4e9b-8029-b17aa9e7fe03.mp4)
+
 ## Supported languages/alphabets
 
 Note that in many cases I've _included_ an alphabet corresponding to a language I do not know,
