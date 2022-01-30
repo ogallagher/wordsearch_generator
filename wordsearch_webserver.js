@@ -26,7 +26,7 @@ Promise.all([
 		const dotenv = modules[2].default
 		const fs = modules[3].default
 		const path = modules[4].default
-		const temp_logger = modules[5]
+		const temp_logger = modules[5].default
 		
 		// init logging
 		temp_logger.config({
