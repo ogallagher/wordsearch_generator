@@ -14,6 +14,7 @@ const WP_HOST_URL = 'https://wordsearch.dreamhosters.com'
 const DEPENDENCIES_URL = '/webpage_dependencies.html'
 const WORDSEARCH_COMPONENT_URL = '/wordsearch_webcomponent.html'
 const WORDSEARCH_CORE_URL = '/wordsearch_generator.js'
+const WORDSEARCH_LOG_URL = '/temp_js_logger.js'
 const DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR = '.wordsearch-container'
 
 const REM_MIN = 5
@@ -74,7 +75,42 @@ let wordsearch_webpage_promise = new Promise(function(resolve, reject) {
 			})
 		}),
 		
-		// core dependencies
+		// logging script
+		new Promise(function(resolve_log) {
+			let url = USE_WP_HOST_URL
+				? `${WP_HOST_URL}${WORDSEARCH_LOG_URL}`
+				: WORDSEARCH_LOG_URL
+			
+			$.ajax({
+				method: 'GET',
+				url: url,
+				dataType: 'script',
+				cache: false,
+				success: function() {
+					// init logging
+					TempLogger.config({
+						level: 'info',
+						with_timestamp: false,
+						caller_name: 'wordsearch_webpage',
+						with_lineno: true,
+						parse_level_prefix: true,
+						with_level: true,
+						with_always_level_name: false
+					})
+					console.log(`INFO configured temp logger. level = ${
+						TempLogger.LEVEL_TO_STR[TempLogger.root.level]
+					}`)
+					
+					resolve_log()
+				},
+				error: function(err) {
+					console.log('ERROR failed to fetch logging lib')
+					resolve_log()
+				}
+			})
+		}),
+		
+		// core script
 		new Promise(function(resolve_core, reject_core) {
 			let url = USE_WP_HOST_URL
 				? `${WP_HOST_URL}${WORDSEARCH_CORE_URL}`
@@ -91,7 +127,7 @@ let wordsearch_webpage_promise = new Promise(function(resolve, reject) {
 					.then(resolve_core)
 				},
 				error: function(err) {
-					console.log(`ERROR failed to fetch wordsearch generator`)
+					console.log('ERROR failed to fetch wordsearch generator')
 					reject_core()
 				}
 			})

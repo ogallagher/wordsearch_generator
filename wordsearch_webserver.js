@@ -16,7 +16,8 @@ Promise.all([
 	import('cors'),
 	import('dotenv'),
 	import('fs'),
-	import('path')
+	import('path'),
+	import('./temp_js_logger/temp_js_logger.js')
 ])
 .then(function(modules) {
 	try {
@@ -25,6 +26,18 @@ Promise.all([
 		const dotenv = modules[2].default
 		const fs = modules[3].default
 		const path = modules[4].default
+		const temp_logger = modules[5]
+		
+		// init logging
+		temp_logger.config({
+			level: 'debug',
+			with_timestamp: false,
+			caller_name: 'wordsearch_webserver',
+			with_lineno: true,
+			parse_level_prefix: true,
+			with_level: true,
+			with_always_level_name: false
+		})
 
 		// load .env into process.env
 		dotenv.config()
