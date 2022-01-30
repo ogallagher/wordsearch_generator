@@ -1,0 +1,3 @@
+[submodule "temp_js_logger"]
+	path = temp_js_logger
+	url = https://github.com/ogallagher/temp_js_logger
