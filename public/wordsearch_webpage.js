@@ -87,6 +87,9 @@ let wordsearch_webpage_promise = new Promise(function(resolve, reject) {
 				dataType: 'script',
 				cache: false,
 				success: function() {
+					// normally this happens on window.load, but that event happened already
+					TempLogger.init_webpage_console()
+					
 					// init logging
 					TempLogger.config({
 						level: 'debug',
@@ -159,7 +162,7 @@ let wordsearch_component_promise = new Promise(function(resolve, reject) {
 	})
 })
 
-window.onload = function(e) {
+window.addEventListener('load', function(e) {
 	wordsearch_webpage_promise
 	.then(
 		function() {
@@ -181,7 +184,7 @@ window.onload = function(e) {
 			return Promise.reject()
 		}
 	)
-}
+})
 
 function ext_js_dependencies() {
 	return new Promise(function(resolve, reject) {
