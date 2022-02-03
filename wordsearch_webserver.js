@@ -36,119 +36,121 @@ Promise.all([
 			with_lineno: true,
 			parse_level_prefix: true,
 			with_level: true,
-			with_always_level_name: false
+			with_always_level_name: false,
+			with_cli_colors: true
 		})
-
-		// load .env into process.env
-		dotenv.config()
+		.then(() => {
+			// load .env into process.env
+			dotenv.config()
 		
-		// constants
-		const port = process.env.PORT || 80
+			// constants
+			const port = process.env.PORT || 80
 	
-		let PUBLIC_DIR
-		if (process.env.IS_DREAMHOST) {
-			PUBLIC_DIR = './public'
-		}
-		else {
-			// module syntax
-			// PUBLIC_DIR = script_dir()
+			let PUBLIC_DIR
+			if (process.env.IS_DREAMHOST) {
+				PUBLIC_DIR = './public'
+			}
+			else {
+				// module syntax
+				// PUBLIC_DIR = script_dir()
 			
-			PUBLIC_DIR = `${__dirname}/public`
-		}
-		console.log(`DEBUG serving ${PUBLIC_DIR}/`)
+				PUBLIC_DIR = `${__dirname}/public`
+			}
+			console.log(`DEBUG serving ${PUBLIC_DIR}/`)
 		
-		const EX_CFG_FILES_DIR = 'example_cfg_files'
+			const EX_CFG_FILES_DIR = 'example_cfg_files'
 		
-		// server instance
-		const server = express()
+			// server instance
+			const server = express()
 		
-		// enable cross-origin requests for same origin html imports
-		server.use(cors({
-			// allow all origins
-			origin: '*'
-		}))
+			// enable cross-origin requests for same origin html imports
+			server.use(cors({
+				// allow all origins
+				origin: '*'
+			}))
 		
-		server.set('port', port)
+			server.set('port', port)
 	
-		// serve website from public/
-		server.use(express.static(PUBLIC_DIR))
+			// serve website from public/
+			server.use(express.static(PUBLIC_DIR))
 		
-		// route root path to wordsearch generator page
-		server.get('/', function(req,res,next) {
-			console.log(`INFO routing root path to /wordsearch_generator.html`)
-			res.sendFile(`./wordsearch_generator.html`, {
-				root: PUBLIC_DIR
+			// route root path to wordsearch generator page
+			server.get('/', function(req,res,next) {
+				console.log(`INFO routing root path to /wordsearch_generator.html`)
+				res.sendFile(`./wordsearch_generator.html`, {
+					root: PUBLIC_DIR
+				})
 			})
-		})
 		
-		// route api calls
-		server.get('/api/list_ex_cfg_files', function(req, res) {
-			list_ex_cfg_files()
-			.then((result) => {
-				res.json(result)
+			// route api calls
+			server.get('/api/list_ex_cfg_files', function(req, res) {
+				list_ex_cfg_files()
+				.then((result) => {
+					res.json(result)
+				})
 			})
-		})
 		
-		server.get('/api/ex_cfg_file', function(req, res) {
-			let file_path = path.join(PUBLIC_DIR, EX_CFG_FILES_DIR, req.query.filename)
-			fs.readFile(file_path, 'utf8', function(err, data) {
-				if (err) {
-					console.log(`ERROR failed to get cfg file ${file_path}`)
-					console.log(err)
-					res.json({
-						error: err
-					})
-				}
-				else {
-					console.log(`DEBUG read ex cfg file of length ${data.length}`)
-					res.json({
-						file: data
-					})
-				}
-			})
-		})
-		
-		// http server
-		server.listen(server.get('port'), on_start)
-	
-		// methods
-		
-		function on_start() {
-			console.log('INFO server running')
-		}
-		
-		function list_ex_cfg_files() {
-			console.log(`INFO listing example config files`)
-  		  	
-			// Function to get current filenames
-			// in directory with specific extension
-			let ex_cfg_files_dir = path.join(PUBLIC_DIR, EX_CFG_FILES_DIR)
-			
-			return new Promise(function(resolve, reject) {
-				fs.readdir(ex_cfg_files_dir, function(err, files) {
+			server.get('/api/ex_cfg_file', function(req, res) {
+				let file_path = path.join(PUBLIC_DIR, EX_CFG_FILES_DIR, req.query.filename)
+				fs.readFile(file_path, 'utf8', function(err, data) {
 					if (err) {
-						console.log(`ERROR failed to list files in ${ex_cfg_files_dir}`)
+						console.log(`ERROR failed to get cfg file ${file_path}`)
 						console.log(err)
-						reject({
+						res.json({
 							error: err
 						})
 					}
 					else {
-						console.log(`INFO found ${files.length} example files`)
-						let ex_cfg_files = files
-						.map(function(file) {
-							if (path.extname(file) == '.json') {
-								console.log(`DEBUG\t${file}`)
-								return file
-							}
+						console.log(`DEBUG read ex cfg file of length ${data.length}`)
+						res.json({
+							file: data
 						})
-						.filter(file => file != undefined)
-						
-						resolve(ex_cfg_files)
 					}
 				})
 			})
-		}
+		
+			// http server
+			server.listen(server.get('port'), on_start)
+			
+			// methods
+		
+			function on_start() {
+				console.log('INFO server running')
+			}
+		
+			function list_ex_cfg_files() {
+				console.log(`INFO listing example config files`)
+  		  	
+				// Function to get current filenames
+				// in directory with specific extension
+				let ex_cfg_files_dir = path.join(PUBLIC_DIR, EX_CFG_FILES_DIR)
+			
+				return new Promise(function(resolve, reject) {
+					fs.readdir(ex_cfg_files_dir, function(err, files) {
+						if (err) {
+							console.log(`ERROR failed to list files in ${ex_cfg_files_dir}`)
+							console.log(err)
+							reject({
+								error: err
+							})
+						}
+						else {
+							console.log(`INFO found ${files.length} example files`)
+							let ex_cfg_files = files
+							.map(function(file) {
+								if (path.extname(file) == '.json') {
+									console.log(`DEBUG\t${file}`)
+									return file
+								}
+							})
+							.filter(file => file != undefined)
+						
+							resolve(ex_cfg_files)
+						}
+					})
+				})
+			}
+		})
 	}
 	catch (err) {
 		console.error(err.stack)

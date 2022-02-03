@@ -101,11 +101,12 @@ let wordsearch_webpage_promise = new Promise(function(resolve, reject) {
 						with_level: true,
 						with_always_level_name: false
 					})
-					console.log(`INFO configured temp logger. level = ${
-						TempLogger.LEVEL_TO_STR[TempLogger.root.level]
-					}`)
-					
-					resolve_log()
+					.then(() => {
+						console.log(`INFO configured temp logger. level = ${
+							TempLogger.LEVEL_TO_STR[TempLogger.root.level]
+						}`)
+						resolve_log()
+					})
 				},
 				error: function(err) {
 					console.log('ERROR failed to fetch logging lib')

@@ -61,7 +61,8 @@ temp_logger.config({
 	with_lineno: true,
 	parse_level_prefix: true,
 	with_level: true,
-	with_always_level_name: false
+	with_always_level_name: false,
+	with_cli_colors: true
 })
 
 // declare wordsearch
@@ -209,7 +210,7 @@ function on_alphabet_load() {
 				word_clues = new Array(parseInt(word_count_str))
 		
 				if (word_clues.length > 0) {
-					console.log(`word${WORD_CLUE_DELIM}clue`)
+					console.log(`ALWAYS word${WORD_CLUE_DELIM}clue`)
 					next_word_clue()
 					.then(() => {
 						cli.close()
@@ -289,14 +290,14 @@ function load_word_clues(word_clues, clue_delim=WORD_CLUE_DELIM) {
 
 function print_wordsearch() {
 	if (wordsearch.title !== undefined) {
-		console.log(`\n${
+		console.log(`ALWAYS\n${
 			wordsearch.title
 		}\n${
 			new Array(wordsearch.title.length).fill('-').join('')
 		}\n`)
 	}
 	
-	console.log(`\n${wordsearch.grid_string()}\n`)
+	console.log(`ALWAYS\n${wordsearch.grid_string()}\n`)
 	
-	console.log(`clues:\n\n${wordsearch.clues.join('\n')}\n`)
+	console.log(`ALWAYS clues:\n\n${wordsearch.clues.join('\n')}\n`)
 }
