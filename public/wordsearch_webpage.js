@@ -636,8 +636,8 @@ function on_wordsearch_input_file(wordsearch_cmp_id, wordsearch_json) {
 			words_delim = $(`#${wordsearch_cmp_id} .words-file-delim`).val()
 			
 			if (words_delim == '') {
-				// undefine to use default
-				words_delim = undefined
+				// use default
+				words_delim = WordsearchGenerator.WORD_CLUE_DELIM
 			}
 		}
 		
@@ -749,8 +749,8 @@ function on_wordsearch_input_form(wordsearch_cmp_id) {
 					// get delimiter
 					let words_delim = wordsearch_cmp.find('.words-file-delim').val()
 					if (words_delim == '') {
-						// undefine to use default delimiter
-						words_delim = undefined
+						// default delimiter
+						words_delim = WordsearchGenerator.WORD_CLUE_DELIM
 					}
 					
 					// parse words file

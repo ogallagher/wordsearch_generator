@@ -290,14 +290,14 @@ function load_word_clues(word_clues, clue_delim=WORD_CLUE_DELIM) {
 
 function print_wordsearch() {
 	if (wordsearch.title !== undefined) {
-		console.log(`ALWAYS\n${
+		temp_logger.TempLogger.CONSOLE_METHOD['log'](`\n${
 			wordsearch.title
 		}\n${
 			new Array(wordsearch.title.length).fill('-').join('')
 		}\n`)
 	}
 	
-	console.log(`ALWAYS\n${wordsearch.grid_string()}\n`)
+	temp_logger.TempLogger.CONSOLE_METHOD['log'](`\n${wordsearch.grid_string()}\n`)
 	
-	console.log(`ALWAYS clues:\n\n${wordsearch.clues.join('\n')}\n`)
+	temp_logger.TempLogger.CONSOLE_METHOD['log'](`clues:\n\n${wordsearch.clues.join('\n')}\n`)
 }
