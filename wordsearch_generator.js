@@ -712,6 +712,8 @@ class WordsearchGenerator {
 						console.log(`ERROR failed to read prob dist file ${prob_dist[KEY_PD_FILE]}`)
 					})
 					.then(function(pd) {
+						console.log(`DEBUG prob dist ${pd_name} found; updating probabilities`)
+						
 						// update probabilities
 						self.alphabet[KEY_PROBABILITIES] = pd[KEY_PROBABILITIES]
 						self.alphabet[KEY_ACCUM_PROBABILITIES] = pd[KEY_ACCUM_PROBABILITIES]
@@ -1463,6 +1465,23 @@ if (typeof exports != 'undefined') {
 	exports.KEY_RANDOM_SUBSET = KEY_RANDOM_SUBSET
 	exports.KEY_TITLE = KEY_TITLE
 	exports.KEY_WORDS_DELIM = KEY_WORDS_DELIM
+	
+	// export static methods
+	exports.get_alphabet_aliases = WordsearchGenerator.get_alphabet_aliases
+	exports.get_alphabet = WordsearchGenerator.get_alphabet
+	exports.load_alphabets_file = WordsearchGenerator.load_alphabets_file
+	exports.load_alphabet = WordsearchGenerator.load_alphabet
+	exports.load_alphabet_probability_dist_file = WordsearchGenerator.load_alphabet_probability_dist_file
+	exports.parse_alphabet_probability_dist_str = WordsearchGenerator.parse_alphabet_probability_dist_str
+	exports.load_alphabet_charset_file = WordsearchGenerator.load_alphabet_charset_file
+	exports.parse_charset_str = WordsearchGenerator.parse_charset_str
+	exports.load_words_file_dsv = WordsearchGenerator.load_words_file_dsv
+	exports.import_config = WordsearchGenerator.import_config
+	exports.char_to_code = WordsearchGenerator.char_to_code
+	exports.code_to_char = WordsearchGenerator.code_to_char
+	exports.string_to_array = WordsearchGenerator.string_to_array
+	exports.whole_char_at = WordsearchGenerator.whole_char_at
+	exports.rel_path_to_abs_path = WordsearchGenerator.rel_path_to_abs_path
 	
 	// console.log(`DEBUG ${exports}`)
 } 
