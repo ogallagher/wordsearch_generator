@@ -624,6 +624,7 @@ function on_wordsearch_input_file(wordsearch_cmp_id, wordsearch_json) {
 		let description = typeof wordsearch_json === 'string' 
 			? JSON.parse(wordsearch_json)
 			: wordsearch_json
+		console.log(JSON.stringify(description, undefined, 2))
 		
 		let random_subset = description[WordsearchGenerator.KEY_RANDOM_SUBSET]
 		
@@ -680,7 +681,9 @@ function on_wordsearch_input_file(wordsearch_cmp_id, wordsearch_json) {
 				word_clues,
 				random_subset,
 				description[WordsearchGenerator.KEY_TITLE],
-				words_delim
+				words_delim,
+				description[WordsearchGenerator.KEY_SELECTED_CHARSET],
+				description[WordsearchGenerator.KEY_SELECTED_PROB_DIST]
 			)
 		
 			if (random_subset != undefined) {

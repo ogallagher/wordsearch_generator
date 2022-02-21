@@ -1465,6 +1465,8 @@ if (typeof exports != 'undefined') {
 	exports.KEY_RANDOM_SUBSET = KEY_RANDOM_SUBSET
 	exports.KEY_TITLE = KEY_TITLE
 	exports.KEY_WORDS_DELIM = KEY_WORDS_DELIM
+	exports.KEY_SELECTED_CHARSET = KEY_SELECTED_CHARSET
+	exports.KEY_SELECTED_PROB_DIST = KEY_SELECTED_PROB_DIST
 	
 	// export static methods
 	exports.get_alphabet_aliases = WordsearchGenerator.get_alphabet_aliases
@@ -1512,6 +1514,8 @@ else {
 	WordsearchGenerator.KEY_RANDOM_SUBSET = KEY_RANDOM_SUBSET
 	WordsearchGenerator.KEY_TITLE = KEY_TITLE
 	WordsearchGenerator.KEY_WORDS_DELIM = KEY_WORDS_DELIM
+	WordsearchGenerator.KEY_SELECTED_CHARSET = KEY_SELECTED_CHARSET
+	WordsearchGenerator.KEY_SELECTED_PROB_DIST = KEY_SELECTED_PROB_DIST
 
 	// console.log(`DEBUG no exports`)
 }
