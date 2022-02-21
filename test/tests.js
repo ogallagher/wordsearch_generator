@@ -1,10 +1,13 @@
 const assert = require('assert')
+const ProgressBar = require('progress')
 
 describe('WordsearchGenerator', function() {
 	const temp_logger = require('./temp_js_logger')
 	let wg
 	
 	before(function(done) {
+		temp_logger.set_level('info')
+		
 		temp_logger.imports_promise.then(function() {
 			wg = require('./wordsearch_generator.js')
 			wg.environment_promise.then(done)
@@ -21,7 +24,7 @@ describe('WordsearchGenerator', function() {
 	
 	describe('prob_dist', function() {
 		let w
-		let sample_size = 1000
+		let sample_size = 30000000
 		let max_error = 0.05
 		
 		function char_to_idx(char) {
@@ -78,7 +81,7 @@ describe('WordsearchGenerator', function() {
 				})
 			})
 			
-			it('generates random characters w dictionary prob dist', function(done) {
+			it('generates random characters w dictionary prob dist', function() {
 				console.log('debug set prob dist = dictionary')
 				w.set_probability_distribution('dictionary')
 				.then(function() {					
@@ -93,8 +96,15 @@ describe('WordsearchGenerator', function() {
 						} unique chars`
 					)
 					
+					let progress_sample = new ProgressBar(
+						'collect sample [:bar] (:percent) ',
+						{
+							total: sample_size
+						}
+					)
 					for (let i=0; i<sample_size; i++) {
 						sample_dist[char_to_idx(w.random_cell())] += 1
+						progress_sample.tick()
 					}
 					
 					let stats = dist_stats(sample_dist)
@@ -106,30 +116,54 @@ describe('WordsearchGenerator', function() {
 					sample_dist = sample_dist.map((f) => { return f / stats.sum })
 					
 					// check error against ideal probability distribution
-					wg.load_alphabet_probability_dist_file('ko_prob_dist.txt')
-					.then(
-						function(prob_dist) {
-							let real_dist = new Array(...prob_dist.probabilities)
-							assert.equal(real_dist.length, sample_dist.length)
+					return new Promise(function(resolve, reject) {
+						wg.load_alphabet_probability_dist_file('ko_prob_dist.txt')
+						.then(
+							function(prob_dist) {
+								let real_dist = new Array(...prob_dist.probabilities)
+								assert.equal(real_dist.length, sample_dist.length)
 							
-							let errors = new Array(sample_dist.length)
-							console.log(errors.length)
-							for (let i=0; i<errors.length; i++) {
-								errors[i] = Math.abs(sample_dist[i] - real_dist[i]) / real_dist[i]
-							}
+								let errors = new Array(sample_dist.length)
+								let progress_errors = new ProgressBar(
+									'calculate errors [:bar] (:percent) ',
+									{
+										total: errors.length
+									}
+								)
+								for (let i=0; i<errors.length; i++) {
+									let den = real_dist[i]
+									if (den == 0) {
+										den = sample_dist[i]
+									}
+									
+									let num = Math.abs(sample_dist[i] - real_dist[i])
+									if (num == 0) {
+										den = 1
+									}
+									
+									errors[i] = num / den
+									if (num/den > 1) {
+										console.log(
+											`error big error sample=${sample_dist[i]} real=${real_dist[i]}`
+										)
+									}
+									progress_errors.tick()
+								}
 						
-							console.log('debug calculate error stats')
-							let error_stats = dist_stats(errors)
-							assert.equal(error_stats.length, errors.length)
-							console.log(`info avg error = ${error_stats.avg}`)
-							assert.ok(error_stats.avg <= max_error)
-						},
-						function() {
-							assert.ok(false)
-						}
-					)
-					.finally(function() {
-						done()
+								console.log('debug calculate error stats')
+								let error_stats = dist_stats(errors)
+								assert.equal(error_stats.count, errors.length)
+								console.log(`info errors stats:\n${
+									JSON.stringify(error_stats, undefined, 2)
+								}`)
+								assert.ok(error_stats.avg <= max_error)
+								
+								resolve()
+							},
+							function() {
+								reject()
+							}
+						)
 					})
 				})
 			})

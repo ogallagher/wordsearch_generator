@@ -10,7 +10,7 @@
 	"main": "wordsearch_webserver.js",
 	"scripts": {
 		"cli": "node wordsearch_cli.js",
-		"web": "node wordsearchwebserver.js",
+		"web": "node wordsearch_webserver.js",
 		"test": "mocha"
 	},
 	"keywords": [
@@ -33,6 +33,7 @@
 	},
 	"devDependencies": {
 		"jsdoc": "^3.6.10",
-		"mocha": "^9.2.1"
+		"mocha": "^9.2.1",
+		"progress": "^2.0.3"
 	}
 }
