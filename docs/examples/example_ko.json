@@ -1,12 +1,25 @@
 {
 	"language": "ko",
-	"size": 8,
-	"title": "한국 단어찾기 예",
+	"size": 25,
+	"case": "lower",
 	"words": [
-		"사과:과일 중 하나",
-		"머리:head, 목 위에",
-		"가위:scissors",
-		"지름:diameter",
-		"까치:이름이 ㄲ로 시작하는 새"
-	]
+		"토끼:rabbit",
+		"고양이:cat",
+		"다람쥐:squirrel",
+		"고래:whale",
+		"물고기:fish",
+		"코끼리:elephant",
+		"여우:fox",
+		"사슴:deer",
+		"돼지:pig",
+		"고슴도치:hedgehog",
+		"강아지:puppy",
+		"도마뱀:lizard",
+		"개미:ant",
+		"개구리:frog",
+		"거북이:turtle",
+		"오징어:squid"
+	],
+	"selected_prob_dist": "dictionary",
+	"title": "한국어 단어찾기 예 - 동물"
 }

@@ -185,6 +185,7 @@ window.addEventListener('load', function(e) {
 			return Promise.reject()
 		}
 	)
+	.then(add_wordsearch_container_btn)
 })
 
 function ext_js_dependencies() {
@@ -241,305 +242,7 @@ function wordsearch_webpage_main() {
 		
 		// load wordsearch components into each container
 		$(wordsearch_containers_selector).each(function(idx) {
-			console.log(`DEBUG load wordsearch generator component ${idx}`)
-			
-			// load component
-			let wordsearch_jq = $(wordsearch_html)
-			
-			// uniquely identify
-			let wordsearch_id = `wordsearch-component-${new Date().toISOString()}`
-			.replaceAll(':','-')
-			.replaceAll('.','-')
-			wordsearch_jq.attr('id', wordsearch_id)
-			
-			// append to container
-			$(this).append(wordsearch_jq)
-			
-			set_wordsearch_input_type(wordsearch_id, INPUT_FILE)
-			set_wordsearch_is_random_subset(wordsearch_id, false)
-			
-			// handle input choice
-			wordsearch_jq.find('.wordsearch-input-file').click(function() {
-				set_wordsearch_input_type(wordsearch_id, INPUT_FILE)
-			})
-			wordsearch_jq.find('.wordsearch-input-form').click(function() {
-				set_wordsearch_input_type(wordsearch_id, INPUT_FORM)
-			})
-			
-			// handle alphabet choices list
-			let langs_jq = wordsearch_jq.find('.languages')
-			
-			// show on focus
-			let lang_jq = wordsearch_jq.find('.language')
-			.on('focusin', function() {
-				// show alphabets
-				langs_jq.show()
-			})
-			.on('focusout', function(event) {
-				// potentially allow a language option to accept a click event before disappearing
-				setTimeout(() => {
-					langs_jq.hide()
-				}, 150)
-			})
-			
-			const alphabet_option_template = 
-			`<div class="language-option px-2">
-				<span class="alphabet-key"></span>
-				<span class="alphabet-aliases"></span>
-			</div>`
-			
-			// display alphabets in list
-			for (let alphabet_key in alphabets) {
-				// console.log(`debug loaded alphabet:\b${JSON.stringify(alphabet_key)}`)
-				let alphabet_jq = $(alphabet_option_template)
-				.attr('data-alphabet-key', alphabet_key)
-				
-				alphabet_jq.find('.alphabet-key').html(alphabet_key)
-				alphabet_jq.find('.alphabet-aliases').html(alphabets[alphabet_key].join(' '))
-				
-				langs_jq.append(alphabet_jq)
-				
-				// handle alphabet click
-				alphabet_jq.on('click', function(event) {
-					on_alphabet_option_click(wordsearch_id, event)
-				})
-			}
-			
-			// charset display
-			wordsearch_jq.find('.charset')
-			// show on focus
-			.on('focusin', function() {
-				// show charsets
-				wordsearch_jq.find('.charset-options').show()
-			})
-			// hide on unfocus
-			.on('focusout', function() {
-				// potentially allow a charset to accept click before disappearing
-				setTimeout(() => {
-					wordsearch_jq.find('.charset-options').hide()
-				}, 150)
-			})
-			
-			// prob dist display
-			wordsearch_jq.find('.prob-dist')
-			// show on focus
-			.on('focusin', function() {
-				// show prob dists
-				wordsearch_jq.find('.prob-dist-options').show()
-			})
-			// hide on unfocus
-			.on('focusout', function() {
-				// potentially allow a prob dist to accept click before disappearing
-				setTimeout(() => {
-					wordsearch_jq.find('.prob-dist-options').hide()
-				}, 150)
-			})
-			
-			// load initial charsets and prob dists
-			load_charsets_prob_dists(wordsearch_id, lang_jq.val())
-			
-			// set default wordsearch size
-			wordsearch_jq.find('.size-width')
-			.attr('placeholder', WordsearchGenerator.WIDTH_DEFAULT)
-			wordsearch_jq.find('.size-height')
-			.attr('placeholder', WordsearchGenerator.WIDTH_DEFAULT)
-			
-			// handle description file upload
-			wordsearch_jq.find('.wordsearch-file').on('change', function() {
-				let filereader = new FileReader()
-				filereader.onload = function() {
-					wordsearch_description_json[wordsearch_id] = filereader.result
-					on_wordsearch_input_file(wordsearch_id, wordsearch_description_json[wordsearch_id])
-				}
-				filereader.readAsText($(this).prop('files')[0])
-			})
-			
-			// handle words file upload
-			wordsearch_jq.find('.words-file').on('change', function() {
-				let filereader = new FileReader()
-				filereader.onload = function() {
-					wordsearch_word_clues[wordsearch_id] = filereader.result
-				}
-				filereader.readAsText($(this).prop('files')[0])
-			})
-			
-			// handle word-clue delim input
-			wordsearch_jq.find('.words-file-delim')
-			.attr('placeholder', WordsearchGenerator.WORD_CLUE_DELIM)
-			
-			// handle whitespace controls
-			let cell_padx = 16
-			let cell_padx_min = 0
-			let cell_padx_max = cell_padx * 2
-			wordsearch_jq.find('.whitespace-label').html(cell_padx)
-			wordsearch_jq.find('.whitespace-control')
-			.attr('min', cell_padx_min)
-			.attr('max', cell_padx_max)
-			.attr('step', (cell_padx_max - cell_padx_min) / 20)
-			.val(cell_padx)
-			.on('input', function() {
-				let new_cell_padx = parseFloat($(this).val())
-				
-				wordsearch_jq.find('.ws-cell')
-				.css('padding-left', new_cell_padx)
-				.css('padding-right', new_cell_padx)
-				
-				wordsearch_jq.find('.whitespace-label').html(Math.round(new_cell_padx))
-			})
-			
-			// handle font size controls
-			let cell_font = rem_to_px(2.25)
-			let font_min = 8
-			let font_max = cell_font * 2.5
-			
-			let answer_font = rem_to_px(1.5) / cell_font
-			
-			wordsearch_jq.find('.font-size-label').html(cell_font)
-			wordsearch_jq.find('.font-size-control')
-			.attr('min', font_min)
-			.attr('max', font_max)
-			.attr('step', (font_max - font_min) / 20)
-			.val(cell_font)
-			.on('input', function() {
-				let new_cell_font = parseFloat($(this).val())
-				
-				wordsearch_jq.find('.ws-cell').css('fontSize', new_cell_font)
-				wordsearch_jq.find('.ws-answer').css('fontSize', new_cell_font * answer_font)
-				
-				wordsearch_jq.find('.font-size-label').html(Math.round(new_cell_font))
-			})
-			
-			// handle reload button
-			wordsearch_jq.find('.wordsearch-reload').click(function() {
-				// console.log(`DEBUG wordsearch reload button ${wordsearch_id}`)
-				switch (wordsearch_input_type[wordsearch_id]) {
-					case INPUT_FILE:
-						let description_json = wordsearch_description_json[wordsearch_id]
-						let config = description_json == undefined 
-							? undefined
-							: JSON.parse(description_json)
-						
-						if (config != undefined) {
-							// use random subset count input if enabled
-							if (wordsearch_is_random_subset[wordsearch_id]) {
-								let ui_subset_length = wordsearch_jq.find('.random-subset-count').val()
-								if (ui_subset_length !== '') {
-									ui_subset_length = parseInt(ui_subset_length)
-									// console.log(`DEBUG ui subset length = ${ui_subset_length}`)
-									config['random_subset'] = ui_subset_length
-								}
-							}
-							
-							on_wordsearch_input_file(wordsearch_id, config)
-						}
-						else {
-							console.log(`ERROR wordsearch config file not defined`)
-						}
-						
-						break
-			
-					case INPUT_FORM:
-						on_wordsearch_input_form(wordsearch_id)
-						break
-				}
-				
-				// reset whitespace control
-				wordsearch_jq.find('.whitespace-label').html(cell_padx)
-				wordsearch_jq.find('.whitespace-control').val(cell_padx)
-				
-				// reset font size control
-				wordsearch_jq.find('.font-size-label').html(cell_font)
-				wordsearch_jq.find('.font-size-control').val(cell_font)
-			})
-	
-			// handle word-clue add button click
-			wordsearch_jq.find('.add-word-clue').click(function() {
-				let datetime_str = new Date().toISOString()
-				let containerjq = wordsearch_jq.find('.word-clues')
-				let rowjq = $(
-					`<div class="row word-clue mt-1 gx-1" data-when="${datetime_str}">
-						<div class="col">
-							<input type="text" placeholder="word" class="word-clue-word form-control"/>
-						</div>
-						<div class="col">
-							<input type="text" placeholder="clue (optional)" class="word-clue-clue form-control"/>
-						</div>
-						<div class="col-auto d-flex flex-column justify-content-center">
-							<button 
-								class="btn btn-danger word-clue-delete" 
-								data-wordsearch-id="${wordsearch_id}"
-								data-when="${datetime_str}"
-								onclick="on_word_clue_delete_click(event)">
-								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" fill="currentColor" class="bi bi-dash-lg" viewBox="0 0 16 16">
-									<path fill-rule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z"/>
-								</svg>
-							</button>
-						</div>
-					</div>`
-				)
-				containerjq.append(rowjq)
-			})
-			
-			// handle words file button click
-			wordsearch_jq.find('.words-file-button').click(function() {
-				set_wordsearch_use_words_file(wordsearch_id, !is_on($(this)))
-			})
-			
-			// handle random subset button click
-			wordsearch_jq.find('.random-subset').click(function() {
-				set_wordsearch_is_random_subset(wordsearch_id, !is_on($(this)))
-			})
-			
-			// handle print button
-			wordsearch_jq.find('.wordsearch-print').click(function() {
-				// clean wordsearch
-				wordsearch_jq.find('.wordsearch').addClass('printable')
-		
-				// hide config
-				wordsearch_jq.find('.wordsearch-config').addClass('printable')
-		
-				// hide answers header
-				wordsearch_jq.find('.answers-header').addClass('printable')
-		
-				// hide answers
-				wordsearch_jq.find('.ws-word').addClass('printable')
-		
-				// show print-only
-				wordsearch_jq.find('.printscreen-only').addClass('printable')
-			})
-			
-			// handle screen button
-			wordsearch_jq.find('.wordsearch-screen').click(function() {
-				// mark wordsearch
-				wordsearch_jq.find('.wordsearch').removeClass('printable')
-		
-				// show config
-				wordsearch_jq.find('.wordsearch-config').removeClass('printable')
-		
-				// show answers header
-				wordsearch_jq.find('.answers-header').removeClass('printable')
-		
-				// show answers
-				wordsearch_jq.find('.ws-word').removeClass('printable')
-		
-				// hide print-only
-				wordsearch_jq.find('.printscreen-only').removeClass('printable')
-			})
-			
-			// handle export config button
-			wordsearch_jq.find('.wordsearch-export-config').click(function() {
-				if (wordsearch_global[wordsearch_id] != undefined) {
-					let wordsearch_json_encoded = btoa(unescape(encodeURIComponent(
-						JSON.stringify(wordsearch_global[wordsearch_id].export_config())
-					)))
-					console.log(`DEBUG encoded export = ${wordsearch_json_encoded}`)
-			
-					wordsearch_jq.find('.wordsearch-export-link')
-					.prop('href',`data:application/json;base64,${wordsearch_json_encoded}`)
-					.prop('download',`wordsearch_cfg_${new Date().toISOString()}.json`)
-					[0].click()
-				}
-			})
+			load_child_wordsearch_generator($(this), idx, wordsearch_html)
 		})
 		.promise().done(() => {
 			return Promise.resolve()
@@ -547,6 +250,352 @@ function wordsearch_webpage_main() {
 	})
 	
 	return p
+}
+
+function load_child_wordsearch_generator(parent_jq, idx, wordsearch_html) {
+	console.log(`DEBUG load wordsearch generator component ${idx}`)
+	
+	// load component
+	let wordsearch_jq = $(wordsearch_html)
+	
+	// uniquely identify
+	let wordsearch_id = `wordsearch-component-${new Date().toISOString()}`
+	.replaceAll(':','-')
+	.replaceAll('.','-')
+	wordsearch_jq.attr('id', wordsearch_id)
+	
+	// append to container
+	parent_jq.append(wordsearch_jq)
+	
+	set_wordsearch_input_type(wordsearch_id, INPUT_FILE)
+	set_wordsearch_is_random_subset(wordsearch_id, false)
+	
+	// handle input choice
+	wordsearch_jq.find('.wordsearch-input-file').click(function() {
+		set_wordsearch_input_type(wordsearch_id, INPUT_FILE)
+	})
+	wordsearch_jq.find('.wordsearch-input-form').click(function() {
+		set_wordsearch_input_type(wordsearch_id, INPUT_FORM)
+	})
+	
+	// handle alphabet choices list
+	let langs_jq = wordsearch_jq.find('.languages')
+	
+	// show on focus
+	let lang_jq = wordsearch_jq.find('.language')
+	.on('focusin', function() {
+		// show alphabets
+		langs_jq.show()
+	})
+	.on('focusout', function(event) {
+		// potentially allow a language option to accept a click event before disappearing
+		setTimeout(() => {
+			langs_jq.hide()
+		}, 150)
+	})
+	
+	const alphabet_option_template = 
+	`<div class="language-option px-2">
+		<span class="alphabet-key"></span>
+		<span class="alphabet-aliases"></span>
+	</div>`
+	
+	// display alphabets in list
+	for (let alphabet_key in alphabets) {
+		// console.log(`debug loaded alphabet:\b${JSON.stringify(alphabet_key)}`)
+		let alphabet_jq = $(alphabet_option_template)
+		.attr('data-alphabet-key', alphabet_key)
+		
+		alphabet_jq.find('.alphabet-key').html(alphabet_key)
+		alphabet_jq.find('.alphabet-aliases').html(alphabets[alphabet_key].join(' '))
+		
+		langs_jq.append(alphabet_jq)
+		
+		// handle alphabet click
+		alphabet_jq.on('click', function(event) {
+			on_alphabet_option_click(wordsearch_id, event)
+		})
+	}
+	
+	// charset display
+	wordsearch_jq.find('.charset')
+	// show on focus
+	.on('focusin', function() {
+		// show charsets
+		wordsearch_jq.find('.charset-options').show()
+	})
+	// hide on unfocus
+	.on('focusout', function() {
+		// potentially allow a charset to accept click before disappearing
+		setTimeout(() => {
+			wordsearch_jq.find('.charset-options').hide()
+		}, 150)
+	})
+	
+	// prob dist display
+	wordsearch_jq.find('.prob-dist')
+	// show on focus
+	.on('focusin', function() {
+		// show prob dists
+		wordsearch_jq.find('.prob-dist-options').show()
+	})
+	// hide on unfocus
+	.on('focusout', function() {
+		// potentially allow a prob dist to accept click before disappearing
+		setTimeout(() => {
+			wordsearch_jq.find('.prob-dist-options').hide()
+		}, 150)
+	})
+	
+	// load initial charsets and prob dists
+	load_charsets_prob_dists(wordsearch_id, lang_jq.val())
+	
+	// set default wordsearch size
+	wordsearch_jq.find('.size-width')
+	.attr('placeholder', WordsearchGenerator.WIDTH_DEFAULT)
+	wordsearch_jq.find('.size-height')
+	.attr('placeholder', WordsearchGenerator.WIDTH_DEFAULT)
+	
+	// handle description file upload
+	wordsearch_jq.find('.wordsearch-file').on('change', function() {
+		let filereader = new FileReader()
+		filereader.onload = function() {
+			wordsearch_description_json[wordsearch_id] = filereader.result
+			on_wordsearch_input_file(wordsearch_id, wordsearch_description_json[wordsearch_id])
+		}
+		filereader.readAsText($(this).prop('files')[0])
+	})
+	
+	// handle words file upload
+	wordsearch_jq.find('.words-file').on('change', function() {
+		let filereader = new FileReader()
+		filereader.onload = function() {
+			wordsearch_word_clues[wordsearch_id] = filereader.result
+		}
+		filereader.readAsText($(this).prop('files')[0])
+	})
+	
+	// handle word-clue delim input
+	wordsearch_jq.find('.words-file-delim')
+	.attr('placeholder', WordsearchGenerator.WORD_CLUE_DELIM)
+	
+	// handle whitespace controls
+	let cell_padx = 16
+	let cell_padx_min = 0
+	let cell_padx_max = cell_padx * 2
+	wordsearch_jq.find('.whitespace-label').html(cell_padx)
+	wordsearch_jq.find('.whitespace-control')
+	.attr('min', cell_padx_min)
+	.attr('max', cell_padx_max)
+	.attr('step', (cell_padx_max - cell_padx_min) / 20)
+	.val(cell_padx)
+	.on('input', function() {
+		let new_cell_padx = parseFloat($(this).val())
+		
+		wordsearch_jq.find('.ws-cell')
+		.css('padding-left', new_cell_padx)
+		.css('padding-right', new_cell_padx)
+		
+		wordsearch_jq.find('.whitespace-label').html(Math.round(new_cell_padx))
+	})
+	
+	// handle font size controls
+	let cell_font = rem_to_px(2.25)
+	let font_min = 8
+	let font_max = cell_font * 2.5
+	
+	let answer_font = rem_to_px(1.5) / cell_font
+	
+	wordsearch_jq.find('.font-size-label').html(cell_font)
+	wordsearch_jq.find('.font-size-control')
+	.attr('min', font_min)
+	.attr('max', font_max)
+	.attr('step', (font_max - font_min) / 20)
+	.val(cell_font)
+	.on('input', function() {
+		let new_cell_font = parseFloat($(this).val())
+		
+		wordsearch_jq.find('.ws-cell').css('fontSize', new_cell_font)
+		wordsearch_jq.find('.ws-answer').css('fontSize', new_cell_font * answer_font)
+		
+		wordsearch_jq.find('.font-size-label').html(Math.round(new_cell_font))
+	})
+	
+	// handle reload button
+	wordsearch_jq.find('.wordsearch-reload').click(function() {
+		// console.log(`DEBUG wordsearch reload button ${wordsearch_id}`)
+		switch (wordsearch_input_type[wordsearch_id]) {
+			case INPUT_FILE:
+				let description_json = wordsearch_description_json[wordsearch_id]
+				let config = description_json == undefined 
+					? undefined
+					: JSON.parse(description_json)
+				
+				if (config != undefined) {
+					// use random subset count input if enabled
+					if (wordsearch_is_random_subset[wordsearch_id]) {
+						let ui_subset_length = wordsearch_jq.find('.random-subset-count').val()
+						if (ui_subset_length !== '') {
+							ui_subset_length = parseInt(ui_subset_length)
+							// console.log(`DEBUG ui subset length = ${ui_subset_length}`)
+							config['random_subset'] = ui_subset_length
+						}
+					}
+					
+					on_wordsearch_input_file(wordsearch_id, config)
+				}
+				else {
+					console.log(`ERROR wordsearch config file not defined`)
+				}
+				
+				break
+	
+			case INPUT_FORM:
+				on_wordsearch_input_form(wordsearch_id)
+				break
+		}
+		
+		// reset whitespace control
+		wordsearch_jq.find('.whitespace-label').html(cell_padx)
+		wordsearch_jq.find('.whitespace-control').val(cell_padx)
+		
+		// reset font size control
+		wordsearch_jq.find('.font-size-label').html(cell_font)
+		wordsearch_jq.find('.font-size-control').val(cell_font)
+	})
+
+	// handle word-clue add button click
+	wordsearch_jq.find('.add-word-clue').click(function() {
+		let datetime_str = new Date().toISOString()
+		let containerjq = wordsearch_jq.find('.word-clues')
+		let rowjq = $(
+			`<div class="row word-clue mt-1 gx-1" data-when="${datetime_str}">
+				<div class="col">
+					<input type="text" placeholder="word" class="word-clue-word form-control"/>
+				</div>
+				<div class="col">
+					<input type="text" placeholder="clue (optional)" class="word-clue-clue form-control"/>
+				</div>
+				<div class="col-auto d-flex flex-column justify-content-center">
+					<button 
+						class="btn btn-danger word-clue-delete" 
+						data-wordsearch-id="${wordsearch_id}"
+						data-when="${datetime_str}"
+						onclick="on_word_clue_delete_click(event)">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" fill="currentColor" class="bi bi-dash-lg" viewBox="0 0 16 16">
+							<path fill-rule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z"/>
+						</svg>
+					</button>
+				</div>
+			</div>`
+		)
+		containerjq.append(rowjq)
+	})
+	
+	// handle words file button click
+	wordsearch_jq.find('.words-file-button').click(function() {
+		set_wordsearch_use_words_file(wordsearch_id, !is_on($(this)))
+	})
+	
+	// handle random subset button click
+	wordsearch_jq.find('.random-subset').click(function() {
+		set_wordsearch_is_random_subset(wordsearch_id, !is_on($(this)))
+	})
+	
+	// handle print button
+	wordsearch_jq.find('.wordsearch-print').click(function() {
+		// clean wordsearch
+		wordsearch_jq.find('.wordsearch').addClass('printable')
+
+		// hide config
+		wordsearch_jq.find('.wordsearch-config').addClass('printable')
+
+		// hide answers header
+		wordsearch_jq.find('.answers-header').addClass('printable')
+
+		// hide answers
+		wordsearch_jq.find('.ws-word').addClass('printable')
+
+		// show print-only
+		wordsearch_jq.find('.printscreen-only').addClass('printable')
+	})
+	
+	// handle screen button
+	wordsearch_jq.find('.wordsearch-screen').click(function() {
+		// mark wordsearch
+		wordsearch_jq.find('.wordsearch').removeClass('printable')
+
+		// show config
+		wordsearch_jq.find('.wordsearch-config').removeClass('printable')
+
+		// show answers header
+		wordsearch_jq.find('.answers-header').removeClass('printable')
+
+		// show answers
+		wordsearch_jq.find('.ws-word').removeClass('printable')
+
+		// hide print-only
+		wordsearch_jq.find('.printscreen-only').removeClass('printable')
+	})
+	
+	// handle export config button
+	wordsearch_jq.find('.wordsearch-export-config').click(function() {
+		if (wordsearch_global[wordsearch_id] != undefined) {
+			let wordsearch_json_encoded = btoa(unescape(encodeURIComponent(
+				JSON.stringify(wordsearch_global[wordsearch_id].export_config())
+			)))
+			console.log(`DEBUG encoded export = ${wordsearch_json_encoded}`)
+	
+			wordsearch_jq.find('.wordsearch-export-link')
+			.prop('href',`data:application/json;base64,${wordsearch_json_encoded}`)
+			.prop('download',`wordsearch_cfg_${new Date().toISOString()}.json`)
+			[0].click()
+		}
+	})
+	
+	return wordsearch_jq
+}
+
+function add_wordsearch_container_btn() {
+	wordsearch_component_promise.then((wordsearch_html) => {
+		$('#add-wordsearch-container').click(function() {
+			console.log(`DEBUG add-wordsearch-container.click`)
+			
+			// add new wordsearch container
+			let header_jq = $(
+				`<div class="mb-2 row">
+					<div class="h2 col">Wordsearch generator</div>
+					<div class="col-auto">
+						<button class="btn btn-danger rm-wordsearch-container">
+							remove wordsearch generator
+						</button>
+					</div>
+				</div>`
+			)
+			let container_jq = $(
+				`<section class="wordsearch-container mb-3"></section>`
+			)
+			let hr_jq = $(`<hr/>`)
+			
+			$('.wordsearch-containers')
+			.append(header_jq)
+			.append(container_jq)
+			.append(hr_jq)
+			
+			// handle remove button
+			header_jq.find('.rm-wordsearch-container').click(function() {
+				hr_jq.remove()
+				container_jq.remove()
+				header_jq.remove()
+			})
+			
+			// load child wordsearch generator in new wordsearch container
+			let wordsearch_jq = load_child_wordsearch_generator(container_jq, '?', wordsearch_html)
+			
+			// enable example cfg file button
+			ex_cfg_file_main(wordsearch_jq)
+		})
+	})
 }
 
 // TODO rename to set_wordsearch_config_type

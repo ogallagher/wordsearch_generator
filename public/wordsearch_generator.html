@@ -22,10 +22,10 @@
 			wordsearch generators will be inserted.
 		-->
 		<script 
-			src="https://wordsearch.dreamhosters.com/wordsearch_webpage.js?version=0.34.1" 
+			src="https://wordsearch.dreamhosters.com/wordsearch_webpage.js?version=0.35.0" 
 			type="text/javascript"
 			data-containers=".wordsearch-container"
-			data-use-host="true"
+			data-use-host="false"
 			id="wordsearch-webpage-component-driver">
 		</script>
 		
@@ -43,17 +43,20 @@
 		</header>
 		
 		<main class="container">
-			<!-- loaded by wordsearch_webpage.js -->
-			<h2 class="mb-2">Wordsearch generator 1</h2>
-			<section class="wordsearch-container mb-3">
-			</section>
-			
-			<hr/>
-			
-			<!-- loaded by wordsearch_webpage.js -->
-			<h2 class="mb-2">Wordsearch generator 2</h2>
-			<section class="wordsearch-container">
-			</section>
+			<div class="wordsearch-containers">
+				<div class="mb-2 row">
+					<div class="h2 col">Wordsearch generator</div>
+				</div>
+				<!-- wordsearch-container children loaded by wordsearch_webpage.js -->
+				<section class="wordsearch-container mb-3">
+				</section>
+				<hr/>
+			</div>
+			<div>
+				<button id="add-wordsearch-container" class="btn btn-primary">
+					add wordsearch generator
+				</button>
+			</div>
 		</main>
 		
 		<footer class="container-fluid py-2">
