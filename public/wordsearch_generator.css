@@ -53,6 +53,14 @@ body {
 	background-color: navy;
 }
 
+.ws-cell-input {
+	display: none;
+	
+	padding: 0;
+	font-size: 2.25rem;
+	text-align: center;
+}
+
 .ws-answer {
 	color: black;
 	font-size: 1.5rem;
@@ -143,6 +151,16 @@ body {
 .editing .ws-cell[data-on="true"] {
 	color: white;
 	background-color: navy;
+	
+	padding-left: 0px;
+	padding-right: 0px;
+}
+
+.editing .ws-cell[data-on="true"] > .ws-cell-content {
+	display: none !important;
+}
+.editing .ws-cell[data-on="true"] > .ws-cell-input {
+	display: block;
 }
 
 /**

@@ -1017,14 +1017,19 @@ function display_wordsearch(wordsearch, wordsearch_cmp_id) {
 				`<td class="ws-cell"
 					data-x="${x}" data-y="${y}" data-char="${cell}"
 					data-on="false">
-					<div class="d-flex flex-column justify-content-center">
+					<div class="ws-cell-content d-flex flex-column justify-content-center">
 						${cell}
 					</div>
+					<input type="text" class="ws-cell-input form-control" value="${cell}"/>
 				</td>`
 			)
 			
 			cel.click(function(e) {
-				on_cell_click(wordsearch_cmp_id, $(this), wordsearch, e)
+				on_cell_click(wordsearch_cmp_id, cel, wordsearch, e)
+			})
+			
+			cel.find('.ws-cell-input').on('keyup', function(e) {
+				on_cell_input_key(wordsearch_cmp_id, cel, e.originalEvent.code)
 			})
 			
 			rel.append(cel)
@@ -1117,6 +1122,11 @@ function on_cell_click(wordsearch_cmp_id, cell, wordsearch, event) {
 				
 				// set last clicked cell as first endpoint
 				endpoint_cells = [cell]
+				
+				// activate cell input
+				cell.find('.ws-cell-input')
+				.focus()
+				.select()
 			}
 		}
 		else {
@@ -1182,6 +1192,90 @@ function on_cell_click(wordsearch_cmp_id, cell, wordsearch, event) {
 	else {
 		// clear endpoint_cells
 		endpoint_cells = []
+	}
+}
+
+function on_cell_input_key(wordsearch_id, cell, key) {
+	key = key.toLowerCase()
+	const arrow_key_prefix = 'arrow'
+	
+	function update_cell() {
+		const injq = cell.find('.ws-cell-input')
+		.blur()
+		
+		// update cell char
+		const char = injq.val()[0]
+		cell.attr('data-char', char)
+		cell.find('.ws-cell-content').html(char)
+	}
+	
+	if (key.startsWith(arrow_key_prefix)) {
+		const arrow = key.substring(arrow_key_prefix.length)
+		// console.log(`DEBUG ws-cell-input arrow-key=${arrow}`)
+		
+		update_cell()
+		
+		// find next cell
+		let x = parseInt(cell.attr('data-x'))
+		let y = parseInt(cell.attr('data-y'))
+		switch (arrow) {
+			case 'up':
+				y -= 1
+				break
+				
+			case 'right':
+				x += 1
+				break
+				
+			case 'down':
+				y += 1
+				break
+				
+			case 'left':
+				x -= 1
+				break
+		}
+		
+		// select next cell
+		on_cell_click(
+			wordsearch_id,
+			$(`#${wordsearch_id}`).find(`.ws-cell[data-x="${x}"][data-y="${y}"]`),
+			wordsearch_global[wordsearch_id],
+			// mimic MouseEvent
+			{
+				shiftKey: false
+			}
+		)
+	}
+	else if (key == 'enter') {
+		update_cell()
+		
+		// deselect current cell
+		on_cell_click(
+			wordsearch_id,
+			cell,
+			wordsearch_global[wordsearch_id],
+			// mimic MouseEvent
+			{
+				shiftKey: false
+			}
+		)
+	}
+	else if (key == 'escape') {
+		const injq = cell.find('.ws-cell-input')
+		.blur()
+		.val(cell.attr('data-char'))
+		
+		// deselect current cell
+		on_cell_click(
+			wordsearch_id,
+			cell,
+			wordsearch_global[wordsearch_id],
+			// mimic MouseEvent
+			{
+				shiftKey: false
+			}
+		)
 	}
 }
 
