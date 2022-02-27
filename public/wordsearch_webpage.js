@@ -1029,7 +1029,7 @@ function display_wordsearch(wordsearch, wordsearch_cmp_id) {
 			})
 			
 			cel.find('.ws-cell-input').on('keyup', function(e) {
-				on_cell_input_key(wordsearch_cmp_id, cel, e.originalEvent.code)
+				on_cell_input_key(wordsearch_cmp_id, cel, e.originalEvent)
 			})
 			
 			rel.append(cel)
@@ -1195,13 +1195,18 @@ function on_cell_click(wordsearch_cmp_id, cell, wordsearch, event) {
 	}
 }
 
-function on_cell_input_key(wordsearch_id, cell, key) {
-	key = key.toLowerCase()
+function on_cell_input_key(wordsearch_id, cell, event) {
+	const key = event.code.toLowerCase()
+	const shifted = event.shiftKey
 	const arrow_key_prefix = 'arrow'
 	
-	function update_cell() {
+	function update_cell(random_char) {
 		const injq = cell.find('.ws-cell-input')
 		.blur()
+		
+		if (random_char) {
+			injq.val(wordsearch_global[wordsearch_id].random_cell())
+		}
 		
 		// update cell char
 		const char = injq.val()[0]
@@ -1213,7 +1218,7 @@ function on_cell_input_key(wordsearch_id, cell, key) {
 		const arrow = key.substring(arrow_key_prefix.length)
 		// console.log(`DEBUG ws-cell-input arrow-key=${arrow}`)
 		
-		update_cell()
+		update_cell(shifted)
 		
 		// find next cell
 		let x = parseInt(cell.attr('data-x'))
