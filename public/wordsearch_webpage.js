@@ -540,6 +540,11 @@ function load_child_wordsearch_generator(parent_jq, idx, wordsearch_html) {
 		wordsearch_jq.find('.printscreen-only').removeClass('printable')
 	})
 	
+	// handle edit mode button
+	wordsearch_jq.find('.wordsearch-edit').click(function() {
+		console.log(`DEBUG wordsearch-edit.click`)
+	})
+	
 	// handle export config button
 	wordsearch_jq.find('.wordsearch-export-config').click(function() {
 		if (wordsearch_global[wordsearch_id] != undefined) {
@@ -999,6 +1004,12 @@ function display_wordsearch(wordsearch, wordsearch_cmp_id) {
 	
 	// enable print view
 	wordsearch_cmp.find('.wordsearch-print').prop('disabled', false)
+	
+	// enable edit mode
+	wordsearch_cmp.find('.wordsearch-edit').prop('disabled', false)
+	
+	// enable export
+	wordsearch_cmp.find('.wordsearch-export-config').prop('disabled', false)
 	
 	// update wordsearch reference
 	wordsearch_global[wordsearch_cmp_id] = wordsearch
