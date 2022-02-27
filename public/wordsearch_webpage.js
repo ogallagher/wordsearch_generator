@@ -196,9 +196,11 @@ function ext_js_dependencies() {
 			// alias d3 as dsv to match used variable in core
 			dsv = d3
 			delete d3
+			resolve()
 		})
 		.fail(function() {
 			console.log('ERROR failed to load d3-dsv frontend dsv parser library')
+			reject()
 		})
 	})
 }
@@ -302,7 +304,7 @@ function load_child_wordsearch_generator(parent_jq, idx, wordsearch_html) {
 	
 	// display alphabets in list
 	for (let alphabet_key in alphabets) {
-		// console.log(`debug loaded alphabet:\b${JSON.stringify(alphabet_key)}`)
+		// console.log(`debug loaded alphabet:\n${JSON.stringify(alphabet_key)}`)
 		let alphabet_jq = $(alphabet_option_template)
 		.attr('data-alphabet-key', alphabet_key)
 		
@@ -567,7 +569,7 @@ function add_wordsearch_container_btn() {
 					<div class="h2 col">Wordsearch generator</div>
 					<div class="col-auto">
 						<button class="btn btn-danger rm-wordsearch-container">
-							remove wordsearch generator
+							Remove wordsearch generator
 						</button>
 					</div>
 				</div>`
@@ -639,8 +641,17 @@ function set_wordsearch_use_words_file(wordsearch_cmp_id, use_file) {
 	wordsearch_cmp.find('.words-file-delim')
 	.prop('disabled', !use_file)
 	
+	// update word-clues section
+	const wcs_jq = wordsearch_cmp.find('.word-clues-section')
+	if (use_file) {
+		wcs_jq.addClass('d-none')
+	}
+	else {
+		wcs_jq.removeClass('d-none')
+	}
+	
 	// update word-clues inputs
-	wordsearch_cmp.find('.word-clue input')
+	wcs_jq.find('.word-clue input')
 	.prop('disabled', use_file)
 }
 
