@@ -31,12 +31,16 @@ const ESCAPE_CHAR = {
 	'\\': '\\'
 }
 
+const CSS_CLASS_PRINT = 'printable'
+const CSS_CLASS_EDIT = 'editing'
+
 let alphabets
 
 // global vars corresponding to each wordsearch generator component by id
 let wordsearch_input_type = {}
 let wordsearch_use_words_file = {}
 let wordsearch_is_random_subset = {}
+let wordsearch_is_editing = {}
 let wordsearch_global = {}
 // TODO rename to wordsearch_words_file
 let wordsearch_word_clues = {}
@@ -507,42 +511,48 @@ function load_child_wordsearch_generator(parent_jq, idx, wordsearch_html) {
 	// handle print button
 	wordsearch_jq.find('.wordsearch-print').click(function() {
 		// clean wordsearch
-		wordsearch_jq.find('.wordsearch').addClass('printable')
+		wordsearch_jq.find('.wordsearch').addClass(CSS_CLASS_PRINT)
 
 		// hide config
-		wordsearch_jq.find('.wordsearch-config').addClass('printable')
+		wordsearch_jq.find('.wordsearch-config').addClass(CSS_CLASS_PRINT)
 
 		// hide answers header
-		wordsearch_jq.find('.answers-header').addClass('printable')
+		wordsearch_jq.find('.answers-header').addClass(CSS_CLASS_PRINT)
 
 		// hide answers
-		wordsearch_jq.find('.ws-word').addClass('printable')
+		wordsearch_jq.find('.ws-word').addClass(CSS_CLASS_PRINT)
 
 		// show print-only
-		wordsearch_jq.find('.printscreen-only').addClass('printable')
+		wordsearch_jq.find('.printscreen-only').addClass(CSS_CLASS_PRINT)
 	})
 	
 	// handle screen button
 	wordsearch_jq.find('.wordsearch-screen').click(function() {
 		// mark wordsearch
-		wordsearch_jq.find('.wordsearch').removeClass('printable')
+		wordsearch_jq.find('.wordsearch').removeClass(CSS_CLASS_PRINT)
 
 		// show config
-		wordsearch_jq.find('.wordsearch-config').removeClass('printable')
+		wordsearch_jq.find('.wordsearch-config').removeClass(CSS_CLASS_PRINT)
 
 		// show answers header
-		wordsearch_jq.find('.answers-header').removeClass('printable')
+		wordsearch_jq.find('.answers-header').removeClass(CSS_CLASS_PRINT)
 
 		// show answers
-		wordsearch_jq.find('.ws-word').removeClass('printable')
+		wordsearch_jq.find('.ws-word').removeClass(CSS_CLASS_PRINT)
 
 		// hide print-only
-		wordsearch_jq.find('.printscreen-only').removeClass('printable')
+		wordsearch_jq.find('.printscreen-only').removeClass(CSS_CLASS_PRINT)
 	})
 	
 	// handle edit mode button
+	wordsearch_is_editing[wordsearch_id] = false
 	wordsearch_jq.find('.wordsearch-edit').click(function() {
-		console.log(`DEBUG wordsearch-edit.click`)
+		set_wordsearch_is_editing(wordsearch_id, true)
+	})
+	
+	// handle edit exit button
+	wordsearch_jq.find('.wordsearch-edit-exit').click(function() {		
+		set_wordsearch_is_editing(wordsearch_id, false)
 	})
 	
 	// handle export config button
@@ -679,6 +689,33 @@ function set_wordsearch_is_random_subset(wordsearch_cmp_id, is_random, subset_le
 	else {
 		wordsearch_cmp.find('.random-subset-count')
 		.prop('disabled', true)
+	}
+}
+
+function set_wordsearch_is_editing(wordsearch_id, is_editing) {
+	wordsearch_is_editing[wordsearch_id] = is_editing
+	
+	const wordsearch_jq = $(`#${wordsearch_id}`)
+	
+	if (is_editing) {
+		// enable wordsearch editing styles
+		wordsearch_jq.find('.wordsearch').addClass(CSS_CLASS_EDIT)
+		
+		// hide config
+		wordsearch_jq.find('.wordsearch-config').addClass(CSS_CLASS_PRINT)
+		
+		// show edit-only
+		wordsearch_jq.find('.edit-only').addClass(CSS_CLASS_EDIT)
+	}
+	else {
+		// disable wordsearch editing styles
+		wordsearch_jq.find('.wordsearch').removeClass(CSS_CLASS_EDIT)
+		
+		// show config
+		wordsearch_jq.find('.wordsearch-config').removeClass(CSS_CLASS_PRINT)
+		
+		// hide edit-only
+		wordsearch_jq.find('.edit-only').removeClass(CSS_CLASS_EDIT)
 	}
 }
 
@@ -978,7 +1015,7 @@ function display_wordsearch(wordsearch, wordsearch_cmp_id) {
 			// cell element
 			let cel = $(
 				`<td class="ws-cell"
-					data-x="${x}" data-y="${y}" data-word="${cell}"
+					data-x="${x}" data-y="${y}" data-char="${cell}"
 					data-on="false">
 					<div class="d-flex flex-column justify-content-center">
 						${cell}
@@ -986,8 +1023,8 @@ function display_wordsearch(wordsearch, wordsearch_cmp_id) {
 				</td>`
 			)
 			
-			cel.click(function() {
-				on_cell_click(wordsearch_cmp_id, $(this), wordsearch)
+			cel.click(function(e) {
+				on_cell_click(wordsearch_cmp_id, $(this), wordsearch, e)
 			})
 			
 			rel.append(cel)
@@ -999,6 +1036,20 @@ function display_wordsearch(wordsearch, wordsearch_cmp_id) {
 	}
 	
 	wel.append(tel)
+	
+	// associate answer cells with corresponding words
+	for (let word_idx of Object.keys(wordsearch.word_idx_to_point)) {
+		let points = wordsearch.word_idx_to_point[word_idx]
+		let a = points[0]
+		let b = points[1]
+		let dx = Math.sign(b.x - a.x)
+		let dy = Math.sign(b.y - a.y)
+		
+		for (let x=a.x, y=a.y; x!=b.x+dx || y!=b.y+dy; x+=dx, y+=dy) {
+			tel.find(`.ws-cell[data-x="${x}"][data-y="${y}"]`)
+			.attr('data-word-idx', word_idx)
+		}
+	}
 	
 	display_answers(wordsearch_cmp_id, wordsearch.words, wordsearch.clues)
 	
@@ -1031,77 +1082,101 @@ function display_answers(wordsearch_cmp_id, words, clues) {
 	}
 }
 
-function on_cell_click(wordsearch_cmp_id, cell, wordsearch) {
-	let wordsearch_cmp = $(`#${wordsearch_cmp_id}`)
+function on_cell_click(wordsearch_cmp_id, cell, wordsearch, event) {
+	const wordsearch_cmp = $(`#${wordsearch_cmp_id}`)
+	const shifted = event.shiftKey
 	// console.log(
 	// 	`DEBUG cell ${cell.attr('data-x')},${cell.attr('data-y')}=${
-	// 		cell.attr('data-word')
-	// 	} clicked`
+	// 		cell.attr('data-char')
+	// 	} clicked. shifted=${event.shiftKey}`
 	// )
 	
-	let cell_is_on = !is_on(cell)
+	const cell_is_on = !is_on(cell)
 	cell.attr('data-on', cell_is_on)
 	
 	if (cell_is_on) {
 		let en = endpoint_cells.length
-		if (en < 2) {
-			// add to endpoint_cells
-			endpoint_cells.push(cell)
-			en++
-		}
 		
-		let a = endpoint_cells[0]
-		let b = en == 1
-			// single char word
-			? a
-			// multi char word
-			: endpoint_cells[1]
-		
-		// check endpoints
-		let ab = 
-			`${a.attr('data-x')},${a.attr('data-y')}-`
-			+ `${b.attr('data-x')},${b.attr('data-y')}`
-		
-		let word_idx = wordsearch.point_to_word_idx[ab]
-		if (word_idx != undefined) {
-			console.log(`DEBUG word ${word_idx}=${wordsearch.words[word_idx]} found`)
-			a.attr('data-on',false)
-			b.attr('data-on',false)
-			
-			// mark all word cells as found
-			if (a === b) {
-				a.attr('data-found',true)
+		if (wordsearch_is_editing[wordsearch_cmp_id]) {
+			if (shifted) {
+				// add endpoints as new word
+				console.log(`WARNING add endpoints as new word not implemented`)
+				
+				// clear endpoint_cells
+				cell.attr('data-on', false)
+				for (let ec of endpoint_cells) {
+					ec.attr('data-on', false)
+				}
+				endpoint_cells = []
 			}
 			else {
-				let ax=parseInt(a.attr('data-x')), ay=parseInt(a.attr('data-y'))
-				let bx=parseInt(b.attr('data-x')), by=parseInt(b.attr('data-y'))
-				let dx=Math.sign(bx-ax), dy=Math.sign(by-ay)
-			
-				for (let x=ax,y=ay; x!=bx+dx || y!=by+dy; ) {
-					// console.log(`.ws-cell[data-x="${x}"][data-y="${y}"]`)
-					wordsearch_cmp.find(`.ws-cell[data-x="${x}"][data-y="${y}"]`)
-					.attr('data-found',true)
+				if (en == 1) {
+					// ignore prev endpoint
+					endpoint_cells[0].attr('data-on', false)
+				}
 				
-					x += dx
-					y += dy
+				// set last clicked cell as first endpoint
+				endpoint_cells = [cell]
+			}
+		}
+		else {
+			if (en < 2) {
+				// add to endpoint_cells
+				endpoint_cells.push(cell)
+				en++
+			}
+		
+			let a = endpoint_cells[0]
+			let b = en == 1
+				// single char word
+				? a
+				// multi char word
+				: endpoint_cells[1]
+			
+			// check endpoints against answers
+			let ab = cells_to_endpoint_str(a,b)
+		
+			let word_idx = wordsearch.point_to_word_idx[ab]
+			if (word_idx != undefined) {
+				console.log(`DEBUG word ${word_idx}=${wordsearch.words[word_idx]} found`)
+				a.attr('data-on',false)
+				b.attr('data-on',false)
+			
+				// mark all word cells as found
+				if (a === b) {
+					a.attr('data-found',true)
+				}
+				else {
+					let ax=parseInt(a.attr('data-x')), ay=parseInt(a.attr('data-y'))
+					let bx=parseInt(b.attr('data-x')), by=parseInt(b.attr('data-y'))
+					let dx=Math.sign(bx-ax), dy=Math.sign(by-ay)
+			
+					for (let x=ax,y=ay; x!=bx+dx || y!=by+dy; ) {
+						// console.log(`.ws-cell[data-x="${x}"][data-y="${y}"]`)
+						wordsearch_cmp.find(`.ws-cell[data-x="${x}"][data-y="${y}"]`)
+						.attr('data-found',true)
+				
+						x += dx
+						y += dy
+					}
+				}
+			
+				// reveal answer
+				wordsearch_cmp.find(`.ws-answer[data-word-idx="${word_idx}"] > .ws-word`)
+				.attr('data-found', true)
+			}
+			else if (en > 1) {
+				// clear cells from attempt
+				console.log(`DEBUG endpoints not a word`)
+				for (let ec of endpoint_cells) {
+					ec.attr('data-on', false)
 				}
 			}
-			
-			// reveal answer
-			wordsearch_cmp.find(`.ws-answer[data-word-idx="${word_idx}"] > .ws-word`)
-			.attr('data-found', true)
-		}
-		else if (en > 1) {
-			// clear cells from attempt
-			console.log(`DEBUG endpoints not a word`)
-			for (let ec of endpoint_cells) {
-				ec.attr('data-on', false)
-			}
-		}
 		
-		// clear endpoint_cells if len>=2 or single char word found
-		if (en > 1 || word_idx != undefined) {
-			endpoint_cells = []
+			// clear endpoint_cells if len>=2 or single char word found
+			if (en > 1 || word_idx != undefined) {
+				endpoint_cells = []
+			}
 		}
 	}
 	else {
@@ -1300,6 +1375,14 @@ function on_prob_dist_option_click(wordsearch_cmp_id, event) {
 	
 	// update prob dist val
 	$(`#${wordsearch_cmp_id}`).find('.prob-dist').val(pd_name)
+}
+
+function cells_to_endpoint_str(a, b) {
+	return (
+		`${a.attr('data-x')},${a.attr('data-y')}` + 
+		'-' +
+		`${b.attr('data-x')},${b.attr('data-y')}`
+	)
 }
 
 function is_on(jq, on_attr = 'data-on') {

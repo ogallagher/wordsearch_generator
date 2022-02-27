@@ -13,6 +13,9 @@ body {
 .wordsearch {
 	font-family: monospace;
 }
+.wordsearch ::selection {
+	background-color: transparent;
+}
 
 .wordsearch-component-error {
 	color: red;
@@ -110,6 +113,36 @@ body {
 .prob-dist-option .prob-dist-description {
 	color: gray;
 	pointer-events: none;
+}
+
+/**
+ * edit mode styles
+ */
+.edit-only {
+	display: none;
+}
+.edit-only.editing {
+	display: block;
+}
+
+.wordsearch-config.editing {
+	display: none;
+}
+
+.editing .ws-cell {
+	color: black;
+	background-color: white;
+}
+.editing .ws-cell:hover {
+	background-color: gray;
+}
+.editing .ws-cell[data-word-idx] {
+	color: white;
+	background-color: black;
+}
+.editing .ws-cell[data-on="true"] {
+	color: white;
+	background-color: navy;
 }
 
 /**

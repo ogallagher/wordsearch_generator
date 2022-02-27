@@ -119,6 +119,7 @@ class WordsearchGenerator {
 	 * - clues
 	 * - word_cells
 	 * - point_to_word_idx
+	 * - word_idx_to_point Maps words indeces to grid coordinates. See reset_word_clues.
 	 *
 	 * @param {String} language Language code string.
 	 * @param {String} alphabet_case Alphabet case (upper, lower).
@@ -224,6 +225,9 @@ class WordsearchGenerator {
 		
 		// maps coordinates to indeces in words for detecting found words
 		this.point_to_word_idx = {}
+		
+		// maps indeces in words to grid coordinates. key = index int. value = [{x,y},{x,y}].
+		this.word_idx_to_point = {}
 	}
 
 	/**
@@ -621,6 +625,17 @@ class WordsearchGenerator {
 		let ba = `${wxys[n][1]},${wxys[n][2]}-${wxys[0][1]},${wxys[0][2]}`
 		this.point_to_word_idx[ab] = word_idx
 		this.point_to_word_idx[ba] = word_idx
+		
+		this.word_idx_to_point[word_idx] = [
+			{
+				x: wxys[0][1],
+				y: wxys[0][2]
+			},
+			{
+				x: wxys[n][1],
+				y: wxys[n][2]
+			}
+		]
 	}
 
 	export_config() {
