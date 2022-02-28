@@ -1113,11 +1113,14 @@ function on_cell_click(wordsearch_cmp_id, cell, wordsearch, event) {
 				
 				let wxys = []
 				let new_word = []
+				let new_word_idx = wordsearch.words.length
 				for (let x=ax, y=ay; x!=bx+dx || y!=by+dy; x+=dx, y+=dy) {
-					const char = wordsearch_cmp.find(
+					const word_cell = wordsearch_cmp.find(
 						`.ws-cell[data-x="${x}"][data-y="${y}"]`
-					).attr('data-char')
+					)
+					word_cell.attr('data-word-idx', new_word_idx)
 					
+					const char = word_cell.attr('data-char')
 					wxys.push([char,x,y])
 					new_word.push(char)
 				}
