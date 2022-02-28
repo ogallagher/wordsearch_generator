@@ -595,7 +595,7 @@ class WordsearchGenerator {
 	
 	/**
 	 * Place the characters of a word in the wordsearch grid, also updating word_cells,
-	 * words, clues, and point_to_word_idx for answer detection.
+	 * words, clues, and point_to_word_idx, word_idx_to_point for answer detection.
 	 * Called by {add_word_clue}.
 	 * 
 	 * @param {Array} wxys Array arrays, each containing a character and its location.

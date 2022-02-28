@@ -1103,9 +1103,31 @@ function on_cell_click(wordsearch_cmp_id, cell, wordsearch, event) {
 		let en = endpoint_cells.length
 		
 		if (wordsearch_is_editing[wordsearch_cmp_id]) {
-			if (shifted) {
+			if (shifted && en == 1) {
 				// add endpoints as new word
-				console.log(`WARNING add endpoints as new word not implemented`)
+				let a = endpoint_cells[0]
+				let b = cell
+				let ax = parseInt(a.attr('data-x')), ay = parseInt(a.attr('data-y'))
+				let bx = parseInt(b.attr('data-x')), by = parseInt(b.attr('data-y'))
+				let dx = Math.sign(bx-ax), dy = Math.sign(by-ay)
+				
+				let wxys = []
+				let new_word = []
+				for (let x=ax, y=ay; x!=bx+dx || y!=by+dy; x+=dx, y+=dy) {
+					const char = wordsearch_cmp.find(
+						`.ws-cell[data-x="${x}"][data-y="${y}"]`
+					).attr('data-char')
+					
+					wxys.push([char,x,y])
+					new_word.push(char)
+				}
+				console.log(`INFO add endpoints as new word ${new_word.join('')}`)
+				
+				// add word to wordsearch model
+				wordsearch.place_word(wxys, new_word.join(''), new_word.join(''))
+				
+				// refresh word-clue answers
+				display_answers(wordsearch_cmp_id, wordsearch.words, wordsearch.clues)
 				
 				// clear endpoint_cells
 				cell.attr('data-on', false)
@@ -1226,6 +1248,7 @@ function on_cell_input_key(wordsearch_id, cell, event) {
 			const wordsearch_jq = $(`#${wordsearch_id}`)
 			wordsearch_jq.find(`.ws-cell[data-word-idx="${word_idx}"]`)
 			.removeAttr('data-word-idx')
+			.attr('data-found', 'false')
 			
 			// remove from answers
 			wordsearch_jq.find(`.ws-answer[data-word-idx="${word_idx}"]`)
