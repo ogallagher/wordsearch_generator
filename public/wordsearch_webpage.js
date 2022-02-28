@@ -1204,14 +1204,33 @@ function on_cell_input_key(wordsearch_id, cell, event) {
 		const injq = cell.find('.ws-cell-input')
 		.blur()
 		
+		const wordsearch = wordsearch_global[wordsearch_id]
+		
 		if (random_char) {
-			injq.val(wordsearch_global[wordsearch_id].random_cell())
+			injq.val(wordsearch.random_cell())
 		}
 		
 		// update cell char
 		const char = injq.val()[0]
 		cell.attr('data-char', char)
 		cell.find('.ws-cell-content').html(char)
+		
+		let word_idx = cell.attr('data-word-idx')
+		if (word_idx != '' && !isNaN(word_idx)) {
+			word_idx = parseInt(word_idx)
+			console.log(`WARNING remove answer ${wordsearch.words[word_idx]} on char overwrite`)
+			// remove from wordsearch model
+			wordsearch.forget_word(word_idx)
+			
+			// remove reference to word from html cell data attr
+			const wordsearch_jq = $(`#${wordsearch_id}`)
+			wordsearch_jq.find(`.ws-cell[data-word-idx="${word_idx}"]`)
+			.removeAttr('data-word-idx')
+			
+			// remove from answers
+			wordsearch_jq.find(`.ws-answer[data-word-idx="${word_idx}"]`)
+			.remove()
+		}
 	}
 	
 	if (key.startsWith(arrow_key_prefix)) {

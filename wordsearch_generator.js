@@ -637,6 +637,38 @@ class WordsearchGenerator {
 			}
 		]
 	}
+	
+	/**
+	 * Remove a word from word_cells, point_to_word_idx, and word_idx_to_point. So as not to
+	 * shift indeces of other words, the value for the index of this.words is set to undefined
+	 * instead of removing the word from the array.
+	 *
+	 * @return {Array} Array of points in the removed word, each being {x,y}.
+	 */
+	forget_word(word_idx) {
+		let word = this.words[word_idx]
+		let endpoints = this.word_idx_to_point[word_idx]
+		
+		let a = endpoints[0]
+		let b = endpoints[1]
+		let dx = Math.sign(b.x - a.x)
+		let dy = Math.sign(b.y - a.y)
+		let points = []
+		
+		for (let x=a.x, y=a.y; x!=b.x+dx || y!=b.y+dy; x+=dx, y+=dy) {
+			this.word_cells[y][x] = undefined
+			points.push({ x: x, y: y })
+		}
+		
+		this.word_idx_to_point[word_idx] = undefined
+		this.point_to_word_idx[
+			`${endpoints[0].x},${endpoints[0].y}-${endpoints[1].x},${endpoints[1].y}`
+		] = undefined
+		
+		this.words[word_idx] = undefined
+		
+		return points
+	}
 
 	export_config() {
 		let config = {}
