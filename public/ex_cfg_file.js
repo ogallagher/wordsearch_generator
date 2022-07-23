@@ -159,7 +159,7 @@ function ex_cfg_file_main(wordsearch_component) {
 					.then(function(cfg_file_str) {					
 						// load wordsearch from file
 						wordsearch_description_json[wordsearch_id] = cfg_file_str
-						on_wordsearch_input_file(wordsearch_id, wordsearch_description_json[wordsearch_id])
+						on_wordsearch_config_file(wordsearch_id, wordsearch_description_json[wordsearch_id])
 					
 						// update use_ex_cfg
 						set_use_ex_cfg(false, wordsearch_id)

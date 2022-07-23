@@ -164,6 +164,45 @@ body {
 }
 
 /**
+ * sharing url styles
+ */
+.share-url-only {
+	display: none;
+}
+.share-url-only.sharing-url {
+	display: block;
+}
+
+.wordsearch-share-url {
+	background-color: gray;
+}
+.wordsearch-share-url.sharing-url {
+	background-color: blue;
+	border-color: blue;
+}
+.wordsearch-share-url.sharing-url:hover {
+	background-color: darkblue;
+	border-color: darkblue;
+}
+
+.wordsearch-config.sharing-url .wordsearch-input-methods {
+	display: none;
+}
+
+.copy-share-url[data-on="false"] > .bi-clipboard-fill {
+	display: initial;
+}
+.copy-share-url[data-on="true"] > .bi-clipboard-fill {
+	display: none;
+}
+.copy-share-url[data-on="false"] > .bi-clipboard-check-fill {
+	display: none;
+}
+.copy-share-url[data-on="true"] > .bi-clipboard-check-fill {
+	display: initial;
+}
+
+/**
  * printer friendly styles
  */
 

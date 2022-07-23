@@ -31,8 +31,16 @@ const ESCAPE_CHAR = {
 	'\\': '\\'
 }
 
+const CSS_CLASS_WORDSEARCH_CONFIG = 'wordsearch-config'
+const CSS_CLASS_WORDSEARCH_INPUT_METHODS = 'wordsearch-input-methods'
+const CSS_CLASS_SHARE_URL_BUTTON = 'wordsearch-share-url'
+const CSS_CLASS_COPY_SHARE_URL_BUTTON = 'copy-share-url'
+const CSS_CLASS_SHARE_URL_TEXT = 'share-url-out'
+
 const CSS_CLASS_PRINT = 'printable'
 const CSS_CLASS_EDIT = 'editing'
+const CSS_CLASS_SHARE_URL_ONLY = 'share-url-only'
+const CSS_CLASS_SHARE_URL = 'sharing-url'
 
 let alphabets
 
@@ -41,6 +49,7 @@ let wordsearch_input_type = {}
 let wordsearch_use_words_file = {}
 let wordsearch_is_random_subset = {}
 let wordsearch_is_editing = {}
+let wordsearch_is_sharing = {}
 let wordsearch_global = {}
 // TODO rename to wordsearch_words_file
 let wordsearch_word_clues = {}
@@ -367,7 +376,7 @@ function load_child_wordsearch_generator(parent_jq, idx, wordsearch_html) {
 		let filereader = new FileReader()
 		filereader.onload = function() {
 			wordsearch_description_json[wordsearch_id] = filereader.result
-			on_wordsearch_input_file(wordsearch_id, wordsearch_description_json[wordsearch_id])
+			on_wordsearch_config_file(wordsearch_id, wordsearch_description_json[wordsearch_id])
 		}
 		filereader.readAsText($(this).prop('files')[0])
 	})
@@ -448,7 +457,7 @@ function load_child_wordsearch_generator(parent_jq, idx, wordsearch_html) {
 						}
 					}
 					
-					on_wordsearch_input_file(wordsearch_id, config)
+					on_wordsearch_config_file(wordsearch_id, config)
 				}
 				else {
 					console.log(`ERROR wordsearch config file not defined`)
@@ -457,7 +466,7 @@ function load_child_wordsearch_generator(parent_jq, idx, wordsearch_html) {
 				break
 	
 			case INPUT_FORM:
-				on_wordsearch_input_form(wordsearch_id)
+				on_wordsearch_config_form(wordsearch_id)
 				break
 		}
 		
@@ -553,6 +562,35 @@ function load_child_wordsearch_generator(parent_jq, idx, wordsearch_html) {
 	// handle edit exit button
 	wordsearch_jq.find('.wordsearch-edit-exit').click(function() {		
 		set_wordsearch_is_editing(wordsearch_id, false)
+	})
+
+	// handle share url button
+	wordsearch_is_sharing[wordsearch_id] = false
+	wordsearch_jq.find(`.${CSS_CLASS_SHARE_URL_BUTTON}`).click(function() {
+		set_wordsearch_is_sharing(wordsearch_id)
+	})
+
+	// handle copy share url button
+	wordsearch_jq.find(`.${CSS_CLASS_COPY_SHARE_URL_BUTTON}`).click(function() {
+		let share_url_jq = wordsearch_jq.find(`.${CSS_CLASS_SHARE_URL_TEXT}`)
+		share_url_jq.select()
+
+		// copy url to clipboard
+		let share_url = share_url_jq.val()
+		navigator.clipboard.writeText(share_url)
+		.then(function() {
+			console.log(`INFO copied wordsearch share url to the clipboard:\n${share_url}`)
+		})
+
+		// display confirmation
+		let copy_btn = $(this)
+		copy_btn.attr('data-on', 'true')
+		setTimeout(
+			function() {
+				copy_btn.attr('data-on', 'false')
+			}, 
+			1000
+		)
 	})
 	
 	// handle export config button
@@ -702,7 +740,7 @@ function set_wordsearch_is_editing(wordsearch_id, is_editing) {
 		wordsearch_jq.find('.wordsearch').addClass(CSS_CLASS_EDIT)
 		
 		// hide config
-		wordsearch_jq.find('.wordsearch-config').addClass(CSS_CLASS_PRINT)
+		wordsearch_jq.find(`.${CSS_CLASS_WORDSEARCH_CONFIG}`).addClass(CSS_CLASS_PRINT)
 		
 		// show edit-only
 		wordsearch_jq.find('.edit-only').addClass(CSS_CLASS_EDIT)
@@ -712,15 +750,38 @@ function set_wordsearch_is_editing(wordsearch_id, is_editing) {
 		wordsearch_jq.find('.wordsearch').removeClass(CSS_CLASS_EDIT)
 		
 		// show config
-		wordsearch_jq.find('.wordsearch-config').removeClass(CSS_CLASS_PRINT)
+		wordsearch_jq.find(`.${CSS_CLASS_WORDSEARCH_CONFIG}`).removeClass(CSS_CLASS_PRINT)
 		
 		// hide edit-only
 		wordsearch_jq.find('.edit-only').removeClass(CSS_CLASS_EDIT)
 	}
 }
 
-// TODO rename to on_wordsearch_config_file
-function on_wordsearch_input_file(wordsearch_cmp_id, wordsearch_json) {
+function set_wordsearch_is_sharing(wordsearch_id) {
+	is_sharing = !wordsearch_is_sharing[wordsearch_id]
+	wordsearch_is_sharing[wordsearch_id] = is_sharing
+
+	const wordsearch_jq = $(`#${wordsearch_id}`)
+
+	if (is_sharing) {
+		// hide config input methods
+		wordsearch_jq.find(`.${CSS_CLASS_WORDSEARCH_CONFIG}`).addClass(CSS_CLASS_SHARE_URL)
+
+		// show share-url-only
+		wordsearch_jq.find(`.${CSS_CLASS_SHARE_URL_ONLY}`).addClass(CSS_CLASS_SHARE_URL)
+		wordsearch_jq.find(`.${CSS_CLASS_SHARE_URL_BUTTON}`).addClass(CSS_CLASS_SHARE_URL)
+	}
+	else {
+		// show config input methods
+		wordsearch_jq.find(`.${CSS_CLASS_WORDSEARCH_CONFIG}`).removeClass(CSS_CLASS_SHARE_URL)
+
+		// hide share-url-only
+		wordsearch_jq.find(`.${CSS_CLASS_SHARE_URL_ONLY}`).removeClass(CSS_CLASS_SHARE_URL)
+		wordsearch_jq.find(`.${CSS_CLASS_SHARE_URL_BUTTON}`).removeClass(CSS_CLASS_SHARE_URL)
+	}
+}
+
+function on_wordsearch_config_file(wordsearch_cmp_id, wordsearch_json) {
 	if (wordsearch_json != undefined) {
 		console.log(`INFO ${wordsearch_cmp_id}:on_wordsearch_input_file`)
 		let description = typeof wordsearch_json === 'string' 
@@ -805,8 +866,7 @@ function on_wordsearch_input_file(wordsearch_cmp_id, wordsearch_json) {
 	}
 }
 
-// TODO rename to on_wordsearch_config_form
-function on_wordsearch_input_form(wordsearch_cmp_id) {
+function on_wordsearch_config_form(wordsearch_cmp_id) {
 	console.log(`${wordsearch_cmp_id}:on_wordsearch_input_form`)
 	let wordsearch_cmp = $(`#${wordsearch_cmp_id}`)
 	
@@ -1063,6 +1123,9 @@ function display_wordsearch(wordsearch, wordsearch_cmp_id) {
 	
 	// enable edit mode
 	wordsearch_cmp.find('.wordsearch-edit').prop('disabled', false)
+
+	// enable share url
+	wordsearch_cmp.find(`.${CSS_CLASS_SHARE_URL_BUTTON}`).prop('disabled', false)
 	
 	// enable export
 	wordsearch_cmp.find('.wordsearch-export-config').prop('disabled', false)

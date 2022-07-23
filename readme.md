@@ -240,3 +240,9 @@ to both the embedded words list and the external DSV words file approaches.
 
 If you want to use the wordsearch generator in a different environment, include the `WordsearchGenerator`
 class from `wordsearch_generator.js`, as well as `alphabets.json`
+
+## Credits
+
+Webpage icons from [icons.getbootstrap.com](https://icons.getbootstrap.com).
+
+See `alphabets.json` and referenced files for alphabet charset and probability distribution credits.
