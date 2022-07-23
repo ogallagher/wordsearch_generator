@@ -153,9 +153,23 @@ the ability to have more than one in the same single page.
 
 2. Download/clone this repository.
 
-3. Run `node wordsearch_cli.js`.
+3. Install dependencies
 
-4. Follow the prompts to generate a wordsearch. The output is not interactive/playable.
+```bash
+# in project directory
+cd <wordsearch-generator-root>
+
+# install dependencies
+npm install
+
+# fetch sources from git submodules (to be migrated to npm dependencies)
+git submodule init
+git submodule update
+```
+
+4. Run `node wordsearch_cli.js`.
+
+5. Follow the prompts to generate a wordsearch. The output is not interactive/playable.
 
 ## Contents
 
