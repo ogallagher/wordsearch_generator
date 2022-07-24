@@ -123,7 +123,7 @@ class WordsearchGenerator {
 	 *
 	 * @param {String} language Language code string.
 	 * @param {String} alphabet_case Alphabet case (upper, lower).
-	 * @param {Number, Array} width Puzzle width/height (square), or array of width and height (rectangle).
+	 * @param {Number|Array<Number>} width Puzzle width/height (square), or array of width and height (rectangle).
 	 * @param {Array} words Array of word[-clue] strings with default word-clue delimiter WORD_CLUE_DELIM, or array of
 	 * word[-clue] arrays, or string path to words dsv file.
 	 * @param {Number} random_subset How many words to select from the population for each wordsearch.
@@ -670,12 +670,20 @@ class WordsearchGenerator {
 		return points
 	}
 
+	/**
+	 * TODO document config attributes.
+	 * 
+	 * @returns {Object} Serializable saved version of this wordsearch generator.
+	 */
 	export_config() {
 		let config = {}
 
 		config[KEY_LANGUAGE] = this.language
 
-		config[KEY_SIZE] = this.grid.length
+		config[KEY_SIZE] = [
+			this.grid[0].length,
+			this.grid.length
+		]
 
 		config[KEY_CASE] = this.alphabet_case
 
@@ -692,6 +700,11 @@ class WordsearchGenerator {
 		return config
 	}
 	
+	/**
+	 * TODO document better.
+	 * 
+	 * @returns {Object} Selected probability distribution.
+	 */
 	get_selected_prob_dist() {
 		return this.alphabet[KEY_SELECTED_PROB_DIST]
 	}
@@ -699,11 +712,10 @@ class WordsearchGenerator {
 	/**
 	 * Select the probability distribution to use when randomizing wordsearch cells.
 	 * 
-	 * @param {String,Object} pd_name The prob dist name/key to be selected from 
+	 * @param {String|Object} pd_name The prob dist name/key to be selected from 
 	 * this.language[KEY_PROB_DIST], or the prob dist object itself.
 	 * 
-	 * @returns Promise resolves undefined.
-	 * @type Promise
+	 * @returns {Promise<undefined>} Promise resolves undefined.
 	 */
 	set_probability_distribution(pd_name) {
 		let self = this
@@ -785,8 +797,7 @@ class WordsearchGenerator {
 	 * 
 	 * @param {String} cs_name
 	 *
-	 * @returns Promise resolves undefined.
-	 * @type Promise
+	 * @returns {Promise<undefined>} Promise resolves undefined.
 	 */
 	set_charset(cs_name) {
 		let self = this
@@ -863,8 +874,7 @@ class WordsearchGenerator {
 	 *
 	 * @param {String} path Path to alphabets file.
 	 *
-	 * @returns Resolve alphabet aliases, or reject on failure.
-	 * @type Promise
+	 * @returns {Promise<Object>} Resolve alphabet aliases, or reject on failure.
 	 */
 	static get_alphabet_aliases(filepath = ALPHABET_FILE) {
 		if (USE_WG_HOST_URL && environment == ENV_FRONTEND) {
@@ -898,8 +908,7 @@ class WordsearchGenerator {
 	 * @param {String} language Language code.
 	 * @param {String} filepath Path to alphabets file.
 	 * 
-	 * @returns Promise: resolve alphabet description, or reject if the language is not supported.
-	 * @type Object
+	 * @returns {Promise<Object>} resolve alphabet description, or reject if the language is not supported.
 	 */
 	static get_alphabet(language, case_key = KEY_RANGES, filepath = ALPHABET_FILE) {
 		if (USE_WG_HOST_URL && environment == ENV_FRONTEND) {
@@ -1252,8 +1261,7 @@ class WordsearchGenerator {
 	 * 
 	 * @param {String} txt Text file content string.
 	 *
-	 * @returns Resolves array of unicode points. Rejects undefined on failure.
-	 * @type Promise
+	 * @returns {Promise<Array<Number>>} Resolves array of unicode points. Rejects undefined on failure.
 	 */
 	static parse_charset_str(txt, delim = '\n') {
 		return new Promise(function(resolve, reject) {
@@ -1279,9 +1287,8 @@ class WordsearchGenerator {
 	 * @param String path_or_data Path to words file, or contents of file if used in frontend/browser.
 	 * @param String delimiter Column delimiter. Default is WORD_CLUE_DELIM.
 	 * 
-	 * @returns Resolves an array of words and word-clues. Each item is a 1- or 2-string array.
+	 * @returns {Promise<Array<String>>} Resolves an array of words and word-clues. Each item is a 1- or 2-string array.
 	 * On failure, rejects undefined.
-	 * @type Promise
 	 */
 	static load_words_file_dsv(path_or_data, delimiter=WORD_CLUE_DELIM) {
 		return new Promise(function(resolve, reject) {

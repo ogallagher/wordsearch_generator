@@ -36,6 +36,8 @@ const CSS_CLASS_WORDSEARCH_INPUT_METHODS = 'wordsearch-input-methods'
 const CSS_CLASS_SHARE_URL_BUTTON = 'wordsearch-share-url'
 const CSS_CLASS_COPY_SHARE_URL_BUTTON = 'copy-share-url'
 const CSS_CLASS_SHARE_URL_TEXT = 'share-url-out'
+const CSS_CLASS_SHARE_URL_OTHER_WORDSEARCHES = 'share-url-other-wordsearches'
+const CSS_CLASS_SHARE_URL_SOLVE_PROGRESS = 'share-url-solve-progress'
 
 const CSS_CLASS_PRINT = 'printable'
 const CSS_CLASS_EDIT = 'editing'
@@ -49,7 +51,7 @@ let wordsearch_input_type = {}
 let wordsearch_use_words_file = {}
 let wordsearch_is_random_subset = {}
 let wordsearch_is_editing = {}
-let wordsearch_is_sharing = {}
+let wordsearch_sharing = {}
 let wordsearch_global = {}
 // TODO rename to wordsearch_words_file
 let wordsearch_word_clues = {}
@@ -564,10 +566,42 @@ function load_child_wordsearch_generator(parent_jq, idx, wordsearch_html) {
 		set_wordsearch_is_editing(wordsearch_id, false)
 	})
 
+	// TODO introduce typing to wordsearch_sharing elements
+	wordsearch_sharing[wordsearch_id] = {
+		is_sharing: false,
+		include_others: false,
+		solve_progress: false
+	}
+
 	// handle share url button
-	wordsearch_is_sharing[wordsearch_id] = false
 	wordsearch_jq.find(`.${CSS_CLASS_SHARE_URL_BUTTON}`).click(function() {
 		set_wordsearch_is_sharing(wordsearch_id)
+	})
+
+	// handle share url form controls
+	wordsearch_jq.find(`.${CSS_CLASS_SHARE_URL_OTHER_WORDSEARCHES}`).click(function() {
+		const include_others_jq = $(this)
+		let include_others = !is_on(include_others_jq)
+		console.log(`debug include other wordsearches in share url = ${include_others}`)
+		
+		wordsearch_sharing[wordsearch_id].include_others = include_others
+
+		include_others_jq
+		.attr('data-on', include_others)
+		.addClass(include_others ? 'btn-secondary' : 'btn-outline-secondary')
+		.removeClass(include_others ? 'btn-outline-secondary' : 'btn-secondary')
+	})
+	wordsearch_jq.find(`.${CSS_CLASS_SHARE_URL_SOLVE_PROGRESS}`).click(function() {
+		const solve_progress_jq = $(this)
+		let solve_progress = !is_on(solve_progress_jq)
+		console.log(`debug include solve progress in share url = ${solve_progress}`)
+
+		wordsearch_sharing[wordsearch_id].solve_progress = solve_progress
+
+		solve_progress_jq
+		.attr('data-on', solve_progress)
+		.addClass(solve_progress ? 'btn-secondary' : 'btn-outline-secondary')
+		.removeClass(solve_progress ? 'btn-outline-secondary' : 'btn-secondary')
 	})
 
 	// handle copy share url button
@@ -758,8 +792,8 @@ function set_wordsearch_is_editing(wordsearch_id, is_editing) {
 }
 
 function set_wordsearch_is_sharing(wordsearch_id) {
-	is_sharing = !wordsearch_is_sharing[wordsearch_id]
-	wordsearch_is_sharing[wordsearch_id] = is_sharing
+	is_sharing = !wordsearch_sharing[wordsearch_id].is_sharing
+	wordsearch_sharing[wordsearch_id].is_sharing = is_sharing
 
 	const wordsearch_jq = $(`#${wordsearch_id}`)
 
