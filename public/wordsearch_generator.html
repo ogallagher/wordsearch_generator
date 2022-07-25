@@ -18,11 +18,15 @@
 			a number I change to prevent this page from using an old cached version
 			of wordsearch_webpage.js.
 			
-			Note data-containers defines a css selector referencing target containers where
+			data-containers defines a css selector referencing target containers where
 			wordsearch generators will be inserted.
+
+			data-use-host toggles whether to use the original dedicated webserver (true) or whatever
+			webserver is currently hosting the webpage (false).
 		-->
 		<script 
-			src="https://wordsearch.dreamhosters.com/wordsearch_webpage.js?version=0.36.1" 
+			src="https://wordsearch.dreamhosters.com/wordsearch_webpage.js?version=0.37.0" 
+			src-ignore="/wordsearch_webpage.js?version=0.37.0" 
 			type="text/javascript"
 			data-containers=".wordsearch-container"
 			data-use-host="true"

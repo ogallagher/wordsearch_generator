@@ -66,12 +66,22 @@
 					<div class="h4">Words (and clues)</div>
 					<div class="word-clues">
 					</div>
-					<div class="text-center py-2">
-						<button class="add-word-clue btn btn-secondary w-100">
-							<svg class="bi bi-plus-lg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-								<path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
-							</svg>
-						</button>
+					<div class="text-center py-2 row">
+						<div class="col">
+							<button class="add-word-clue btn btn-secondary w-100">
+								<svg xmlns="http://www.w3.org/2000/svg"
+									class="bi bi-plus-lg" 
+									width="24" height="24" viewBox="0 0 16 16" 
+									fill="currentColor">
+									<path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+								</svg>
+							</button>
+						</div>
+						<div class="col">
+							<button class="show-word-clues btn btn-secondary w-100" data-on="true">
+								<span class="show-hide">hide</span> words
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>

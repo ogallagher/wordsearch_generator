@@ -37,6 +37,7 @@ const SHARE_URL_QUERY_KEY_WSCONFIG_PREFIX = 'wscfg_'
 
 const CSS_CLASS_WORDSEARCH_CONFIG = 'wordsearch-config'
 const CSS_CLASS_WORDSEARCH_INPUT_METHODS = 'wordsearch-input-methods'
+const CSS_CLASS_WORD_CLUES_SHOW_BUTTON = 'show-word-clues'
 const CSS_CLASS_SHARE_URL_BUTTON = 'wordsearch-share-url'
 const CSS_CLASS_COPY_SHARE_URL_BUTTON = 'copy-share-url'
 const CSS_CLASS_SHARE_URL_TEXT = 'share-url-out'
@@ -545,6 +546,14 @@ function load_child_wordsearch_generator(
 	wordsearch_jq.find('.add-word-clue').click(function() {
 		add_word_clue(wordsearch_id)
 	})
+
+	// handle word-clue show/hide button click
+	wordsearch_jq.find(`.${CSS_CLASS_WORD_CLUES_SHOW_BUTTON}`)
+	.attr('data-on', true)
+	.click(function() {
+		let show = !is_on($(this))
+		set_show_word_clues(show)
+	})
 	
 	// handle words file button click
 	wordsearch_jq.find('.words-file-button').click(function() {
@@ -877,6 +886,23 @@ function set_wordsearch_is_sharing(wordsearch_id) {
 	update_share_url(wordsearch_id)
 }
 
+function set_show_word_clues(show) {
+	const word_clues_show_jq = $(`.${CSS_CLASS_WORD_CLUES_SHOW_BUTTON}`)
+
+	word_clues_show_jq
+	.attr('data-on', show)
+	.find('.show-hide').text(
+		show ? 'hide' : 'show'
+	)
+	
+	if (show) {
+		$('.word-clues').removeClass('d-none')
+	}
+	else {
+		$('.word-clues').addClass('d-none')
+	}
+}
+
 /**
  * 
  * @param {String} wordsearch_id 
@@ -941,8 +967,10 @@ function update_share_url(wordsearch_id) {
  * @param {String} wordsearch_id 
  * @param {WordsearchGenerator} wordsearch 
  */
-function on_wordsearch_instance(wordsearch_id, wordsearch) {
+function on_wordsearch_instance(wordsearch_id, wordsearch, show_word_clues=false) {
 	console.log(`info load wordsearch from generator instance ${wordsearch_id}`)
+
+	const wordsearch_jq = $(`#${wordsearch_id}`)
 
 	// show wordsearch
 	wordsearch.init_promise.then(() => {
@@ -951,7 +979,9 @@ function on_wordsearch_instance(wordsearch_id, wordsearch) {
 		// update input widgets to match wordsearch contents
 	
 		// TODO title
-		// TODO alphabet
+		// alphabet
+		wordsearch_jq.find('.language').val(wordsearch.language)
+
 		// TODO charset
 		// TODO prob dist
 
@@ -959,6 +989,7 @@ function on_wordsearch_instance(wordsearch_id, wordsearch) {
 		set_wordsearch_is_random_subset(wordsearch_id, wordsearch.random_subset)
 
 		// words clues
+		set_show_word_clues(show_word_clues)
 		let word, clue
 		for (let i=0; i<wordsearch.words.length; i++) {
 			word = wordsearch.words[i]
@@ -968,6 +999,9 @@ function on_wordsearch_instance(wordsearch_id, wordsearch) {
 		}
 
 		// TODO dimensions
+		wordsearch_jq.find('.size-width').val(wordsearch.width)
+		wordsearch_jq.find('.size-height').val(wordsearch.height)
+
 		// TODO font size
 		// TODO whitespace
 	})
