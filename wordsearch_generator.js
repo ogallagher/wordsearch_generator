@@ -699,6 +699,21 @@ class WordsearchGenerator {
 
 		return config
 	}
+
+	/**
+	 * Converts the output of {export_config} to a base64 string.
+	 * 
+	 * TODO replace deprecated btoa with (frontend window.btoa) and (backend Buffer.from().toString()).
+	 * 
+	 * @returns {String} Url query compatible saved version of this wordsearch generator.
+	 */
+	export_config_url_query_param() {
+		let config_json = JSON.stringify(this.export_config())
+		let config_encoded = btoa(unescape(encodeURIComponent(config_json)))
+		console.log(`debug url encoded config = ${config_encoded}`)
+
+		return config_encoded
+	}
 	
 	/**
 	 * TODO document better.
@@ -1344,8 +1359,7 @@ class WordsearchGenerator {
 	 *
 	 * @param {String|Object} config_json Config json contents.
 	 *
-	 * @returns A {WordsearchGenerator} instance.
-	 * @type WordsearchGenerator
+	 * @returns {WordsearchGenerator}
 	 */
 	static import_config(config_json) {
 		// config is js object, parse json if necessary
@@ -1365,6 +1379,21 @@ class WordsearchGenerator {
 		)
 
 		return wordsearch
+	}
+
+	/**
+	 * Create WordsearchGenerator from output of {export_config_url_query_param}.
+	 * 
+	 * TODO replace deprecated atob with (frontend window.atob) and (backend Buffer.from().toString()).
+	 * 
+	 * @param {String} config_query_param 
+	 * 
+	 * @returns {WordsearchGenerator}
+	 */
+	static import_config_url_query_param(config_query_param) {
+		return WordsearchGenerator.import_config(
+			decodeURIComponent(escape(atob(config_query_param)))
+		)
 	}
 
 	/**

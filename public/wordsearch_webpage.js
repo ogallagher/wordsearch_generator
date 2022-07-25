@@ -31,6 +31,10 @@ const ESCAPE_CHAR = {
 	'\\': '\\'
 }
 
+const SHARE_URL_QUERY_KEY_WSCOUNT = 'wscount'
+const SHARE_URL_QUERY_KEY_WSID_PREFIX = 'wsid_'
+const SHARE_URL_QUERY_KEY_WSCONFIG_PREFIX = 'wscfg_'
+
 const CSS_CLASS_WORDSEARCH_CONFIG = 'wordsearch-config'
 const CSS_CLASS_WORDSEARCH_INPUT_METHODS = 'wordsearch-input-methods'
 const CSS_CLASS_SHARE_URL_BUTTON = 'wordsearch-share-url'
@@ -256,35 +260,91 @@ function wordsearch_webpage_main() {
 		console.log(`INFO wordsearch containers selector = ${wordsearch_containers_selector}`)
 		
 		delete script_jq
-		
-		// load wordsearch components into each container
-		$(wordsearch_containers_selector).each(function(idx) {
-			load_child_wordsearch_generator($(this), idx, wordsearch_html)
-		})
-		.promise().done(() => {
-			return Promise.resolve()
-		})
+
+		// check for saved wordsearches in url query
+		let url = new URL(window.location.href)
+		console.log(`debug url = ${url.toString()}`)
+		if (url.searchParams.has(SHARE_URL_QUERY_KEY_WSCOUNT)) {
+			let url_ws_count = parseInt(url.searchParams.get(SHARE_URL_QUERY_KEY_WSCOUNT))
+			console.log(`info loading ${url_ws_count} wordsearches from the url query string`)
+
+			// remove any initial wordsearch containers
+			$(wordsearch_containers_selector).remove()
+
+			// create loaded containers for each wordsearch as described in the url query params
+			for (let idx = 0; idx < url_ws_count; idx++) {
+				let ws_id = url.searchParams.get(`${SHARE_URL_QUERY_KEY_WSID_PREFIX}${idx}`)
+
+				let ws_config_str = url.searchParams.get(`${SHARE_URL_QUERY_KEY_WSCONFIG_PREFIX}${idx}`)
+				let wordsearch = WordsearchGenerator.import_config_url_query_param(ws_config_str)
+				
+				add_wordsearch_container(
+					wordsearch_html,
+					undefined,
+					ws_id, 
+					wordsearch
+				)
+				return Promise.resolve()
+			}
+		}
+		else {
+			// load example config files into each container
+			ex_cfg_file_main()
+
+			// load wordsearch components into each container
+			$(wordsearch_containers_selector).each(function(idx) {
+				load_child_wordsearch_generator($(this), wordsearch_html)
+			})
+			.promise().done(() => {
+				return Promise.resolve()
+			})
+		}
 	})
 	
 	return p
 }
 
-function load_child_wordsearch_generator(parent_jq, idx, wordsearch_html) {
-	console.log(`DEBUG load wordsearch generator component ${idx}`)
-	
+/**
+ * 
+ * @param {JQuery} parent_jq 
+ * @param {String} wordsearch_html 
+ * @param {String} wordsearch_id Index or unique identifier string.
+ * @param {WordsearchGenerator} wordsearch 
+ * 
+ * @returns 
+ */
+function load_child_wordsearch_generator(
+	parent_jq,
+	wordsearch_html,
+	wordsearch_id=undefined,
+	wordsearch=undefined
+) {	
 	// load component
 	let wordsearch_jq = $(wordsearch_html)
 	
 	// uniquely identify
-	let wordsearch_id = `wordsearch-component-${new Date().toISOString()}`
-	.replaceAll(':','-')
-	.replaceAll('.','-')
-	wordsearch_jq.attr('id', wordsearch_id)
+	if (wordsearch_id == undefined) {
+		wordsearch_id = `wordsearch-component-${new Date().toISOString()}`
+		.replaceAll(':','-')
+		.replaceAll('.','-')
+		wordsearch_jq.attr('id', wordsearch_id)
+	}
+	else {
+		wordsearch_jq.attr('id', wordsearch_id)
+	}
+
+	console.log(`DEBUG load wordsearch generator component ${wordsearch_id}`)
 	
 	// append to container
 	parent_jq.append(wordsearch_jq)
 	
-	set_wordsearch_input_type(wordsearch_id, INPUT_FILE)
+	if (wordsearch == undefined) {
+		set_wordsearch_input_type(wordsearch_id, INPUT_FILE)
+	}
+	else {
+		set_wordsearch_input_type(wordsearch_id, INPUT_FORM)
+	}
+	
 	set_wordsearch_is_random_subset(wordsearch_id, false)
 	
 	// handle input choice
@@ -483,30 +543,7 @@ function load_child_wordsearch_generator(parent_jq, idx, wordsearch_html) {
 
 	// handle word-clue add button click
 	wordsearch_jq.find('.add-word-clue').click(function() {
-		let datetime_str = new Date().toISOString()
-		let containerjq = wordsearch_jq.find('.word-clues')
-		let rowjq = $(
-			`<div class="row word-clue mt-1 gx-1" data-when="${datetime_str}">
-				<div class="col">
-					<input type="text" placeholder="word" class="word-clue-word form-control"/>
-				</div>
-				<div class="col">
-					<input type="text" placeholder="clue (optional)" class="word-clue-clue form-control"/>
-				</div>
-				<div class="col-auto d-flex flex-column justify-content-center">
-					<button 
-						class="btn btn-danger word-clue-delete" 
-						data-wordsearch-id="${wordsearch_id}"
-						data-when="${datetime_str}"
-						onclick="on_word_clue_delete_click(event)">
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" fill="currentColor" class="bi bi-dash-lg" viewBox="0 0 16 16">
-							<path fill-rule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z"/>
-						</svg>
-					</button>
-				</div>
-			</div>`
-		)
-		containerjq.append(rowjq)
+		add_word_clue(wordsearch_id)
 	})
 	
 	// handle words file button click
@@ -590,6 +627,8 @@ function load_child_wordsearch_generator(parent_jq, idx, wordsearch_html) {
 		.attr('data-on', include_others)
 		.addClass(include_others ? 'btn-secondary' : 'btn-outline-secondary')
 		.removeClass(include_others ? 'btn-outline-secondary' : 'btn-secondary')
+
+		update_share_url(wordsearch_id)
 	})
 	wordsearch_jq.find(`.${CSS_CLASS_SHARE_URL_SOLVE_PROGRESS}`).click(function() {
 		const solve_progress_jq = $(this)
@@ -602,6 +641,8 @@ function load_child_wordsearch_generator(parent_jq, idx, wordsearch_html) {
 		.attr('data-on', solve_progress)
 		.addClass(solve_progress ? 'btn-secondary' : 'btn-outline-secondary')
 		.removeClass(solve_progress ? 'btn-outline-secondary' : 'btn-secondary')
+
+		update_share_url(wordsearch_id)
 	})
 
 	// handle copy share url button
@@ -641,6 +682,11 @@ function load_child_wordsearch_generator(parent_jq, idx, wordsearch_html) {
 			[0].click()
 		}
 	})
+
+	// load wordsearch instance
+	if (wordsearch != undefined && wordsearch instanceof WordsearchGenerator) {
+		on_wordsearch_instance(wordsearch_id, wordsearch)
+	}
 	
 	return wordsearch_jq
 }
@@ -650,41 +696,55 @@ function add_wordsearch_container_btn() {
 		$('#add-wordsearch-container').click(function() {
 			console.log(`DEBUG add-wordsearch-container.click`)
 			
-			// add new wordsearch container
-			let header_jq = $(
-				`<div class="mb-2 row">
-					<div class="h2 col">Wordsearch generator</div>
-					<div class="col-auto">
-						<button class="btn btn-danger rm-wordsearch-container">
-							Remove wordsearch generator
-						</button>
-					</div>
-				</div>`
-			)
-			let container_jq = $(
-				`<section class="wordsearch-container mb-3"></section>`
-			)
-			let hr_jq = $(`<hr/>`)
-			
-			$('.wordsearch-containers')
-			.append(header_jq)
-			.append(container_jq)
-			.append(hr_jq)
-			
-			// handle remove button
-			header_jq.find('.rm-wordsearch-container').click(function() {
-				hr_jq.remove()
-				container_jq.remove()
-				header_jq.remove()
-			})
-			
-			// load child wordsearch generator in new wordsearch container
-			let wordsearch_jq = load_child_wordsearch_generator(container_jq, '?', wordsearch_html)
-			
-			// enable example cfg file button
-			ex_cfg_file_main(wordsearch_jq)
+			add_wordsearch_container(wordsearch_html)
 		})
 	})
+}
+
+function add_wordsearch_container(
+	wordsearch_html,
+	parent_selector=`${DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR}s`, 
+	wordsearch_id=undefined, 
+	wordsearch=undefined
+) {
+	// add new wordsearch container
+	let header_jq = $(
+		`<div class="mb-2 row">
+			<div class="h2 col">Wordsearch generator</div>
+			<div class="col-auto">
+				<button class="btn btn-danger rm-wordsearch-container">
+					Remove wordsearch generator
+				</button>
+			</div>
+		</div>`
+	)
+	let container_jq = $(
+		`<section class="wordsearch-container mb-3"></section>`
+	)
+	let hr_jq = $(`<hr/>`)
+	
+	$(parent_selector)
+	.append(header_jq)
+	.append(container_jq)
+	.append(hr_jq)
+	
+	// handle remove button
+	header_jq.find('.rm-wordsearch-container').click(function() {
+		hr_jq.remove()
+		container_jq.remove()
+		header_jq.remove()
+	})
+	
+	// load child wordsearch generator in new wordsearch container
+	let wordsearch_jq = load_child_wordsearch_generator(
+		container_jq, 
+		wordsearch_html,
+		wordsearch_id, 
+		wordsearch
+	)
+	
+	// enable example cfg file button
+	ex_cfg_file_main(wordsearch_jq)
 }
 
 // TODO rename to set_wordsearch_config_type
@@ -813,11 +873,109 @@ function set_wordsearch_is_sharing(wordsearch_id) {
 		wordsearch_jq.find(`.${CSS_CLASS_SHARE_URL_ONLY}`).removeClass(CSS_CLASS_SHARE_URL)
 		wordsearch_jq.find(`.${CSS_CLASS_SHARE_URL_BUTTON}`).removeClass(CSS_CLASS_SHARE_URL)
 	}
+
+	update_share_url(wordsearch_id)
 }
 
-function on_wordsearch_config_file(wordsearch_cmp_id, wordsearch_json) {
+/**
+ * 
+ * @param {String} wordsearch_id 
+ * 
+ * @returns {URL} Share url with wordsearch[es] included.
+ */
+function update_share_url(wordsearch_id) {
+	let share_url_options = wordsearch_sharing[wordsearch_id]
+
+	// collect wordsearches to include in url
+	let wordsearches = []
+	if (share_url_options.include_others) {
+		for (let wsid of Object.keys(wordsearch_global)) {
+			wordsearches.push({
+				id: wsid,
+				wordsearch: wordsearch_global[wsid]
+			})
+		}
+	}
+	else {
+		wordsearches.push({
+			id: wordsearch_id,
+			wordsearch: wordsearch_global[wordsearch_id]
+		})
+	}
+
+	// compile share url
+	let share_url = new URL(WP_HOST_URL)
+	share_url.searchParams.set(SHARE_URL_QUERY_KEY_WSCOUNT, new Number(wordsearches.length).toString())
+
+	let idx = 0
+	for (let wordsearch_kv of wordsearches) {
+		let id = wordsearch_kv.id
+		let wordsearch = wordsearch_kv.wordsearch
+
+		share_url.searchParams.set(
+			`${SHARE_URL_QUERY_KEY_WSID_PREFIX}${idx}`,
+			id
+		)
+
+		share_url.searchParams.set(
+			`${SHARE_URL_QUERY_KEY_WSCONFIG_PREFIX}${idx}`,
+			wordsearch.export_config_url_query_param()
+		)
+		
+		idx++
+	}
+
+	let share_url_str = share_url.toString()
+	console.log(
+		`debug updated share url with ${wordsearches.length} wordsearches of length ${share_url_str.length}`
+	)
+
+	// update active share url form
+	$(`#${wordsearch_id}`).find(`.${CSS_CLASS_SHARE_URL_TEXT}`).val(share_url_str)
+
+	return share_url
+}
+
+/**
+ * 
+ * @param {String} wordsearch_id 
+ * @param {WordsearchGenerator} wordsearch 
+ */
+function on_wordsearch_instance(wordsearch_id, wordsearch) {
+	console.log(`info load wordsearch from generator instance ${wordsearch_id}`)
+
+	// show wordsearch
+	wordsearch.init_promise.then(() => {
+		display_wordsearch(wordsearch, wordsearch_id)
+
+		// update input widgets to match wordsearch contents
+	
+		// TODO title
+		// TODO alphabet
+		// TODO charset
+		// TODO prob dist
+
+		// random subset
+		set_wordsearch_is_random_subset(wordsearch_id, wordsearch.random_subset)
+
+		// words clues
+		let word, clue
+		for (let i=0; i<wordsearch.words.length; i++) {
+			word = wordsearch.words[i]
+			clue = wordsearch.clues[i]
+
+			add_word_clue(wordsearch_id, word, clue)
+		}
+
+		// TODO dimensions
+		// TODO font size
+		// TODO whitespace
+	})
+}
+
+function on_wordsearch_config_file(wordsearch_id, wordsearch_json) {
 	if (wordsearch_json != undefined) {
-		console.log(`INFO ${wordsearch_cmp_id}:on_wordsearch_input_file`)
+		console.log(`INFO ${wordsearch_id}:on_wordsearch_input_file`)
 		let description = typeof wordsearch_json === 'string' 
 			? JSON.parse(wordsearch_json)
 			: wordsearch_json
@@ -825,13 +983,13 @@ function on_wordsearch_config_file(wordsearch_cmp_id, wordsearch_json) {
 		
 		let random_subset = description[WordsearchGenerator.KEY_RANDOM_SUBSET]
 		
-		let use_words_file = wordsearch_use_words_file[wordsearch_cmp_id]
+		let use_words_file = wordsearch_use_words_file[wordsearch_id]
 		
 		// get word-clue delimiter from config file
 		let words_delim = description[WordsearchGenerator.KEY_WORDS_DELIM]
 		if (words_delim == undefined || use_words_file) {
 			// get word-clue delimiter from delimiter input
-			words_delim = $(`#${wordsearch_cmp_id} .words-file-delim`).val()
+			words_delim = $(`#${wordsearch_id} .words-file-delim`).val()
 			
 			if (words_delim == '') {
 				// use default
@@ -840,7 +998,7 @@ function on_wordsearch_config_file(wordsearch_cmp_id, wordsearch_json) {
 		}
 		
 		new Promise(function(resolve) {
-			let word_clues = wordsearch_word_clues[wordsearch_cmp_id]
+			let word_clues = wordsearch_word_clues[wordsearch_id]
 			if (!use_words_file || word_clues == undefined) {
 				// use word-clues embedded in config file
 				word_clues = description[WordsearchGenerator.KEY_WORDS]
@@ -884,7 +1042,7 @@ function on_wordsearch_config_file(wordsearch_cmp_id, wordsearch_json) {
 			)
 		
 			if (random_subset != undefined) {
-				set_wordsearch_is_random_subset(wordsearch_cmp_id, true, random_subset)
+				set_wordsearch_is_random_subset(wordsearch_id, true, random_subset)
 			}
 			
 			return wordsearch.init_promise.then(() => {
@@ -892,7 +1050,7 @@ function on_wordsearch_config_file(wordsearch_cmp_id, wordsearch_json) {
 			})
 		})
 		.then((wordsearch) => {
-			display_wordsearch(wordsearch, wordsearch_cmp_id)
+			display_wordsearch(wordsearch, wordsearch_id)
 		})
 	}
 	else {
@@ -900,9 +1058,9 @@ function on_wordsearch_config_file(wordsearch_cmp_id, wordsearch_json) {
 	}
 }
 
-function on_wordsearch_config_form(wordsearch_cmp_id) {
-	console.log(`${wordsearch_cmp_id}:on_wordsearch_input_form`)
-	let wordsearch_cmp = $(`#${wordsearch_cmp_id}`)
+function on_wordsearch_config_form(wordsearch_id) {
+	console.log(`${wordsearch_id}:on_wordsearch_input_form`)
+	let wordsearch_cmp = $(`#${wordsearch_id}`)
 	
 	try {
 		let width_str = wordsearch_cmp.find('.size-width').val().trim()
@@ -938,8 +1096,8 @@ function on_wordsearch_config_form(wordsearch_cmp_id) {
 		
 		wordsearch.init_promise.then(() => {
 			new Promise(function(res_words) {
-				let use_words_file = wordsearch_use_words_file[wordsearch_cmp_id]
-				let word_clues = wordsearch_word_clues[wordsearch_cmp_id]
+				let use_words_file = wordsearch_use_words_file[wordsearch_id]
+				let word_clues = wordsearch_word_clues[wordsearch_id]
 				
 				if (use_words_file && word_clues != undefined) {					
 					// use words file
@@ -985,9 +1143,9 @@ function on_wordsearch_config_form(wordsearch_cmp_id) {
 				}
 			})
 			.then(function(word_clues) {
-				load_word_clues(wordsearch_cmp_id, wordsearch, word_clues)
+				load_word_clues(wordsearch_id, wordsearch, word_clues)
 				
-				display_wordsearch(wordsearch, wordsearch_cmp_id)
+				display_wordsearch(wordsearch, wordsearch_id)
 			})
 		})
 	}
@@ -1424,6 +1582,57 @@ function on_cell_input_key(wordsearch_id, cell, event) {
 			}
 		)
 	}
+}
+
+/**
+ * 
+ * @param {String} wordsearch_id 
+ * @param {String} word 
+ * @param {String} clue 
+ * 
+ * @returns {Promise<JQuery>}
+ */
+function add_word_clue(wordsearch_id, word=undefined, clue=undefined) {
+	console.log(`debug add ${word}=${clue} widgets to ${wordsearch_id}`)
+	const wordsearch_jq = $(`#${wordsearch_id}`)
+
+	let datetime_str = new Date().toISOString()
+	let containerjq = wordsearch_jq.find('.word-clues')
+
+	let rowjq = $(
+		`<div class="row word-clue mt-1 gx-1" data-when="${datetime_str}">
+			<div class="col">
+				<input 
+					type="text" placeholder="word" 
+					class="word-clue-word form-control"
+					${word === undefined ? '' : `value="${word}"`}
+				/>
+			</div>
+			<div class="col">
+				<input 
+					type="text" placeholder="clue (optional)" 
+					class="word-clue-clue form-control"
+					${clue === undefined ? '' : `value="${clue}"`}
+				/>
+			</div>
+			<div class="col-auto d-flex flex-column justify-content-center">
+				<button 
+					class="btn btn-danger word-clue-delete" 
+					data-wordsearch-id="${wordsearch_id}"
+					data-when="${datetime_str}"
+					onclick="on_word_clue_delete_click(event)">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" fill="currentColor" class="bi bi-dash-lg" viewBox="0 0 16 16">
+						<path fill-rule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z"/>
+					</svg>
+				</button>
+			</div>
+		</div>`
+	)
+
+	return containerjq.append(rowjq).promise()
+	.then(function() {
+		return rowjq
+	})
 }
 
 /**

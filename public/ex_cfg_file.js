@@ -181,5 +181,3 @@ function ex_cfg_file_main(wordsearch_component) {
 		})
 	})
 }
-
-ex_cfg_file_main()
