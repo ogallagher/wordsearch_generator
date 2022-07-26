@@ -99,9 +99,14 @@ function set_use_ex_cfg(use_ex_cfg, wordsearch_id) {
 	.attr('data-on', use_ex_cfg)
 }
 
+/**
+ * 
+ * @param {JQuery} wordsearch_component 
+ * @returns {Promise}
+ */
 function ex_cfg_file_main(wordsearch_component) {
 	// defined in wordsearch_webpage.js
-	wordsearch_webpage_promise
+	return wordsearch_webpage_promise
 	.then(() => {
 		return Promise.all([
 			ex_cfg_files_fetch_promise,

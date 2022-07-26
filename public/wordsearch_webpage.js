@@ -16,6 +16,7 @@ const WORDSEARCH_COMPONENT_URL = '/wordsearch_webcomponent.html?version=0.37.0'
 const WORDSEARCH_CORE_URL = '/wordsearch_generator.js'
 const WORDSEARCH_LOG_URL = '/temp_js_logger.js'
 const DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR = '.wordsearch-container'
+const WORDSEARCH_CONTAINERS_PARENT_SELECTOR = `${DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR}s`
 
 const REM_MIN = 5
 
@@ -31,6 +32,8 @@ const ESCAPE_CHAR = {
 	'\\': '\\'
 }
 
+const SHARE_URL_CHARS_CHOICES = ['none', 'all', 'answers']
+
 const SHARE_URL_QUERY_KEY_WSCOUNT = 'wscount'
 const SHARE_URL_QUERY_KEY_WSID_PREFIX = 'wsid_'
 const SHARE_URL_QUERY_KEY_WSCONFIG_PREFIX = 'wscfg_'
@@ -43,6 +46,7 @@ const CSS_CLASS_COPY_SHARE_URL_BUTTON = 'copy-share-url'
 const CSS_CLASS_SHARE_URL_TEXT = 'share-url-out'
 const CSS_CLASS_SHARE_URL_OTHER_WORDSEARCHES = 'share-url-other-wordsearches'
 const CSS_CLASS_SHARE_URL_SOLVE_PROGRESS = 'share-url-solve-progress'
+const CSS_CLASS_SHARE_URL_CHARS_PREFIX = 'share-url-chars'
 
 const CSS_CLASS_PRINT = 'printable'
 const CSS_CLASS_EDIT = 'editing'
@@ -205,7 +209,8 @@ window.addEventListener('load', function(e) {
 			return Promise.reject()
 		}
 	)
-	.then(add_wordsearch_container_btn)
+
+	add_wordsearch_container_btn()
 })
 
 function ext_js_dependencies() {
@@ -271,34 +276,37 @@ function wordsearch_webpage_main() {
 
 			// remove any initial wordsearch containers
 			$(wordsearch_containers_selector).remove()
+			
+			// remove initial decoration around wordsearch containers
+			$(WORDSEARCH_CONTAINERS_PARENT_SELECTOR).empty()
 
 			// create loaded containers for each wordsearch as described in the url query params
+			let promises = []
 			for (let idx = 0; idx < url_ws_count; idx++) {
 				let ws_id = url.searchParams.get(`${SHARE_URL_QUERY_KEY_WSID_PREFIX}${idx}`)
 
 				let ws_config_str = url.searchParams.get(`${SHARE_URL_QUERY_KEY_WSCONFIG_PREFIX}${idx}`)
 				let wordsearch = WordsearchGenerator.import_config_url_query_param(ws_config_str)
 				
-				add_wordsearch_container(
+				promises.push(add_wordsearch_container(
 					wordsearch_html,
 					undefined,
 					ws_id, 
 					wordsearch
-				)
-				return Promise.resolve()
+				))
 			}
+
+			return Promise.all(promises)
 		}
 		else {
 			// load example config files into each container
 			ex_cfg_file_main()
 
 			// load wordsearch components into each container
-			$(wordsearch_containers_selector).each(function(idx) {
+			return $(wordsearch_containers_selector).each(function(idx) {
 				load_child_wordsearch_generator($(this), wordsearch_html)
 			})
-			.promise().done(() => {
-				return Promise.resolve()
-			})
+			.promise()
 		}
 	})
 	
@@ -312,7 +320,7 @@ function wordsearch_webpage_main() {
  * @param {String} wordsearch_id Index or unique identifier string.
  * @param {WordsearchGenerator} wordsearch 
  * 
- * @returns 
+ * @returns {Number} Wordsearch id.
  */
 function load_child_wordsearch_generator(
 	parent_jq,
@@ -616,7 +624,8 @@ function load_child_wordsearch_generator(
 	wordsearch_sharing[wordsearch_id] = {
 		is_sharing: false,
 		include_others: false,
-		solve_progress: false
+		solve_progress: false,
+		share_chars: 'none'
 	}
 
 	// handle share url button
@@ -653,6 +662,11 @@ function load_child_wordsearch_generator(
 
 		update_share_url(wordsearch_id)
 	})
+	for (let choice of SHARE_URL_CHARS_CHOICES) {
+		wordsearch_jq.find(`.${CSS_CLASS_SHARE_URL_CHARS_PREFIX}-${choice}`).click(function() {
+			set_wordsearch_share_url_chars(wordsearch_id, choice)
+		})
+	}
 
 	// handle copy share url button
 	wordsearch_jq.find(`.${CSS_CLASS_COPY_SHARE_URL_BUTTON}`).click(function() {
@@ -697,13 +711,17 @@ function load_child_wordsearch_generator(
 		on_wordsearch_instance(wordsearch_id, wordsearch)
 	}
 	
-	return wordsearch_jq
+	return wordsearch_id
 }
 
 function add_wordsearch_container_btn() {
+	console.log('add_wordsearch_container_btn()')
+
 	wordsearch_component_promise.then((wordsearch_html) => {
+		console.log('handle add-wordsearch-container button')
+
 		$('#add-wordsearch-container').click(function() {
-			console.log(`DEBUG add-wordsearch-container.click`)
+			console.log('DEBUG add-wordsearch-container.click')
 			
 			add_wordsearch_container(wordsearch_html)
 		})
@@ -712,7 +730,7 @@ function add_wordsearch_container_btn() {
 
 function add_wordsearch_container(
 	wordsearch_html,
-	parent_selector=`${DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR}s`, 
+	parent_selector=WORDSEARCH_CONTAINERS_PARENT_SELECTOR, 
 	wordsearch_id=undefined, 
 	wordsearch=undefined
 ) {
@@ -737,23 +755,27 @@ function add_wordsearch_container(
 	.append(container_jq)
 	.append(hr_jq)
 	
-	// handle remove button
-	header_jq.find('.rm-wordsearch-container').click(function() {
-		hr_jq.remove()
-		container_jq.remove()
-		header_jq.remove()
-	})
-	
 	// load child wordsearch generator in new wordsearch container
-	let wordsearch_jq = load_child_wordsearch_generator(
+	wordsearch_id = load_child_wordsearch_generator(
 		container_jq, 
 		wordsearch_html,
 		wordsearch_id, 
 		wordsearch
 	)
+
+	// handle remove button
+	header_jq.find('.rm-wordsearch-container').click(function() {
+		hr_jq.remove()
+		container_jq.remove()
+		header_jq.remove()
+
+		delete wordsearch_global[wordsearch_id]
+	})
 	
 	// enable example cfg file button
-	ex_cfg_file_main(wordsearch_jq)
+	ex_cfg_file_main($(`#${wordsearch_id}`))
+
+	return Promise.resolve()
 }
 
 // TODO rename to set_wordsearch_config_type
@@ -884,6 +906,42 @@ function set_wordsearch_is_sharing(wordsearch_id) {
 	}
 
 	update_share_url(wordsearch_id)
+}
+
+/**
+ * 
+ * @param {String} wordsearch_id 
+ * @param {String} choice 
+ */
+function set_wordsearch_share_url_chars(wordsearch_id, choice) {
+	const choice_idx = SHARE_URL_CHARS_CHOICES.indexOf(choice)
+
+	if (choice_idx !== -1) {
+		// update share url chars widgets
+		$(`.${CSS_CLASS_SHARE_URL_CHARS_PREFIX}-${choice}`)
+		.attr('data-on', true)
+		.removeClass('btn-outline-secondary')
+		.addClass('btn-secondary')
+
+		const others = new Array(...SHARE_URL_CHARS_CHOICES)
+		others.splice(choice_idx, 1)
+
+		for (let other of others) {
+			$(`.${CSS_CLASS_SHARE_URL_CHARS_PREFIX}-${other}`)
+			.attr('data-on', false)
+			.removeClass('btn-secondary')
+			.addClass('btn-outline-secondary')
+		}
+
+		// update options
+		wordsearch_sharing[wordsearch_id].share_chars = choice
+
+		// update share url
+		update_share_url(wordsearch_id)
+	}
+	else {
+		console.log(`error invalid url share chars choice ${choice}; not in ${SHARE_URL_CHARS_CHOICES}`)
+	}
 }
 
 function set_show_word_clues(show) {
