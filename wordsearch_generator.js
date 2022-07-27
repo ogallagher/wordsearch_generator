@@ -63,6 +63,14 @@ const ALPHABET_CHARSET_DIR = 'alphabet_charsets'
 const PROB_DIST_UNIFORM = 'uniform'
 const CHARSET_DEFAULT = 'default'
 const TXT_COMMENT = '#'
+const INCLUDE_CHARS_NONE = 'none'
+const INCLUDE_CHARS_ANSWERS = 'answers'
+const INCLUDE_CHARS_ALL = 'all'
+const INCLUDE_CHARS_OPTIONS = [
+	INCLUDE_CHARS_NONE,
+	INCLUDE_CHARS_ANSWERS,
+	INCLUDE_CHARS_ALL
+]
 
 // alphabets.json keys
 
@@ -84,6 +92,10 @@ const KEY_CS_NAME = KEY_PD_NAME
 const KEY_CS_DESC = KEY_PD_DESC
 const KEY_CS_FILE = KEY_PD_FILE
 const KEY_CS_DIR = KEY_PD_DIR
+const KEY_WORD_CELLS = 'word_cells'
+const KEY_GRID = 'grid'
+const KEY_POINTS_TO_WORD_IDX = 'point_to_word_idx'
+const KEY_WORD_IDX_TO_POINTS = 'word_idx_to_point'
 
 const KEY_COUNTS = 'counts'
 const KEY_PROBABILITIES = 'probabilities'
@@ -102,24 +114,8 @@ const KEY_TITLE = 'title'
 class WordsearchGenerator {
 	/**
 	 * Constructor.
-	 * TODO use width and height instance vars instead of this.grid.length and this.grid[0].length.
 	 * 
-	 * Instance vars:
-	 * - language Language/alphabet name.
-	 * - alphabet_case Alphabet case string (upper/lower).
-	 * - alphabet_case_key Character code sets key corresponding to the alphabet case.
-	 * - alphabet Selected alphabet with all needed metadata.
-	 * - init_promise Promise whose resolution means the wordsearch generator is ready for use.
-	 * - title Wordsearch title.
-	 * - width
-	 * - height
-	 * - random_subset
-	 * - grid
-	 * - words
-	 * - clues
-	 * - word_cells
-	 * - point_to_word_idx
-	 * - word_idx_to_point Maps words indeces to grid coordinates. See reset_word_clues.
+	 * TODO use width and height instance vars instead of this.grid.length and this.grid[0].length.
 	 *
 	 * @param {String} language Language code string.
 	 * @param {String} alphabet_case Alphabet case (upper, lower).
@@ -132,7 +128,13 @@ class WordsearchGenerator {
 	 * @param {String} selected_prob_dist Name of the selected probability distribution.
 	 */
 	constructor(language = LANGUAGE_DEFAULT, alphabet_case = CASE_DEFAULT, width = WIDTH_DEFAULT, words, random_subset, title, words_delim, selected_charset, selected_prob_dist) {
+		/**
+		 * Language/alphabet name.
+		 */
 		this.language = language
+		/**
+		 * Alphabet case string (upper/lower).
+		 */
 		this.alphabet_case = alphabet_case
 		
 		let case_key
@@ -146,8 +148,14 @@ class WordsearchGenerator {
 				case_key = KEY_LOWER_RANGES
 				break
 		}
+		/**
+		 * Character code sets key corresponding to the alphabet case.
+		 */
 		this.alphabet_case_key = case_key
 
+		/**
+		 * Wordsearch title.
+		 */
 		this.title = title
 		
 		// convert width to width,height
@@ -160,13 +168,55 @@ class WordsearchGenerator {
 		else {
 			height = width
 		}
+		/**
+		 * Wordsearch grid width.
+		 * @type {Number}
+		 */
 		this.width = width
+		/**
+		 * Wordsearch grid height.
+		 * @type {Number}
+		 */
 		this.height = height
 		
-		this.reset_word_clues()
-		
+		/**
+		 * How many words to select from the population for each wordsearch.
+		 * @type {Number}
+		 */
 		this.random_subset = random_subset
-		
+
+		/**
+		 * Array of contained words.
+		 * @type {Array<String>}
+		 */
+		this.words = undefined
+		/**
+		 * Array of clues for each word.
+		 * @type {Array<String>}
+		 */
+		this.clues = undefined
+		/**
+		 * Maps coordinates to indeces in words for detecting found words.
+		 * @type {Object}
+		 */
+		this.point_to_word_idx = undefined
+		/**
+		 * Maps words indeces to grid coordinates. See {reset_word_clues}.
+		 * @type {Object}
+		 */
+		this.word_idx_to_point = undefined
+
+		this.reset_word_clues()
+
+		/**
+		 * Selected alphabet with all needed metadata.
+		 * @type {Object}
+		 */
+		this.alphabet = undefined
+		/**
+		 * Promise whose resolution means the wordsearch generator is ready for use.
+		 * @type {Promise}
+		 */
 		this.init_promise = WordsearchGenerator.get_alphabet(this.language, case_key)
 		// load alphabet
 		.then((alphabet) => {
@@ -199,7 +249,9 @@ class WordsearchGenerator {
 				}
 				this.alphabet = undefined
 			}
-		)
+		).then(() => {
+			console.log(`debug wordsearch generator init promise resolved`)
+		})
 	}
 	
 	/**
@@ -343,6 +395,8 @@ class WordsearchGenerator {
 	 * Fill in random content for all cells in grid.
 	 */
 	randomize_cells() {
+		console.log(`debug randomize cells`)
+		
 		for (let y = 0; y < this.height; y++) {
 			for (let x = 0; x < this.width; x++) {
 				this.grid[y][x] = this.random_cell()
@@ -376,7 +430,8 @@ class WordsearchGenerator {
 	 * @returns Resolves passes (placed words) and fails (skipped words).
 	 * @type Promise
 	 */
-	add_word_clues(word_clues, subset_length, max_attempts, words_delim) {
+	add_word_clues(word_clues, subset_length=undefined, max_attempts=undefined, words_delim=undefined) {
+		console.log('debug add word-clues')
 		let self = this
 		
 		return new Promise(function(res_wc, rej_wc) {
@@ -465,6 +520,7 @@ class WordsearchGenerator {
 	 * 
 	 * @param {String} word Word.
 	 * @param {String} clue Clue.
+	 * @param {Number} max_attempts
 	 */
 	add_word_clue(word, clue, max_attempts = 20) {
 		let word_arr = WordsearchGenerator.string_to_array(word)
@@ -673,9 +729,12 @@ class WordsearchGenerator {
 	/**
 	 * TODO document config attributes.
 	 * 
+	 * @param {String} include_chars Whether to include the generated characters grid ('all'), just
+	 * the answers ('answers'), or neither ('none', undefined).
+	 * 
 	 * @returns {Object} Serializable saved version of this wordsearch generator.
 	 */
-	export_config() {
+	export_config(include_chars=undefined) {
 		let config = {}
 
 		config[KEY_LANGUAGE] = this.language
@@ -693,22 +752,45 @@ class WordsearchGenerator {
 
 		let words = new Array(this.words.length)
 		for (let i = 0; i < words.length; i++) {
-			words[i] = `${this.words[i]}:${this.clues[i]}`
+			words[i] = `${this.words[i]}${WORD_CLUE_DELIM}${this.clues[i]}`
 		}
 		config[KEY_WORDS] = words
 
+		switch (include_chars) {
+			case INCLUDE_CHARS_ALL:
+				// include answers + fillers (grid)
+				config[KEY_GRID] = this.grid
+
+			case INCLUDE_CHARS_ANSWERS:
+				// include answers (word_cells)
+				config[KEY_WORD_CELLS] = this.word_cells
+
+				// include answer endpoints
+				config[KEY_POINTS_TO_WORD_IDX] = this.point_to_word_idx
+				config[KEY_WORD_IDX_TO_POINTS] = this.word_idx_to_point
+				break
+			
+			case INCLUDE_CHARS_NONE:
+			default:
+				// do not include character grid in config
+				break
+		}
+
 		return config
 	}
+
 
 	/**
 	 * Converts the output of {export_config} to a base64 string.
 	 * 
 	 * TODO replace deprecated btoa with (frontend window.btoa) and (backend Buffer.from().toString()).
 	 * 
+	 * @param {String} include_chars
+	 * 
 	 * @returns {String} Url query compatible saved version of this wordsearch generator.
 	 */
-	export_config_url_query_param() {
-		let config_json = JSON.stringify(this.export_config())
+	export_config_url_query_param(include_chars=undefined) {
+		let config_json = JSON.stringify(this.export_config(include_chars))
 		let config_encoded = btoa(unescape(encodeURIComponent(config_json)))
 		console.log(`debug url encoded config = ${config_encoded}`)
 
@@ -1356,29 +1438,112 @@ class WordsearchGenerator {
 
 	/**
 	 * Create WordsearchGenerator from config json file.
+	 * 
+	 * TODO return a promise.
 	 *
 	 * @param {String|Object} config_json Config json contents.
 	 *
-	 * @returns {WordsearchGenerator}
+	 * @returns {Promise<WordsearchGenerator>}
 	 */
 	static import_config(config_json) {
 		// config is js object, parse json if necessary
+		console.log('debug import wordsearch generator config')
 		let config = (typeof config_json === 'string' || config_json instanceof Buffer)
 			? JSON.parse(config_json)
 			: config_json
 		
-		let wordsearch = new WordsearchGenerator(
-			config[KEY_LANGUAGE],
-			config[KEY_CASE],
-			config[KEY_SIZE],
-			config[KEY_WORDS],
-			config[KEY_RANDOM_SUBSET],
-			config[KEY_TITLE],
-			config[KEY_WORDS_DELIM],
-			config[KEY_SELECTED_CHARSET]
-		)
+		TempLogger.CONSOLE_METHOD['log'](config)
+		
+		let grid = config[KEY_GRID]
+		let has_grid = grid !== undefined
 
-		return wordsearch
+		let word_cells = config[KEY_WORD_CELLS]
+		let has_word_cells = word_cells !== undefined
+		
+		return new Promise(function(res) {
+			if (has_grid || has_word_cells) {
+				console.log(`debug config has grid (${has_grid}) or has word cells (${has_word_cells})`)
+	
+				// create randomized wordsearch without answers
+				let wordsearch = new WordsearchGenerator(
+					config[KEY_LANGUAGE],
+					config[KEY_CASE],
+					config[KEY_SIZE],
+					undefined,
+					config[KEY_RANDOM_SUBSET],
+					config[KEY_TITLE],
+					config[KEY_WORDS_DELIM],
+					config[KEY_SELECTED_CHARSET],
+					undefined
+				)
+				
+				wordsearch.init_promise
+				.then(function() {
+					if (has_grid) {
+						// assign saved filler characters
+						console.log(`info load filler characters from saved grid`)
+						wordsearch.grid = grid
+					}
+		
+					if (has_word_cells) {
+						// place words at saved locations
+						console.log(`info load answer characters from saved words`)
+						wordsearch.word_cells = word_cells
+
+						// overlay word characters in grid
+						let c = undefined
+						for (let y=0; y<wordsearch.height; y++) {
+							for (let x=0; x<wordsearch.width; x++) {
+								c = wordsearch.word_cells[y][x]
+								if (c != null) {
+									wordsearch.grid[y][x] = c
+								}
+							}
+						}
+						
+						wordsearch.point_to_word_idx = config[KEY_POINTS_TO_WORD_IDX]
+						wordsearch.word_idx_to_point = config[KEY_WORD_IDX_TO_POINTS]
+		
+						// parse word-clues
+						wordsearch.words = []
+						wordsearch.clues = []
+						for (let word_clue of config[KEY_WORDS]) {
+							let word_clue_arr = word_clue.split(WORD_CLUE_DELIM)
+							wordsearch.words.push(word_clue_arr[0])
+							wordsearch.clues.push(word_clue_arr[1])
+						}
+					}
+					else {
+						// place words at random locations
+						return wordsearch.add_word_clues(
+							config[KEY_WORDS], 
+							config[KEY_RANDOM_SUBSET], 
+							undefined,
+							config[KEY_WORDS_DELIM]
+						)
+					}
+				})
+				.then(() => {
+					res(wordsearch)
+				})
+			}
+			else {
+				// generate random grid and random locations for word-clues
+				let wordsearch = new WordsearchGenerator(
+					config[KEY_LANGUAGE],
+					config[KEY_CASE],
+					config[KEY_SIZE],
+					config[KEY_WORDS],
+					config[KEY_RANDOM_SUBSET],
+					config[KEY_TITLE],
+					config[KEY_WORDS_DELIM],
+					config[KEY_SELECTED_CHARSET]
+				)
+				wordsearch.init_promise.then(() => {
+					res(wordsearch)
+				})
+			}
+		})
 	}
 
 	/**
@@ -1388,7 +1553,7 @@ class WordsearchGenerator {
 	 * 
 	 * @param {String} config_query_param 
 	 * 
-	 * @returns {WordsearchGenerator}
+	 * @returns {Promise<WordsearchGenerator>}
 	 */
 	static import_config_url_query_param(config_query_param) {
 		return WordsearchGenerator.import_config(
@@ -1516,6 +1681,63 @@ class WordsearchGenerator {
 			return false
 		}
 	}
+
+	/**
+	 * 
+	 * @param {Array<Array<String>>} grid 2 dimensional array of characters.
+	 * 
+	 * @returns {String} A simple string of all the characters concatenated in row major order.
+	 */
+	 static grid_to_flat(grid) {
+		let flat = ''
+		
+		for (let row of grid) {
+			flat += row.join('')
+		}
+
+		return flat
+	}
+
+	/**
+	 * 
+	 * @param {String} flat String of characters representing a 2d grid of characters.
+	 * @param {Number|Array{Number}} width
+	 * @param {Number} height
+	 * 
+	 * @returns {Array<Array<String>>} 2 dimensional array of characters.
+	 */
+	static flat_to_grid(flat, width, height=undefined) {
+		if (width instanceof Array) {
+			height = width[1]
+			width = width[0]
+		}
+		else if (height === undefined) {
+			height = width
+		}
+		// else width and height are both defined
+
+		let flat_arr = WordsearchGenerator.string_to_array(flat)
+
+		if (flat_arr.length == width * height) {
+			let grid = new Array(height)
+			for (let y=0; y<height; y++) {
+				grid[y] = new Array(width)
+			}
+
+			let i = 0
+			for (let y=0; y<height; y++) {
+				for (let x=0; x<width; x++) {
+					grid[y][x] = i++
+				}
+			}
+
+			return grid
+		}
+		else {
+			console.log(`error flat ${flat} of length ${flat_arr.length} does not match dimensions ${width}x${height}`)
+			return null
+		}
+	}
 }
 
 if (typeof exports != 'undefined') {
@@ -1550,6 +1772,12 @@ if (typeof exports != 'undefined') {
 	exports.KEY_WORDS_DELIM = KEY_WORDS_DELIM
 	exports.KEY_SELECTED_CHARSET = KEY_SELECTED_CHARSET
 	exports.KEY_SELECTED_PROB_DIST = KEY_SELECTED_PROB_DIST
+	exports.INCLUDE_CHARS_NONE = INCLUDE_CHARS_NONE
+	exports.INCLUDE_CHARS_ANSWERS = INCLUDE_CHARS_ANSWERS
+	exports.INCLUDE_CHARS_ALL = INCLUDE_CHARS_ALL
+	exports.INCLUDE_CHARS_OPTIONS = INCLUDE_CHARS_OPTIONS
+	exports.KEY_WORD_CELLS = KEY_WORD_CELLS
+	exports.KEY_GRID = KEY_GRID
 	
 	// export static methods
 	exports.get_alphabet_aliases = WordsearchGenerator.get_alphabet_aliases
@@ -1567,6 +1795,8 @@ if (typeof exports != 'undefined') {
 	exports.string_to_array = WordsearchGenerator.string_to_array
 	exports.whole_char_at = WordsearchGenerator.whole_char_at
 	exports.rel_path_to_abs_path = WordsearchGenerator.rel_path_to_abs_path
+	exports.grid_to_flat = WordsearchGenerator.grid_to_flat
+	exports.flat_to_grid = WordsearchGenerator.flat_to_grid
 	
 	// console.log(`DEBUG ${exports}`)
 } 
@@ -1599,6 +1829,12 @@ else {
 	WordsearchGenerator.KEY_WORDS_DELIM = KEY_WORDS_DELIM
 	WordsearchGenerator.KEY_SELECTED_CHARSET = KEY_SELECTED_CHARSET
 	WordsearchGenerator.KEY_SELECTED_PROB_DIST = KEY_SELECTED_PROB_DIST
+	WordsearchGenerator.INCLUDE_CHARS_NONE = INCLUDE_CHARS_NONE
+	WordsearchGenerator.INCLUDE_CHARS_ANSWERS = INCLUDE_CHARS_ANSWERS
+	WordsearchGenerator.INCLUDE_CHARS_ALL = INCLUDE_CHARS_ALL
+	WordsearchGenerator.INCLUDE_CHARS_OPTIONS = INCLUDE_CHARS_OPTIONS
+	WordsearchGenerator.KEY_WORD_CELLS = KEY_WORD_CELLS
+	WordsearchGenerator.KEY_GRID = KEY_GRID
 
 	// console.log(`DEBUG no exports`)
 }

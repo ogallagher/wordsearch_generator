@@ -12,7 +12,7 @@ const D3_DSV_URL = 'https://cdn.jsdelivr.net/npm/d3-dsv@3'
 let USE_WP_HOST_URL = true
 const WP_HOST_URL = 'https://wordsearch.dreamhosters.com'
 const DEPENDENCIES_URL = '/webpage_dependencies.html'
-const WORDSEARCH_COMPONENT_URL = '/wordsearch_webcomponent.html?version=0.37.0'
+const WORDSEARCH_COMPONENT_URL = '/wordsearch_webcomponent.html?version=0.37.1'
 const WORDSEARCH_CORE_URL = '/wordsearch_generator.js'
 const WORDSEARCH_LOG_URL = '/temp_js_logger.js'
 const DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR = '.wordsearch-container'
@@ -286,14 +286,18 @@ function wordsearch_webpage_main() {
 				let ws_id = url.searchParams.get(`${SHARE_URL_QUERY_KEY_WSID_PREFIX}${idx}`)
 
 				let ws_config_str = url.searchParams.get(`${SHARE_URL_QUERY_KEY_WSCONFIG_PREFIX}${idx}`)
-				let wordsearch = WordsearchGenerator.import_config_url_query_param(ws_config_str)
 				
-				promises.push(add_wordsearch_container(
-					wordsearch_html,
-					undefined,
-					ws_id, 
-					wordsearch
-				))
+				promises.push(
+					WordsearchGenerator.import_config_url_query_param(ws_config_str)
+					.then((wordsearch) => {
+						add_wordsearch_container(
+							wordsearch_html,
+							undefined,
+							ws_id, 
+							wordsearch
+						)
+					})
+				)
 			}
 
 			return Promise.all(promises)
@@ -1003,7 +1007,7 @@ function update_share_url(wordsearch_id) {
 
 		share_url.searchParams.set(
 			`${SHARE_URL_QUERY_KEY_WSCONFIG_PREFIX}${idx}`,
-			wordsearch.export_config_url_query_param()
+			wordsearch.export_config_url_query_param(share_url_options.share_chars)
 		)
 		
 		idx++
