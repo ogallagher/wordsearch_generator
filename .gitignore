@@ -9,6 +9,7 @@ package-lock.json
 # local only
 local
 public/external_webpage.html
+logs
 
 # admin
 bin/wordsearch-ssh
