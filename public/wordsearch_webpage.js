@@ -32,14 +32,29 @@ const ESCAPE_CHAR = {
 	'\\': '\\'
 }
 
+// whitespace vars
+let cell_padx = 16
+let cell_padx_min = 0
+let cell_padx_max = cell_padx * 2
+
+// fontsize vars
+let cell_font = rem_to_px(2.25)
+let font_min = 8
+let font_max = cell_font * 2.5
+let answer_font = rem_to_px(1.5) / cell_font
+
 const SHARE_URL_CHARS_CHOICES = ['none', 'all', 'answers']
 
 const SHARE_URL_QUERY_KEY_WSCOUNT = 'wscount'
 const SHARE_URL_QUERY_KEY_WSID_PREFIX = 'wsid_'
 const SHARE_URL_QUERY_KEY_WSCONFIG_PREFIX = 'wscfg_'
+const SHARE_URL_QUERY_KEY_WSWHITESPACE_PREFIX = 'wsws_'
+const SHARE_URL_QUERY_KEY_WSFONTSIZE_PREFIX = 'wsfs_'
 
 const CSS_CLASS_WORDSEARCH_CONFIG = 'wordsearch-config'
 const CSS_CLASS_WORDSEARCH_INPUT_METHODS = 'wordsearch-input-methods'
+const CSS_CLASS_WORDSEARCH_WHITESPACE_CONTROL = 'whitespace-control'
+const CSS_CLASS_WORDSEARCH_FONTSIZE_CONTROL = 'font-size-control'
 const CSS_CLASS_WORD_CLUES_SHOW_BUTTON = 'show-word-clues'
 const CSS_CLASS_SHARE_URL_BUTTON = 'wordsearch-share-url'
 const CSS_CLASS_COPY_SHARE_URL_BUTTON = 'copy-share-url'
@@ -284,8 +299,15 @@ function wordsearch_webpage_main() {
 			let promises = []
 			for (let idx = 0; idx < url_ws_count; idx++) {
 				let ws_id = url.searchParams.get(`${SHARE_URL_QUERY_KEY_WSID_PREFIX}${idx}`)
-
 				let ws_config_str = url.searchParams.get(`${SHARE_URL_QUERY_KEY_WSCONFIG_PREFIX}${idx}`)
+				let ws_whitespace_str = url.searchParams.get(`${SHARE_URL_QUERY_KEY_WSWHITESPACE_PREFIX}${idx}`)
+				if (ws_whitespace_str != null) {
+					ws_whitespace_str = parseFloat(ws_whitespace_str)
+				}
+				let ws_fontsize_str = url.searchParams.get(`${SHARE_URL_QUERY_KEY_WSFONTSIZE_PREFIX}${idx}`)
+				if (ws_fontsize_str != null) {
+					ws_fontsize_str = parseFloat(ws_fontsize_str)
+				}
 				
 				promises.push(
 					WordsearchGenerator.import_config_url_query_param(ws_config_str)
@@ -294,7 +316,9 @@ function wordsearch_webpage_main() {
 							wordsearch_html,
 							undefined,
 							ws_id, 
-							wordsearch
+							wordsearch,
+							ws_whitespace_str,
+							ws_fontsize_str
 						)
 					})
 				)
@@ -323,6 +347,8 @@ function wordsearch_webpage_main() {
  * @param {String} wordsearch_html 
  * @param {String} wordsearch_id Index or unique identifier string.
  * @param {WordsearchGenerator} wordsearch 
+ * @param {Number} whitespace
+ * @param {Number} fontsize
  * 
  * @returns {Number} Wordsearch id.
  */
@@ -330,8 +356,10 @@ function load_child_wordsearch_generator(
 	parent_jq,
 	wordsearch_html,
 	wordsearch_id=undefined,
-	wordsearch=undefined
-) {	
+	wordsearch=undefined,
+	whitespace=undefined,
+	fontsize=undefined
+) {
 	// load component
 	let wordsearch_jq = $(wordsearch_html)
 	
@@ -470,45 +498,25 @@ function load_child_wordsearch_generator(
 	.attr('placeholder', WordsearchGenerator.WORD_CLUE_DELIM)
 	
 	// handle whitespace controls
-	let cell_padx = 16
-	let cell_padx_min = 0
-	let cell_padx_max = cell_padx * 2
 	wordsearch_jq.find('.whitespace-label').html(cell_padx)
-	wordsearch_jq.find('.whitespace-control')
+	wordsearch_jq.find(`.${CSS_CLASS_WORDSEARCH_WHITESPACE_CONTROL}`)
 	.attr('min', cell_padx_min)
 	.attr('max', cell_padx_max)
 	.attr('step', (cell_padx_max - cell_padx_min) / 20)
 	.val(cell_padx)
 	.on('input', function() {
-		let new_cell_padx = parseFloat($(this).val())
-		
-		wordsearch_jq.find('.ws-cell')
-		.css('padding-left', new_cell_padx)
-		.css('padding-right', new_cell_padx)
-		
-		wordsearch_jq.find('.whitespace-label').html(Math.round(new_cell_padx))
+		set_wordsearch_whitespace(wordsearch_id)
 	})
 	
 	// handle font size controls
-	let cell_font = rem_to_px(2.25)
-	let font_min = 8
-	let font_max = cell_font * 2.5
-	
-	let answer_font = rem_to_px(1.5) / cell_font
-	
 	wordsearch_jq.find('.font-size-label').html(cell_font)
-	wordsearch_jq.find('.font-size-control')
+	wordsearch_jq.find(`.${CSS_CLASS_WORDSEARCH_FONTSIZE_CONTROL}`)
 	.attr('min', font_min)
 	.attr('max', font_max)
 	.attr('step', (font_max - font_min) / 20)
 	.val(cell_font)
 	.on('input', function() {
-		let new_cell_font = parseFloat($(this).val())
-		
-		wordsearch_jq.find('.ws-cell').css('fontSize', new_cell_font)
-		wordsearch_jq.find('.ws-answer').css('fontSize', new_cell_font * answer_font)
-		
-		wordsearch_jq.find('.font-size-label').html(Math.round(new_cell_font))
+		set_wordsearch_fontsize(wordsearch_id)
 	})
 	
 	// handle reload button
@@ -712,7 +720,7 @@ function load_child_wordsearch_generator(
 
 	// load wordsearch instance
 	if (wordsearch != undefined && wordsearch instanceof WordsearchGenerator) {
-		on_wordsearch_instance(wordsearch_id, wordsearch)
+		on_wordsearch_instance(wordsearch_id, wordsearch, false, whitespace, fontsize)
 	}
 	
 	return wordsearch_id
@@ -732,11 +740,24 @@ function add_wordsearch_container_btn() {
 	})
 }
 
+/**
+ * 
+ * @param {String} wordsearch_html
+ * @param {String} parent_selector
+ * @param {String} wordsearch_id
+ * @param {WordsearchGenerator} wordsearch
+ * @param {Number} whitespace
+ * @param {Number} fontsize
+ * 
+ * @returns {Promise}
+ */
 function add_wordsearch_container(
 	wordsearch_html,
 	parent_selector=WORDSEARCH_CONTAINERS_PARENT_SELECTOR, 
 	wordsearch_id=undefined, 
-	wordsearch=undefined
+	wordsearch=undefined,
+	whitespace=undefined,
+	fontsize=undefined
 ) {
 	// add new wordsearch container
 	let header_jq = $(
@@ -764,8 +785,12 @@ function add_wordsearch_container(
 		container_jq, 
 		wordsearch_html,
 		wordsearch_id, 
-		wordsearch
+		wordsearch,
+		whitespace,
+		fontsize
 	)
+	
+	let wordsearch_jq = $(`#${wordsearch_id}`)
 
 	// handle remove button
 	header_jq.find('.rm-wordsearch-container').click(function() {
@@ -775,10 +800,10 @@ function add_wordsearch_container(
 
 		delete wordsearch_global[wordsearch_id]
 	})
-	
-	// enable example cfg file button
-	ex_cfg_file_main($(`#${wordsearch_id}`))
 
+	// enable example cfg file button
+	ex_cfg_file_main(wordsearch_jq)
+	
 	return Promise.resolve()
 }
 
@@ -857,6 +882,47 @@ function set_wordsearch_is_random_subset(wordsearch_cmp_id, is_random, subset_le
 		wordsearch_cmp.find('.random-subset-count')
 		.prop('disabled', true)
 	}
+}
+
+function set_wordsearch_whitespace(wordsearch_id, whitespace=undefined) {
+	let wordsearch_jq = $(`#${wordsearch_id}`)
+	
+	let new_cell_padx 
+	if (whitespace == undefined) {
+		new_cell_padx = parseFloat(
+			wordsearch_jq.find(`.${CSS_CLASS_WORDSEARCH_WHITESPACE_CONTROL}`).val()
+		)
+	}
+	else {
+		new_cell_padx = whitespace
+		wordsearch_jq.find(`.${CSS_CLASS_WORDSEARCH_WHITESPACE_CONTROL}`).val(whitespace)
+	}
+	
+	wordsearch_jq.find('.ws-cell')
+	.css('padding-left', new_cell_padx)
+	.css('padding-right', new_cell_padx)
+	
+	wordsearch_jq.find('.whitespace-label').html(Math.round(new_cell_padx))
+}
+
+function set_wordsearch_fontsize(wordsearch_id, fontsize=undefined) {
+	let wordsearch_jq = $(`#${wordsearch_id}`)
+	
+	let new_cell_font 
+	if (fontsize == undefined) {
+		new_cell_font = parseFloat(
+			wordsearch_jq.find(`.${CSS_CLASS_WORDSEARCH_FONTSIZE_CONTROL}`).val()
+		)
+	}
+	else {
+		new_cell_font = fontsize
+		wordsearch_jq.find(`.${CSS_CLASS_WORDSEARCH_FONTSIZE_CONTROL}`).val(fontsize)
+	}
+	
+	wordsearch_jq.find('.ws-cell').css('fontSize', new_cell_font)
+	wordsearch_jq.find('.ws-answer').css('fontSize', new_cell_font * answer_font)
+	
+	wordsearch_jq.find('.font-size-label').html(Math.round(new_cell_font))
 }
 
 function set_wordsearch_is_editing(wordsearch_id, is_editing) {
@@ -999,6 +1065,7 @@ function update_share_url(wordsearch_id) {
 	for (let wordsearch_kv of wordsearches) {
 		let id = wordsearch_kv.id
 		let wordsearch = wordsearch_kv.wordsearch
+		let wordsearch_jq = $(`#${wordsearch_id}`)
 
 		share_url.searchParams.set(
 			`${SHARE_URL_QUERY_KEY_WSID_PREFIX}${idx}`,
@@ -1008,6 +1075,16 @@ function update_share_url(wordsearch_id) {
 		share_url.searchParams.set(
 			`${SHARE_URL_QUERY_KEY_WSCONFIG_PREFIX}${idx}`,
 			wordsearch.export_config_url_query_param(share_url_options.share_chars)
+		)
+		
+		/* TODO make whitespace and fontsize optional */
+		share_url.searchParams.set(
+			`${SHARE_URL_QUERY_KEY_WSWHITESPACE_PREFIX}${idx}`,
+			wordsearch_jq.find(`.${CSS_CLASS_WORDSEARCH_WHITESPACE_CONTROL}`).val()
+		)
+		share_url.searchParams.set(
+			`${SHARE_URL_QUERY_KEY_WSFONTSIZE_PREFIX}${idx}`,
+			wordsearch_jq.find(`.${CSS_CLASS_WORDSEARCH_FONTSIZE_CONTROL}`).val()
 		)
 		
 		idx++
@@ -1028,18 +1105,22 @@ function update_share_url(wordsearch_id) {
  * 
  * @param {String} wordsearch_id 
  * @param {WordsearchGenerator} wordsearch 
+ * 
+ * @returns {Promise}
  */
-function on_wordsearch_instance(wordsearch_id, wordsearch, show_word_clues=false) {
+function on_wordsearch_instance(wordsearch_id, wordsearch, show_word_clues=false, whitespace=undefined, fontsize=undefined) {
 	console.log(`info load wordsearch from generator instance ${wordsearch_id}`)
 
 	const wordsearch_jq = $(`#${wordsearch_id}`)
 
 	// show wordsearch
-	wordsearch.init_promise.then(() => {
-		display_wordsearch(wordsearch, wordsearch_id)
-
+	return wordsearch.init_promise
+	.then(() => {
+		return display_wordsearch(wordsearch, wordsearch_id)
+	})
+	.then(() => {
 		// update input widgets to match wordsearch contents
-	
+		
 		// TODO title
 		// alphabet
 		wordsearch_jq.find('.language').val(wordsearch.language)
@@ -1064,8 +1145,15 @@ function on_wordsearch_instance(wordsearch_id, wordsearch, show_word_clues=false
 		wordsearch_jq.find('.size-width').val(wordsearch.width)
 		wordsearch_jq.find('.size-height').val(wordsearch.height)
 
-		// TODO font size
-		// TODO whitespace
+		// whitespace
+		if (whitespace != undefined) {
+			set_wordsearch_whitespace(wordsearch_id, whitespace)
+		}
+		
+		// font size
+		if (fontsize != undefined) {
+			set_wordsearch_fontsize(wordsearch_id, fontsize)
+		}
 	})
 }
 
@@ -1335,91 +1423,102 @@ function load_word_clues(wordsearch_cmp_id, wordsearch, word_clues) {
 	return Promise.resolve()
 }
 
+/**
+ *
+ * @param {WordsearchGenerator} wordsearch
+ * @param {String} wordsearch_cmp_id
+ * 
+ * @returns {Promise}
+ */ 
 function display_wordsearch(wordsearch, wordsearch_cmp_id) {
-	let wordsearch_cmp = $(`#${wordsearch_cmp_id}`)
-	console.log(`INFO display wordsearch in ${wordsearch_cmp_id}`)
-	
-	// clear endpoint_cells
-	endpoint_cells = []
-	
-	// wordsearch element
-	let wel = wordsearch_cmp.find('.wordsearch')
-	.html('')
-	
-	// table element
-	let tel = $(
-		`<table></table>`
-	)
-	
-	let y=0
-	for (let row of wordsearch.grid) {
-		// row element
-		let rel = $(
-			`<tr class="ws-row"></tr>`
+	return new Promise(function(res) {
+		let wordsearch_cmp = $(`#${wordsearch_cmp_id}`)
+		console.log(`INFO display wordsearch in ${wordsearch_cmp_id}`)
+		
+		// clear endpoint_cells
+		endpoint_cells = []
+		
+		// wordsearch element
+		let wel = wordsearch_cmp.find('.wordsearch')
+		.html('')
+		
+		// table element
+		let tel = $(
+			`<table></table>`
 		)
 		
-		let x=0
-		for (let cell of row) {
-			// cell element
-			let cel = $(
-				`<td class="ws-cell"
-					data-x="${x}" data-y="${y}" data-char="${cell}"
-					data-on="false">
-					<div class="ws-cell-content d-flex flex-column justify-content-center">
-						${cell}
-					</div>
-					<input type="text" class="ws-cell-input form-control" value="${cell}"/>
-				</td>`
+		let y=0
+		for (let row of wordsearch.grid) {
+			// row element
+			let rel = $(
+				`<tr class="ws-row"></tr>`
 			)
-			
-			cel.click(function(e) {
-				on_cell_click(wordsearch_cmp_id, cel, wordsearch, e)
-			})
-			
-			cel.find('.ws-cell-input').on('keyup', function(e) {
-				on_cell_input_key(wordsearch_cmp_id, cel, e.originalEvent)
-			})
-			
-			rel.append(cel)
-			x++
-		}
+	
+			let x=0
+			for (let cell of row) {
+				// cell element
+				let cel = $(
+					`<td class="ws-cell"
+						data-x="${x}" data-y="${y}" data-char="${cell}"
+						data-on="false">
+						<div class="ws-cell-content d-flex flex-column justify-content-center">
+							${cell}
+						</div>
+						<input type="text" class="ws-cell-input form-control" value="${cell}"/>
+					</td>`
+				)
 		
-		tel.append(rel)
-		y++
-	}
-	
-	wel.append(tel)
-	
-	// associate answer cells with corresponding words
-	for (let word_idx of Object.keys(wordsearch.word_idx_to_point)) {
-		let points = wordsearch.word_idx_to_point[word_idx]
-		let a = points[0]
-		let b = points[1]
-		let dx = Math.sign(b.x - a.x)
-		let dy = Math.sign(b.y - a.y)
+				cel.click(function(e) {
+					on_cell_click(wordsearch_cmp_id, cel, wordsearch, e)
+				})
 		
-		for (let x=a.x, y=a.y; x!=b.x+dx || y!=b.y+dy; x+=dx, y+=dy) {
-			tel.find(`.ws-cell[data-x="${x}"][data-y="${y}"]`)
-			.attr('data-word-idx', word_idx)
+				cel.find('.ws-cell-input').on('keyup', function(e) {
+					on_cell_input_key(wordsearch_cmp_id, cel, e.originalEvent)
+				})
+		
+				rel.append(cel)
+				x++
+			}
+	
+			tel.append(rel)
+			y++
 		}
-	}
-	
-	display_answers(wordsearch_cmp_id, wordsearch.words, wordsearch.clues)
-	
-	// enable print view
-	wordsearch_cmp.find('.wordsearch-print').prop('disabled', false)
-	
-	// enable edit mode
-	wordsearch_cmp.find('.wordsearch-edit').prop('disabled', false)
 
-	// enable share url
-	wordsearch_cmp.find(`.${CSS_CLASS_SHARE_URL_BUTTON}`).prop('disabled', false)
+		wel.append(tel)
+
+		// associate answer cells with corresponding words
+		for (let word_idx of Object.keys(wordsearch.word_idx_to_point)) {
+			let points = wordsearch.word_idx_to_point[word_idx]
+			let a = points[0]
+			let b = points[1]
+			let dx = Math.sign(b.x - a.x)
+			let dy = Math.sign(b.y - a.y)
 	
-	// enable export
-	wordsearch_cmp.find('.wordsearch-export-config').prop('disabled', false)
-	
-	// update wordsearch reference
-	wordsearch_global[wordsearch_cmp_id] = wordsearch
+			for (let x=a.x, y=a.y; x!=b.x+dx || y!=b.y+dy; x+=dx, y+=dy) {
+				tel.find(`.ws-cell[data-x="${x}"][data-y="${y}"]`)
+				.attr('data-word-idx', word_idx)
+			}
+		}
+
+		display_answers(wordsearch_cmp_id, wordsearch.words, wordsearch.clues)
+
+		// enable print view
+		wordsearch_cmp.find('.wordsearch-print').prop('disabled', false)
+
+		// enable edit mode
+		wordsearch_cmp.find('.wordsearch-edit').prop('disabled', false)
+
+		// enable share url
+		wordsearch_cmp.find(`.${CSS_CLASS_SHARE_URL_BUTTON}`).prop('disabled', false)
+
+		// enable export
+		wordsearch_cmp.find('.wordsearch-export-config').prop('disabled', false)
+
+		// update wordsearch reference
+		wordsearch_global[wordsearch_cmp_id] = wordsearch
+		
+		res()
+	})
 }
 
 function display_answers(wordsearch_cmp_id, words, clues) {
