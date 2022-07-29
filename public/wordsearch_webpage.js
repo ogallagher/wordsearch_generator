@@ -12,7 +12,7 @@ const D3_DSV_URL = 'https://cdn.jsdelivr.net/npm/d3-dsv@3'
 let USE_WP_HOST_URL = true
 const WP_HOST_URL = 'https://wordsearch.dreamhosters.com'
 const DEPENDENCIES_URL = '/webpage_dependencies.html'
-const WORDSEARCH_COMPONENT_URL = '/wordsearch_webcomponent.html?version=0.37.2'
+const WORDSEARCH_COMPONENT_URL = '/wordsearch_webcomponent.html?version=0.38.0'
 const WORDSEARCH_CORE_URL = '/wordsearch_generator.js'
 const WORDSEARCH_LOG_URL = '/temp_js_logger.js'
 const DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR = '.wordsearch-container'
@@ -51,6 +51,8 @@ const SHARE_URL_QUERY_KEY_WSCONFIG_PREFIX = 'wscfg_'
 const SHARE_URL_QUERY_KEY_WSWHITESPACE_PREFIX = 'wsws_'
 const SHARE_URL_QUERY_KEY_WSFONTSIZE_PREFIX = 'wsfs_'
 
+const CSS_CLASS_WORDSEARCH_CHARSET = 'charset'
+const CSS_CLASS_WORDSEARCH_PROB_DIST = 'prob-dist'
 const CSS_CLASS_WORDSEARCH_CONFIG = 'wordsearch-config'
 const CSS_CLASS_WORDSEARCH_INPUT_METHODS = 'wordsearch-input-methods'
 const CSS_CLASS_WORDSEARCH_WHITESPACE_CONTROL = 'whitespace-control'
@@ -436,7 +438,7 @@ function load_child_wordsearch_generator(
 	}
 	
 	// charset display
-	wordsearch_jq.find('.charset')
+	wordsearch_jq.find(`.${CSS_CLASS_WORDSEARCH_CHARSET}`)
 	// show on focus
 	.on('focusin', function() {
 		// show charsets
@@ -451,7 +453,7 @@ function load_child_wordsearch_generator(
 	})
 	
 	// prob dist display
-	wordsearch_jq.find('.prob-dist')
+	wordsearch_jq.find(`.${CSS_CLASS_WORDSEARCH_PROB_DIST}`)
 	// show on focus
 	.on('focusin', function() {
 		// show prob dists
@@ -1122,11 +1124,20 @@ function on_wordsearch_instance(wordsearch_id, wordsearch, show_word_clues=false
 		// update input widgets to match wordsearch contents
 		
 		// TODO title
+		
 		// alphabet
 		wordsearch_jq.find('.language').val(wordsearch.language)
-
-		// TODO charset
-		// TODO prob dist
+		
+		// load charsets and prob dists for language
+		load_charsets_prob_dists(wordsearch_id, wordsearch.language)
+		.then(() => {
+			// charset
+			wordsearch_jq.find(`.${CSS_CLASS_WORDSEARCH_CHARSET}`)
+			.val(wordsearch.alphabet.selected_charset_name)
+			// prob dist
+			wordsearch_jq.find(`.${CSS_CLASS_WORDSEARCH_PROB_DIST}`)
+			.val(wordsearch.alphabet.selected_prob_dist)
+		})
 
 		// random subset
 		set_wordsearch_is_random_subset(wordsearch_id, wordsearch.random_subset)
@@ -1141,7 +1152,7 @@ function on_wordsearch_instance(wordsearch_id, wordsearch, show_word_clues=false
 			add_word_clue(wordsearch_id, word, clue)
 		}
 
-		// TODO dimensions
+		// dimensions
 		wordsearch_jq.find('.size-width').val(wordsearch.width)
 		wordsearch_jq.find('.size-height').val(wordsearch.height)
 
@@ -1864,7 +1875,7 @@ function load_charsets_prob_dists(wordsearch_cmp_id, alphabet_key) {
 	let wordsearch_jq = $(`#${wordsearch_cmp_id}`)
 	
 	// updates available charsets and prob dists lists
-	WordsearchGenerator.get_alphabet(alphabet_key)
+	return WordsearchGenerator.get_alphabet(alphabet_key)
 	.then(
 		// pass
 		(alphabet) => {
@@ -1938,12 +1949,12 @@ function load_charsets_prob_dists(wordsearch_cmp_id, alphabet_key) {
 		}
 		
 		// select default charset
-		wordsearch_jq.find('.charset')
+		wordsearch_jq.find(`.${CSS_CLASS_WORDSEARCH_CHARSET}`)
 		.val(charsets[0][WordsearchGenerator.KEY_CS_NAME])
 		
 		if (prob_dists == undefined || prob_dists.length == 0) {
 			// select uniform prob dist and disable
-			wordsearch_jq.find('.prob-dist')
+			wordsearch_jq.find(`.${CSS_CLASS_WORDSEARCH_PROB_DIST}`)
 			.val(WordsearchGenerator.PROB_DIST_UNIFORM)
 			.attr('disabled', true)
 		}
@@ -1972,10 +1983,12 @@ function load_charsets_prob_dists(wordsearch_cmp_id, alphabet_key) {
 			}
 		
 			// select uniform prob dist and enable
-			wordsearch_jq.find('.prob-dist')
+			wordsearch_jq.find(`.${CSS_CLASS_WORDSEARCH_PROB_DIST}`)
 			.val(prob_dists[0][WordsearchGenerator.KEY_PD_NAME])
 			.attr('disabled', false)
 		}
+		
+		return Promise.resolve()
 	})
 }
 

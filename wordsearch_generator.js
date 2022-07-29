@@ -88,6 +88,8 @@ const KEY_PD_FILE = 'filename'
 const KEY_PD_DIR = 'dirname'
 const KEY_CHARSET = 'charsets'
 const KEY_SELECTED_CHARSET = 'selected_charset'
+// TODO use selected_charset as name, charset as chars, and charsets as options for load
+const KEY_SELECTED_CHARSET_NAME = 'selected_charset_name'
 const KEY_CS_NAME = KEY_PD_NAME
 const KEY_CS_DESC = KEY_PD_DESC
 const KEY_CS_FILE = KEY_PD_FILE
@@ -738,6 +740,8 @@ class WordsearchGenerator {
 		let config = {}
 
 		config[KEY_LANGUAGE] = this.language
+		config[KEY_SELECTED_PROB_DIST] = this.alphabet[KEY_SELECTED_PROB_DIST]
+		config[KEY_SELECTED_CHARSET] = this.alphabet[KEY_SELECTED_CHARSET_NAME]
 
 		config[KEY_SIZE] = [
 			this.grid[0].length,
@@ -810,7 +814,7 @@ class WordsearchGenerator {
 	 * Select the probability distribution to use when randomizing wordsearch cells.
 	 * 
 	 * @param {String|Object} pd_name The prob dist name/key to be selected from 
-	 * this.language[KEY_PROB_DIST], or the prob dist object itself.
+	 * this.alphabet[KEY_PROB_DIST], or the prob dist object itself.
 	 * 
 	 * @returns {Promise<undefined>} Promise resolves undefined.
 	 */
@@ -825,6 +829,10 @@ class WordsearchGenerator {
 			else if (pd_name == PROB_DIST_UNIFORM) {
 				console.log('INFO use uniform default probability dist')
 				self.alphabet[KEY_SELECTED_PROB_DIST] = PROB_DIST_UNIFORM
+				resolve()
+			}
+			else if (self.alphabet[KEY_SELECTED_PROB_DIST] == pd_name) {
+				console.log(`info prob dist ${pd_name} already selected`)
 				resolve()
 			}
 			else {
@@ -906,6 +914,7 @@ class WordsearchGenerator {
 			if (cs_name == CHARSET_DEFAULT) {
 				console.log('INFO use default charset from ranges')
 				self.alphabet[KEY_SELECTED_CHARSET] = CHARSET_DEFAULT
+				self.alphabet[KEY_SELECTED_CHARSET_NAME] = CHARSET_DEFAULT
 				resolve()
 			}
 			else {
@@ -942,6 +951,7 @@ class WordsearchGenerator {
 							function(cs_codes) {
 								// assign array of code points to selected charset member
 								self.alphabet[KEY_SELECTED_CHARSET] = cs_codes
+								self.alphabet[KEY_SELECTED_CHARSET_NAME] = cs_name
 							},
 							// fail
 							function() {
@@ -1474,7 +1484,7 @@ class WordsearchGenerator {
 					config[KEY_TITLE],
 					config[KEY_WORDS_DELIM],
 					config[KEY_SELECTED_CHARSET],
-					undefined
+					config[KEY_SELECTED_PROB_DIST]
 				)
 				
 				wordsearch.init_promise
@@ -1537,7 +1547,8 @@ class WordsearchGenerator {
 					config[KEY_RANDOM_SUBSET],
 					config[KEY_TITLE],
 					config[KEY_WORDS_DELIM],
-					config[KEY_SELECTED_CHARSET]
+					config[KEY_SELECTED_CHARSET],
+					config[KEY_SELECTED_PROB_DIST]
 				)
 				wordsearch.init_promise.then(() => {
 					res(wordsearch)
