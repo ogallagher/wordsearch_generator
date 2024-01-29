@@ -1,6 +1,4 @@
 /**
- * Owen Gallagher
- * 2021-11-27
  * 
  * Generate wordsearch in any language.
  */
@@ -157,6 +155,7 @@ class WordsearchGenerator {
 
 		/**
 		 * Wordsearch title.
+		 * @type {string}
 		 */
 		this.title = title
 		

@@ -8,7 +8,7 @@
 // node version
 
 const NODE_VERSION = process.version
-const NV_MAJOR = parseInt(NODE_VERSION.substr(1, NODE_VERSION.indexOf('.')))
+const NV_MAJOR = parseInt(NODE_VERSION.substring(1, NODE_VERSION.indexOf('.')))
 
 // external imports
 
@@ -65,7 +65,11 @@ temp_logger.config({
 	with_cli_colors: true
 })
 
-// declare wordsearch
+/**
+ * CLI driver module wordsearch instance.
+ * 
+ * @type {wg.WordsearchGenerator}
+ */
 let wordsearch
 
 wg.environment_promise.then(main)
@@ -257,15 +261,9 @@ function next_word_clue() {
 	})
 }
 
-function test_random_cells(reps) {
-	let random_cells = []
-	for (let i=0; i<reps; i++) {
-		random_cells.push(wordsearch.random_cell())
-	}
-	console.log(random_cells.join(','))
-}
-
 function load_word_clues(word_clues, clue_delim=WORD_CLUE_DELIM) {
+	const long_dimension = Math.max(wordsearch.width, wordsearch.height)
+
 	for (let word_clue of word_clues) {
 		let array = word_clue.split(clue_delim)
 		
@@ -275,13 +273,13 @@ function load_word_clues(word_clues, clue_delim=WORD_CLUE_DELIM) {
 			clue = array[1]
 		}
 		
-		if (word.length <= wordsearch.grid.length) {
+		if (word.length <= long_dimension) {
 			if (!wordsearch.add_word_clue(word,clue)) {
 				console.log(`ERROR failed to find a place for ${word}`)
 			}
 		}
 		else {
-			console.log(`ERROR ${word} length ${word.length} longer than board width ${wordsearch.grid.length}`)
+			console.log(`ERROR ${word} length ${word.length} longer than board long dimension ${long_dimension}`)
 		}
 	}
 	
