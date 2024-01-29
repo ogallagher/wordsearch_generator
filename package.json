@@ -37,6 +37,7 @@
 		"progress": "^2.0.3"
 	},
 	"optionalDependencies": {
-		"sonic-boom": "^3.2.0"
+		"sonic-boom": "^3.2.0",
+		"yargs": "^17.7.2"
 	}
 }

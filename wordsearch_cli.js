@@ -72,9 +72,23 @@ temp_logger.config({
  */
 let wordsearch
 
-wg.environment_promise.then(main)
+const OPT_LOG_LEVEL = 'log-level'
+const OPT_LOG_LEVEL_DEFAULT = 'info'
 
-function main() {
+wg.environment_promise
+.then(cli_args)
+.then((argv) => {
+	if (argv === undefined) {
+		argv = {
+			OPT_LOG_LEVEL: OPT_LOG_LEVEL_DEFAULT
+		}
+	}
+	main(argv[OPT_LOG_LEVEL])
+})
+
+function main(log_level) {
+	temp_logger.set_level(log_level)
+
 	cli.question('create with file (f) or interactively (i)? ', (input_mode) => {
 		if (input_mode == 'f') {
 			cli.question('wordsearch json description file: ', (input_file) => {
@@ -139,6 +153,39 @@ function main() {
 				)
 			})
 		}
+	})
+}
+
+function cli_args() {
+	return new Promise(function(res) {
+		import('yargs/yargs')
+		.then((yargs_module) => {
+			import('yargs/helpers')
+			.then((helpers_module) => {
+				const argv = yargs_module.default(
+					helpers_module.hideBin(process.argv)
+				)
+				.usage('Launches the wordsearch generator via CLI driver.')
+
+				.alias('help', 'h')
+
+				.describe(OPT_LOG_LEVEL, 'logging level')
+				.alias(OPT_LOG_LEVEL, 'l')
+				.choices(OPT_LOG_LEVEL, ['debug', 'info', 'warning', 'error'])
+				.default(OPT_LOG_LEVEL, OPT_LOG_LEVEL_DEFAULT)
+
+				.alias('version', 'v')
+
+				.parse()
+
+				res(argv)
+			})
+		})
+		.catch((err) => {
+			console.log('warning cli args not supported without yargs dependency. ' + err)
+			console.log('debug yargs error stack: ' + err.stack)
+			res(undefined)
+		})
 	})
 }
 
