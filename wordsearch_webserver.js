@@ -17,7 +17,7 @@ Promise.all([
 	import('dotenv'),
 	import('fs'),
 	import('path'),
-	import('./temp_js_logger/temp_js_logger.js')
+	import('temp_js_logger')
 ])
 .then(function(modules) {
 	try {
