@@ -1,3 +1,6 @@
 [submodule "temp_js_logger"]
 	path = temp_js_logger
 	url = https://github.com/ogallagher/temp_js_logger
+[submodule "quizcard-generator"]
+	path = quizcard-generator
+	url = https://github.com/ogallagher/quizcard-generator.git
