@@ -1,0 +1,42 @@
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <!--scales viewport depending on worldspace device width-->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		
+        <meta name="description" content="Language learning quiz cards generator."/>
+        <meta name="author" content="Owen Gallagher <github.com/ogallagher>"/>
+		<meta name="page-name" content="quizcard_generator.html"/>
+
+        <!-- jquery js -->
+		<script src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js"></script>
+        
+        <!--
+            quizcard webpage component driver
+        -->
+        <script
+            src-release="https://wordsearch.dreamhosters.com/quizcard_webpage.js?version=0.0.1"
+            src="/quizcard-generator/quizcard_webpage.js?version=0.0.1"
+            type="text/javascript"
+            data-containers=".quizgen-container"
+            data-use-host="false">
+        </script>
+
+        <title>
+            Language learning quiz cards generator
+        </title>
+    </head>
+    <body class="bg-dark text-light">
+        <main class="container">
+            <div class="quizgen-containers">
+                <section class="quizgen-container">
+                </section>
+            </div>
+        </main>
+    </body>
+    <footer class="container-fluid py-4 text-center">
+        <a href="https://github.com/ogallagher/quizcard-generator" class="text-light">
+            By Owen Gallagher, available on GitHub
+        </a>
+    </footer>
+</html>

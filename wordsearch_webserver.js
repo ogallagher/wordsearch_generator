@@ -17,7 +17,14 @@ Promise.all([
 	import('dotenv'),
 	import('fs'),
 	import('path'),
-	import('temp_js_logger')
+	import('temp_js_logger'),
+	import('./quizcard-generator/quizcard_generator.js').then(
+		(mod) => mod,
+		(err) => {
+			console.log(`error failed to import quizcard-generator. ${err}`)
+			return undefined
+		}
+	)
 ])
 .then(function(modules) {
 	try {
@@ -27,6 +34,7 @@ Promise.all([
 		const fs = modules[3].default
 		const path = modules[4].default
 		const temp_logger = modules[5].default
+		const quizgen = modules[6]
 		
 		// init logging
 		temp_logger.config({
@@ -108,6 +116,15 @@ Promise.all([
 					}
 				})
 			})
+
+			if (quizgen !== undefined) {
+				console.log('info serving quizcard-generator')
+				import('./quizcard_webserver.js')
+				.then((quizcard_server) => quizcard_server.main(server, PUBLIC_DIR))
+			}
+			else {
+				console.log('info quizcard-generator not available')
+			}
 		
 			// http server
 			server.listen(server.get('port'), on_start)
