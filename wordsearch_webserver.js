@@ -18,6 +18,7 @@ Promise.all([
 	import('fs'),
 	import('path'),
 	import('temp_js_logger'),
+	import('body-parser'),
 	import('./quizcard-generator/quizcard_generator.js').then(
 		(mod) => mod,
 		(err) => {
@@ -34,7 +35,8 @@ Promise.all([
 		const fs = modules[3].default
 		const path = modules[4].default
 		const temp_logger = modules[5].default
-		const quizgen = modules[6]
+		const body_parser = modules[6].default
+		const quizgen = modules[7]
 		
 		// init logging
 		temp_logger.config({
@@ -75,6 +77,12 @@ Promise.all([
 			server.use(cors({
 				// allow all origins
 				origin: '*'
+			}))
+
+			// enable POST requests
+			server.use(body_parser.json({
+				strict: true,
+				limit: '10MB'
 			}))
 		
 			server.set('port', port)

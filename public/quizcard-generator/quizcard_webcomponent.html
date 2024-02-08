@@ -1,8 +1,13 @@
-<div class="quizgen-component">
+<div class="quizgen-component mt-1">
     <!-- inputs -->
     <div class="row quizgen-inputs">
         <div class="col-md">
             inputs
+        </div>
+        <div class="col-md">
+            <button class="btn btn-primary" onclick="quizcard_generate()">
+                Generate
+            </button>
         </div>
     </div>
     <!-- anki notes export preview -->
@@ -12,5 +17,10 @@
     <!-- anki cards preview -->
     <div class="quizgen-anki-cards">
         cards preview
+    </div>
+    <!-- result file download url will be set here -->
+    <div class="quizgen-download d-none">
+        <a class="quizgen-download-anchor"></a>
+        [<span class="quizgen-download-size"></span> <span class="quizgen-download-size-unit"></span>]
     </div>
 </div>

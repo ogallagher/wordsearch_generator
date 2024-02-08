@@ -33,13 +33,14 @@
 	},
 	"license": "SEE LICENSE IN license.txt",
 	"dependencies": {
+		"body-parser": "^1.20.2",
 		"cors": "^2.8.5",
 		"d3-dsv": "^3.0.1",
 		"dotenv": "^10.0.0",
 		"express": "^4.17.1"
 	},
 	"devDependencies": {
-		"jsdoc": "^3.6.10",
+		"jsdoc": "^4.0.2",
 		"mocha": "^9.2.1",
 		"progress": "^2.0.3",
 		"temp_js_logger": "^0.7.8"

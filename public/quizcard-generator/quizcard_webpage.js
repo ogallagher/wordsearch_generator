@@ -135,7 +135,6 @@ function add_quizcard_generator() {
 		
         let parent_selector = QUIZGEN_CONTAINERS_PARENT_SELECTOR
         let quizgen_jq = $(quizgen_html)
-        console.log(quizgen_jq)
 
         // uniquely identify
 
@@ -144,4 +143,96 @@ function add_quizcard_generator() {
 
         // etc
 	})
+}
+
+/**
+ * 
+ * @param {number|undefined} limit
+ */
+function quizcard_generate(limit) {
+	const http_method = 'post'
+	const content_type = 'application/json; charset=UTF-8'
+
+	if (limit === undefined) {
+		// preview gets first 2 notes
+		$.ajax({
+			type: http_method,
+			url: '/quizcard-generator/api/preview',
+			data: JSON.stringify({
+				'input-file': 'file1.txt',
+				'input-file-content': 'one two, three four "five \n six!" seven eight.',
+				'exclude-word': undefined,
+				'limit': 2,
+				'word-length-min': 4
+			}),
+			contentType: content_type,
+			/**
+			 * 
+			 * @param {{
+			 * 	anki_notes: string[],
+			 * 	anki_notes_header: string
+			 * }} res 
+			 */
+			success: (res) => {
+				console.log(JSON.stringify(res))
+			},
+			error: (err) => {
+				console.log('error ' + JSON.stringify(res))
+			}
+		})
+	}
+	else {
+		// generate gets download url
+		$.ajax({
+			type: http_method,
+			url: '/quizcard-generator/api/generate',
+			data: JSON.stringify({
+				'input-file': 'file1.txt',
+				'input-file-content': 'one two, three four "five \n six!" seven eight.',
+				'exclude-word': undefined,
+				'word-length-min': 4
+			}),
+			contentType: content_type,
+			/**
+			 * 
+			 * @param {{
+			 * 	file_path: string,
+			 * 	file_size: number,
+			 * 	file_size_unit: string,
+			 * 	file_expiry: number,
+			 * 	file_expiry_unit: string
+			 * }} res 
+			 */
+			success: (res) => {
+				console.log(`info generate result = ${JSON.stringify(res, undefined, 2)}`)
+				quizcard_result_download(
+					res.file_path,
+					res.file_size,
+					res.file_size_unit
+				)
+			},
+			error: (err) => {
+				console.log(`error ${err}`)
+			}
+		})
+	}
+}
+
+function quizcard_result_download(file_url, file_size, file_size_unit) {
+	document.getElementsByClassName('quizgen-download')[0]
+	.classList.remove('d-none')
+
+	/**
+	 * @type {HTMLAnchorElement}
+	 */
+	let anchor = document.getElementsByClassName('quizgen-download-anchor')[0]
+	anchor.href = file_url
+	anchor.download = ''
+	anchor.innerText = file_url
+
+	document.getElementsByClassName('quizgen-download-size')[0]
+	.innerText = file_size
+	
+	document.getElementsByClassName('quizgen-download-size-unit')[0]
+	.innerText = file_size_unit
 }
