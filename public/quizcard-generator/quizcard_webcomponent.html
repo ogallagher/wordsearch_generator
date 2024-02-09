@@ -4,19 +4,7 @@
             <!-- inputs -->
             <div class="quizgen-inputs">
                 <h1>Source text</h1>
-                <div>
-                    <div class="row mb-3">
-                        <div class="col-sm-5">
-                            Source text input mode
-                        </div>
-                        <div class="col-sm">
-                            <div class="input-group">
-                                <button class="btn btn-secondary" type="button">file upload</button>
-                                <button class="btn btn-outline-secondary" type="button">text editor</button>
-                            </div>
-                        </div>
-                    </div>
-                    
+                <div>                    
                     <!-- input file -->
                     <div class="mb-3">
                         <div class="form-label">Source text file</div>
@@ -24,7 +12,6 @@
                             <input type="file" class="quizgen-source-file form-control"/>
                         </div>
                     </div>
-                    
 
                     <!-- input text -->
                     <h1></h1>
@@ -33,8 +20,9 @@
                             Source text editor
                         </label>
                         <textarea 
-                            name="quizgen-source-text-editor" 
-                            class="form-control font-monospace" rows="5"
+                            name="quizgen-source-text-editor"
+                            class="form-control font-monospace quizgen-source-text-editor" 
+                            rows="5"
                             placeholder="file upload preview pending"
                             disabled></textarea>
                     </div>
@@ -46,80 +34,93 @@
                     <input name="quizgen-notes-name" class="form-control" type="text" value="target-lang-notes-1"/>
                 </div>
 
-                <!-- testable words filter -->
-                <div class="mb-3">
-                    <label for="quizgen-word-excludes form-label">
-                        Excluded patterns from testable words
-                    </label>
-                    <textarea 
-                        name="quizgen-word-excludes" 
-                        class="form-control font-monospace" 
-                        rows="1"></textarea>
-                </div>
+                <h3 role="button" aria-expanded="false"
+                    data-bs-toggle="collapse"
+                    data-bs-target=".quizgen-advanced-options">
+                    Advanced options
+                    <i class="collapse-arrow bi bi-caret-left h4 mx-4 pe-none"></i>
+                </h3>
+                <div class="collapse quizgen-advanced-options">
+                    <!-- testable words filter -->
+                    <div class="mb-3">
+                        <label for="quizgen-word-excludes form-label">
+                            Excluded patterns from testable words
+                        </label>
+                        <textarea 
+                            name="quizgen-word-excludes" 
+                            class="form-control font-monospace" 
+                            rows="3"></textarea>
+                    </div>
 
-                <!-- testable words min length -->
-                <div class="mb-3">
-                    <div class="form-label">
-                        Minimum length for testable words
-                    </div>
-                    <div class="input-group">
-                        <div class="input-group-text">
-                            Exclude words shorter than
+                    <!-- testable words min length -->
+                    <div class="mb-3">
+                        <div class="form-label">
+                            Minimum length for testable words
                         </div>
-                        <input type="number" class="form-control" value="2"/>
-                        <div class="input-group-text">
-                            characters
+                        <div class="input-group">
+                            <div class="input-group-text">
+                                Exclude words shorter than
+                            </div>
+                            <input type="number" class="form-control" value="2"/>
+                            <div class="input-group-text">
+                                characters
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- testable words frequency -->
-                <div class="mb-3">
-                    <div class="form-label">
-                        Minimum frequency/occurrences in source text for testable words
-                    </div>
-                    <div class="input-group">
-                        <div class="input-group-text">
-                            Exclude words that occur fewer than
+                    <!-- testable words min frequency -->
+                    <div class="mb-3">
+                        <div class="form-label">
+                            Minimum frequency/occurrences in source text for testable words
                         </div>
-                        <input type="number" class="form-control" value="2"/>
-                        <div class="input-group-text">
-                            times
+                        <div class="input-group">
+                            <div class="input-group-text">
+                                Exclude words that occur fewer than
+                            </div>
+                            <input type="number" class="form-control" value="2"/>
+                            <div class="input-group-text">
+                                times
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="mb-3">
-                    <div class="form-label">
-                        Filter most common or rare for testable words
-                    </div>
-                    <div class="input-group">
-                        <div class="input-group-text">
-                            <input 
-                                class="form-check-input mt-0" 
-                                type="checkbox"
-                                value=""/>
+                    <!-- testable words ordinal frequency -->
+                    <div class="mb-3">
+                        <div class="form-label">
+                            Filter most common or rare for testable words
                         </div>
-                        <div class="input-group-text">
-                            Include the
-                        </div>
-                        <input type="number" class="form-control" value="100"/>
-                        <div class="input-group-text">
-                            most
-                        </div>
-                        <button 
-                            type="button" 
-                            class="btn btn-secondary dropdown-toggle"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                            common
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><span class="dropdown-item">common</span></li>
-                            <li><span class="dropdown-item">rare</span></li>
-                        </ul>
-                        <div class="input-group-text">
-                            words
+                        <div class="input-group">
+                            <div class="input-group-text">
+                                <input 
+                                    class="form-check-input mt-0" 
+                                    type="checkbox"
+                                    value="filter-frequency-order"/>
+                            </div>
+                            <div class="input-group-text">
+                                Include the
+                            </div>
+                            <input type="number" class="form-control" value="100"/>
+                            <div class="input-group-text">
+                                most
+                            </div>
+                            <button 
+                                type="button" 
+                                class="quizgen-frequency-order-select btn btn-secondary dropdown-toggle"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                                common
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <span class="dropdown-item quizgen-frequency-order-most">common</span>
+                                </li>
+                                <li class="">
+                                    <span class="dropdown-item quizgen-frequency-order-least">rare</span>
+                                </li>
+                            </ul>
+                            <div class="input-group-text">
+                                words
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -154,9 +155,7 @@
                     name="quizgen-anki-notes-text" 
                     class="form-control font-monospace" 
                     rows="10" 
-                    disabled>
-                    anki notes file text
-                </textarea>
+                    disabled>anki notes file text</textarea>
             </div>
             <!-- anki cards preview -->
             <div class="row quizgen-anki-cards">

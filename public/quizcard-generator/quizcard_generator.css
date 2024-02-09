@@ -3,6 +3,11 @@
 	font-size: 100%;
 }
 
+.quizgen-component textarea {
+    white-space: pre;
+    font-size: small;
+}
+
 .quizgen-component .quizgen-anki-notes-text > textarea {
     min-height: 5em;
 }
@@ -12,4 +17,8 @@
     border-color: whitesmoke;
     border-style: solid;
     border-width: 0.1em;
+}
+
+.quizgen-component .dropdown-item {
+    cursor: pointer;
 }

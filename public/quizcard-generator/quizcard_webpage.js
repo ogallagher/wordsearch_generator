@@ -133,15 +133,54 @@ function add_quizcard_generator() {
 	quizcard_component_promise.then((quizgen_html) => {
 		console.log('loaded quizcard generator component html')
 		
-        let parent_selector = QUIZGEN_CONTAINERS_PARENT_SELECTOR
-        let quizgen_jq = $(quizgen_html)
+		/**
+		 * @type {HTMLElement}
+		 */
+        let quizgen = $(quizgen_html).get(0)
 
         // uniquely identify
+		let quizgen_id = `qg-${new Date().getTime()}`
+		quizgen.setAttribute('data-qg-id', quizgen_id)
 
         // append to container
-        $(parent_selector).append(quizgen_jq)
+        document.querySelector(DEFAULT_QUIZGEN_CONTAINERS_SELECTOR)
+		.append(quizgen)
 
-        // etc
+		// animate collapse icons
+        quizgen.querySelectorAll('[data-bs-toggle="collapse"]')
+		.forEach((collapser) => {
+			collapser.addEventListener('click', quizcard_collapse_arrow_toggle)
+		})
+		
+		// handle source text file upload
+		let text_editor = quizgen.querySelector('textarea.quizgen-source-text-editor')
+
+		quizgen.querySelector('.quizgen-source-file')
+		.addEventListener('change', (change_event) => {
+			quizcard_on_source_file_upload(change_event, text_editor)
+		})
+
+		// animate ordinal frequency button label
+		let frequency_order_select = quizgen.querySelector('.quizgen-frequency-order-select')
+		quizgen.querySelector('.quizgen-frequency-order-most')
+		.addEventListener(
+			'click', 
+			(mouse_event) => quizcard_choose_frequency_order(mouse_event, frequency_order_select)
+		)
+		quizgen.querySelector('.quizgen-frequency-order-least')
+		.addEventListener(
+			'click', 
+			(mouse_event) => quizcard_choose_frequency_order(mouse_event, frequency_order_select)
+		)
+
+		quizgen.querySelector('.form-check-input')
+		.addEventListener('change', function(change_event) {
+			/**
+			 * @type {HTMLInputElement}
+			 */
+			let checkbox = change_event.target
+			console.log(`debug check box for ${checkbox.value} changed to ${checkbox.checked}`)
+		})
 	})
 }
 
@@ -235,4 +274,66 @@ function quizcard_result_download(file_url, file_size, file_size_unit) {
 	
 	document.getElementsByClassName('quizgen-download-size-unit')[0]
 	.innerText = file_size_unit
+}
+
+/**
+ * Animate the arrow for a collapse control with a bootstrap icon arrow indicator.
+ * @param {MouseEvent} mouse_event 
+ */
+function quizcard_collapse_arrow_toggle(mouse_event) {
+	console.log(`debug collapse arrow container clicked ${mouse_event.target.tagName}`)
+
+	let collapsed = mouse_event.target.classList.contains('collapsed')
+
+	Array.from(mouse_event.target.children).forEach((arrow_sibling) => {
+		if (arrow_sibling.classList.contains('collapse-arrow')) {
+			if (!collapsed) {
+				// close to open
+				console.log('debug collapse arrow open')
+				arrow_sibling.classList.remove('bi-caret-left')
+				arrow_sibling.classList.add('bi-caret-down')
+			}
+			else {
+				// open to close
+				console.log('debug collapse arrow close')
+				arrow_sibling.classList.remove('bi-caret-down')
+				arrow_sibling.classList.add('bi-caret-left')
+			}
+		}
+		else {
+			TempLogger.CONSOLE_METHOD['log'](arrow_sibling.classList)
+		}
+	})
+}
+
+/**
+ * @param {HTMLTextAreaElement} text_editor
+ * @param {InputEvent} change_event 
+ */
+function quizcard_on_source_file_upload(change_event, text_editor) {
+	/**
+	 * @type {HTMLInputElement}
+	 */
+	let file_input = change_event.target
+	console.log(`info source file input changed tag=${file_input.tagName}`)
+
+	let filereader = new FileReader()
+	filereader.onload = function() {
+		console.log(`info source file read complete. write to text editor`)
+		text_editor.value = filereader.result
+		text_editor.disabled = false
+	}
+	
+	filereader.readAsText(file_input.files[0])
+}
+
+/**
+ * 
+ * @param {MouseEvent} mouse_event 
+ * @param {HTMLElement} order_label 
+ */
+function quizcard_choose_frequency_order(mouse_event, order_label) {
+	let frequency_order = mouse_event.target.innerText
+	console.log(`info word frequency order ${frequency_order}`)
+	order_label.innerText = frequency_order
 }
