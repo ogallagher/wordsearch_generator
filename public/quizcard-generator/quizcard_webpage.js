@@ -6,6 +6,10 @@ const QUIZGEN_COMPONENT_URL = '/quizcard-generator/quizcard_webcomponent.html?ve
 const WORDSEARCH_LOG_URL = '/temp_js_logger.js'
 const DEFAULT_QUIZGEN_CONTAINERS_SELECTOR = '.quizgen-container'
 const QUIZGEN_CONTAINERS_PARENT_SELECTOR = `${DEFAULT_QUIZGEN_CONTAINERS_SELECTOR}s`
+const quizgen_frequency_order = {
+	FIRST: 'common',
+	LAST: 'rare'
+}
 
 let quizcard_webpage_promise = new Promise(function(res, rej) {
     // update whether to use host in url
@@ -171,30 +175,29 @@ function add_quizcard_generator() {
 			'click', 
 			(mouse_event) => quizcard_choose_frequency_order(mouse_event, frequency_order_select)
 		)
-		
-		// react to frequency ordinal filter toggle
-		quizgen.querySelector('.form-check-input')
-		.addEventListener('change', function(change_event) {
-			/**
-			 * @type {HTMLInputElement}
-			 */
-			let checkbox = change_event.target
-			console.log(`debug check box for ${checkbox.value} changed to ${checkbox.checked}`)
-		})
 
 		quizgen.querySelector('button.quizgen-generate-preview')
 		.addEventListener('click', (_mouse_event) => {
 			console.log(`debug generate-preview pressed`)
 			quizcard_set_opts(quizgen_id, 3)
-			.then(quizcard_generate)
+			.then((opts) => quizcard_generate(quizgen_id, opts))
 		})
 		quizgen.querySelector('button.quizgen-generate-full')
 		.addEventListener('click', (_mouse_event) => {
 			console.log(`debug generate-full pressed`)
-			quizcard_set_opts(quizgen_id)
-			.then(quizcard_generate)
+			quizcard_set_opts(quizgen_id, undefined)
+			.then((opts) => quizcard_generate(quizgen_id, opts))
 		})
 	})
+}
+
+function quizcard_opt_value_normalized(value) {
+	return (
+		value === '' 
+		|| (Array.isArray(value) && (value.length === 0 || value[0] === ''))
+		|| value === undefined || value === null 
+		|| value === Number.NaN
+	) ? undefined : value
 }
 
 /**
@@ -229,48 +232,90 @@ function quizcard_set_opts(quizgen_id, limit) {
 			 * @type {HTMLInputElement}
 			 */
 			let file_input = quizgen.querySelector('input.quizgen-source-file')
-			r_if(['input-file', file_input.files[0].name])
+			let file_name = quizcard_opt_value_normalized(file_input.files?.item(0)?.name)
+			r_if(['input-file', file_name])
 		}),
 		new Promise((r_fc) => {
 			/**
 			 * @type {HTMLTextAreaElement}
 			 */
 			let text_editor = quizgen.querySelector('textarea.quizgen-source-text-editor')
-			r_fc(['input-file-content', text_editor.value])
+			r_fc(['input-file-content', quizcard_opt_value_normalized(text_editor.value)])
 		}),
 		new Promise((r_ann) => {
 			/**
 			 * @type {HTMLInputElement}
 			 */
 			let name_input = quizgen.querySelector('input.quizgen-notes-name')
-			r_ann(['anki-notes-name', name_input.value])
+			r_ann(['anki-notes-name', quizcard_opt_value_normalized(name_input.value)])
 		}),
 		new Promise((r_ew) => {
 			/**
 			 * @type {HTMLTextAreaElement}
 			 */
 			let excludes_input = quizgen.querySelector('textarea.quizgen-word-excludes')
-			r_ew(['exclude-word', excludes_input.value.split('\n')])
+			let excludes = quizcard_opt_value_normalized(excludes_input.value)?.split('\n')
+			r_ew(['exclude-word', excludes])
 		}),
 		new Promise((r_fm) => {
-
-			r_fm(['word-frequency-min', undefined])
+			/**
+			 * @type {HTMLInputElement}
+			 */
+			let frequency_min_input = quizgen.querySelector('input.quizgen-frequency-min')
+			let frequency_min = quizcard_opt_value_normalized(
+				parseInt(frequency_min_input.value)
+			)
+			r_fm(['word-frequency-min', frequency_min])
 		}),
 		new Promise((r_ffl) => {
+			/**
+			 * @type {HTMLInputElement}
+			 */
+			let frequency_order_enable = quizgen.querySelector('input.quizgen-frequency-order-enable')
+			let opt_key = 'word-frequency-first'
 
-			r_ffl(['word-frequency-first', undefined])
+			if (frequency_order_enable.checked) {
+				/**
+				 * @type {HTMLElement}
+				 */
+				let frequency_order_label = quizgen.querySelector('.quizgen-frequency-order-select')
+				let frequency_order = quizcard_opt_value_normalized(frequency_order_label.innerText)
+				opt_key = (
+					frequency_order === quizgen_frequency_order.FIRST
+					? 'word-frequency-first'
+					: 'word-frequency-last'
+				)
+				/**
+				 * @type {HTMLInputElement}
+				 */
+				let frequency_order_limiter = quizgen.querySelector('input.quizgen-frequency-order-limit')
+				let frequency_order_limit = quizcard_opt_value_normalized(
+					parseInt(frequency_order_limiter)
+				)
+				r_ffl([opt_key, frequency_order_limit])
+			}
+			else {
+				r_ffl([opt_key, undefined])
+			}
 		}),
 		new Promise((r_wlm) => {
-
-			r_wlm(['word-frequency-last', undefined])
+			const length_min_input = quizgen.querySelector('input.quizgen-word-length-min')
+			let length_min = quizcard_opt_value_normalized(
+				parseInt(length_min_input.value)
+			)
+			r_wlm(['word-length-min', length_min])
 		}),
 		new Promise((r_t) => {
-
-			r_t(['tag', undefined])
+			const tags_input = quizgen.querySelector('textarea.quizgen-note-tags')
+			let tags = quizcard_opt_value_normalized(
+				tags_input.value?.split(',')
+			)
+			r_t(['tag', tags])
 		})
 	])
 	.then((opt_entries) => {
 		for (let [key, val] of opt_entries) {
+			console.log(`debug opts[${key}] = ${JSON.stringify(val)}`)
 			opts[key] = val
 		}
 
@@ -282,11 +327,13 @@ function quizcard_set_opts(quizgen_id, limit) {
  * 
  * @param {{[key=string]: any}} opts
  */
-function quizcard_generate(opts) {
+function quizcard_generate(quizgen_id, opts) {
 	const http_method = 'post'
 	const content_type = 'application/json; charset=UTF-8'
 
-	if (opts['limit'] === undefined) {
+	if (opts['limit'] !== undefined) {
+		console.log('info submit preview request')
+
 		// preview gets first 2 notes
 		$.ajax({
 			type: http_method,
@@ -301,7 +348,21 @@ function quizcard_generate(opts) {
 			 * }} res 
 			 */
 			success: (res) => {
-				console.log(JSON.stringify(res))
+				console.log(`info fetched notes preview of ${res.anki_notes.length} notes`)
+				let quizgen = document.querySelector(`.quizgen-component[data-qg-id="${quizgen_id}"]`)
+
+				console.log(`debug first note\n${res.anki_notes[0]}`)
+
+				/**
+				 * @type {HTMLTextAreaElement}
+				 */
+				let notes_preview_textarea = quizgen.querySelector('textarea.quizgen-anki-notes-text')
+
+				// let notes_buffer = new ArrayBuffer(1000)
+				notes_preview_textarea.value = res.anki_notes
+				.join('\n')
+				.replace('<', '&lt;')
+				.replace('>', '&gt;')
 			},
 			error: (err) => {
 				console.log(`error ${err}`)
@@ -309,6 +370,8 @@ function quizcard_generate(opts) {
 		})
 	}
 	else {
+		console.log('info submit generate request')
+
 		// generate gets download url
 		$.ajax({
 			type: http_method,
@@ -328,6 +391,7 @@ function quizcard_generate(opts) {
 			success: (res) => {
 				console.log(`info generate result = ${JSON.stringify(res, undefined, 2)}`)
 				quizcard_result_download(
+					quizgen_id,
 					res.file_path,
 					res.file_size,
 					res.file_size_unit
@@ -340,22 +404,24 @@ function quizcard_generate(opts) {
 	}
 }
 
-function quizcard_result_download(file_url, file_size, file_size_unit) {
-	document.getElementsByClassName('quizgen-download')[0]
-	.classList.remove('d-none')
+function quizcard_result_download(quizgen_id, file_url, file_size, file_size_unit) {
+	let quizgen = document.querySelector(`.quizgen-component[data-qg-id="${quizgen_id}"]`)
+
+	// show download
+	quizgen.querySelector('.quizgen-download').classList.remove('d-none')
 
 	/**
 	 * @type {HTMLAnchorElement}
 	 */
-	let anchor = document.getElementsByClassName('quizgen-download-anchor')[0]
+	let anchor = quizgen.getElementsByClassName('quizgen-download-anchor')[0]
 	anchor.href = file_url
 	anchor.download = ''
 	anchor.innerText = file_url
 
-	document.getElementsByClassName('quizgen-download-size')[0]
+	quizgen.getElementsByClassName('quizgen-download-size')[0]
 	.innerText = file_size
 	
-	document.getElementsByClassName('quizgen-download-size-unit')[0]
+	quizgen.getElementsByClassName('quizgen-download-size-unit')[0]
 	.innerText = file_size_unit
 }
 
