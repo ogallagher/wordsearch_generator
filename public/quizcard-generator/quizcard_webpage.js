@@ -154,7 +154,6 @@ function add_quizcard_generator() {
 		
 		// handle source text file upload
 		let text_editor = quizgen.querySelector('textarea.quizgen-source-text-editor')
-
 		quizgen.querySelector('.quizgen-source-file')
 		.addEventListener('change', (change_event) => {
 			quizcard_on_source_file_upload(change_event, text_editor)
@@ -172,7 +171,8 @@ function add_quizcard_generator() {
 			'click', 
 			(mouse_event) => quizcard_choose_frequency_order(mouse_event, frequency_order_select)
 		)
-
+		
+		// react to frequency ordinal filter toggle
 		quizgen.querySelector('.form-check-input')
 		.addEventListener('change', function(change_event) {
 			/**
@@ -181,6 +181,19 @@ function add_quizcard_generator() {
 			let checkbox = change_event.target
 			console.log(`debug check box for ${checkbox.value} changed to ${checkbox.checked}`)
 		})
+
+		quizgen.querySelector('button.quizgen-generate-preview')
+		.addEventListener('click', (_mouse_event) => {
+			console.log(`debug generate-preview pressed`)
+			quizcard_set_opts(quizgen_id, 3)
+			.then(quizcard_generate)
+		})
+		quizgen.querySelector('button.quizgen-generate-full')
+		.addEventListener('click', (_mouse_event) => {
+			console.log(`debug generate-full pressed`)
+			quizcard_set_opts(quizgen_id)
+			.then(quizcard_generate)
+		})
 	})
 }
 
@@ -188,22 +201,97 @@ function add_quizcard_generator() {
  * 
  * @param {number|undefined} limit
  */
-function quizcard_generate(limit) {
+function quizcard_set_opts(quizgen_id, limit) {
+	/**
+	 * Options to be passed to the quizcard generator via the intermediate webserver API.
+	 */
+	let opts = {
+		'input-file': undefined,
+		'input-file-content': undefined,
+		'anki-notes-name': undefined,
+		'exclude-word': undefined,
+		'word-frequency-min': undefined,
+		'word-frequency-first': undefined,
+		'word-frequency-last': undefined,
+		'word-length-min': undefined,
+		'tag': undefined,
+		'limit': limit
+	}
+
+	/**
+	 * @type {HTMLElement}
+	 */
+	const quizgen = document.querySelector(`.quizgen-component[data-qg-id="${quizgen_id}"]`)
+	
+	return Promise.all([
+		new Promise((r_if) => {
+			/**
+			 * @type {HTMLInputElement}
+			 */
+			let file_input = quizgen.querySelector('input.quizgen-source-file')
+			r_if(['input-file', file_input.files[0].name])
+		}),
+		new Promise((r_fc) => {
+			/**
+			 * @type {HTMLTextAreaElement}
+			 */
+			let text_editor = quizgen.querySelector('textarea.quizgen-source-text-editor')
+			r_fc(['input-file-content', text_editor.value])
+		}),
+		new Promise((r_ann) => {
+			/**
+			 * @type {HTMLInputElement}
+			 */
+			let name_input = quizgen.querySelector('input.quizgen-notes-name')
+			r_ann(['anki-notes-name', name_input.value])
+		}),
+		new Promise((r_ew) => {
+			/**
+			 * @type {HTMLTextAreaElement}
+			 */
+			let excludes_input = quizgen.querySelector('textarea.quizgen-word-excludes')
+			r_ew(['exclude-word', excludes_input.value.split('\n')])
+		}),
+		new Promise((r_fm) => {
+
+			r_fm(['word-frequency-min', undefined])
+		}),
+		new Promise((r_ffl) => {
+
+			r_ffl(['word-frequency-first', undefined])
+		}),
+		new Promise((r_wlm) => {
+
+			r_wlm(['word-frequency-last', undefined])
+		}),
+		new Promise((r_t) => {
+
+			r_t(['tag', undefined])
+		})
+	])
+	.then((opt_entries) => {
+		for (let [key, val] of opt_entries) {
+			opts[key] = val
+		}
+
+		return opts
+	})
+}
+
+/**
+ * 
+ * @param {{[key=string]: any}} opts
+ */
+function quizcard_generate(opts) {
 	const http_method = 'post'
 	const content_type = 'application/json; charset=UTF-8'
 
-	if (limit === undefined) {
+	if (opts['limit'] === undefined) {
 		// preview gets first 2 notes
 		$.ajax({
 			type: http_method,
 			url: '/quizcard-generator/api/preview',
-			data: JSON.stringify({
-				'input-file': 'file1.txt',
-				'input-file-content': 'one two, three four "five \n six!" seven eight.',
-				'exclude-word': undefined,
-				'limit': 2,
-				'word-length-min': 4
-			}),
+			data: JSON.stringify(opts),
 			contentType: content_type,
 			/**
 			 * 
@@ -216,7 +304,7 @@ function quizcard_generate(limit) {
 				console.log(JSON.stringify(res))
 			},
 			error: (err) => {
-				console.log('error ' + JSON.stringify(res))
+				console.log(`error ${err}`)
 			}
 		})
 	}
@@ -225,12 +313,7 @@ function quizcard_generate(limit) {
 		$.ajax({
 			type: http_method,
 			url: '/quizcard-generator/api/generate',
-			data: JSON.stringify({
-				'input-file': 'file1.txt',
-				'input-file-content': 'one two, three four "five \n six!" seven eight.',
-				'exclude-word': undefined,
-				'word-length-min': 4
-			}),
+			data: JSON.stringify(opts),
 			contentType: content_type,
 			/**
 			 * 

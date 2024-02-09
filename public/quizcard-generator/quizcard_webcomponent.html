@@ -31,7 +31,10 @@
                 <!-- input notes name -->
                 <div class="mb-3">
                     <label for="quizgen-notes-name" class="form-label">Generated notes name</label>
-                    <input name="quizgen-notes-name" class="form-control" type="text" value="target-lang-notes-1"/>
+                    <input 
+                        name="quizgen-notes-name" 
+                        class="form-control quizgen-notes-name" 
+                        type="text" placeholder="target-lang-notes-1"/>
                 </div>
 
                 <h3 role="button" aria-expanded="false"
@@ -48,7 +51,7 @@
                         </label>
                         <textarea 
                             name="quizgen-word-excludes" 
-                            class="form-control font-monospace" 
+                            class="form-control font-monospace quizgen-word-excludes" 
                             rows="3"></textarea>
                     </div>
 
@@ -128,13 +131,13 @@
 
             <div class="row">
                 <div class="col-lg">
-                    <button class="btn btn-outline-light w-100 mb-2" onclick="quizcard_generate()">
+                    <button class="quizgen-generate-preview btn btn-outline-light w-100 mb-2">
                         <span class="fs-2 mx-2">Preview</span>
                         <i class="bi bi-arrow-clockwise fs-3 mx-2"></i>
                     </button>
                 </div>
                 <div class="col-lg">
-                    <button class="btn btn-outline-light w-100 mb-2" onclick="quizcard_generate()">
+                    <button class="quizgen-generate-full btn btn-outline-light w-100 mb-2">
                         <span class="fs-2 mx-2">Generate</span>
                         <i class="bi bi-box-arrow-down fs-3 mx-2"></i>
                     </button>
