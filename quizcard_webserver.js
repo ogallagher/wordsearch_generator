@@ -116,6 +116,7 @@ function generator(opts) {
     .then(
         () => {
             console.log(`info calculations complete for ${input_file_path}`)
+            // console.log(`debug sentences = ${qg.get_sentences().join(',')}`)
             return qg.generate_anki_notes(
                 opts[opt.OPT_LIMIT],
                 opts[opt.OPT_WORD_FREQUENCY_MIN], 
