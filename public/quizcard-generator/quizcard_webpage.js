@@ -4,6 +4,7 @@ let USE_WP_HOST_URL = false
 const WP_HOST_URL = 'https://wordsearch.dreamhosters.com'
 const DEPENDENCIES_URL = '/webpage_dependencies.html'
 const QUIZGEN_COMPONENT_URL = '/quizcard-generator/quizcard_webcomponent.html?version=0.0.1'
+const HEADER_COMPONENT_URL = '/header_webcomponent.html'
 const WORDSEARCH_LOG_URL = '/temp_js_logger.js'
 const DEFAULT_QUIZGEN_CONTAINERS_SELECTOR = '.quizgen-container'
 const QUIZGEN_CONTAINERS_PARENT_SELECTOR = `${DEFAULT_QUIZGEN_CONTAINERS_SELECTOR}s`
@@ -97,6 +98,28 @@ let quizcard_webpage_promise = new Promise(function(res, rej) {
 				error: function(err) {
 					console.log('ERROR failed to fetch logging lib')
 					resolve_log()
+				}
+			})
+		}),
+
+		// header nav bar
+		new Promise(function(resolve_nav, reject_nav) {
+			let url = USE_WP_HOST_URL
+				? `${WP_HOST_URL}${HEADER_COMPONENT_URL}`
+				: HEADER_COMPONENT_URL
+			
+			$.ajax({
+				method: 'GET',
+				url: url,
+				dataType: 'html',
+				success: function(header_html) {
+					console.log(`debug loaded header html of length ${header_html.length}`)
+					document.body.querySelector('header.shared-header').innerHTML = header_html
+					resolve_nav()
+				},
+				error: function(err) {
+					console.log(`error failed to get header at ${url}. ${err}`)
+					reject_nav()
 				}
 			})
 		})

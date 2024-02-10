@@ -1,8 +1,3 @@
-/**
- * Owen Gallagher
- * 2021-11-30
- */
-
 const current_script = document.currentScript
 const INPUT_FILE = 0
 const INPUT_FORM = 1
@@ -15,6 +10,7 @@ const DEPENDENCIES_URL = '/webpage_dependencies.html'
 const WORDSEARCH_COMPONENT_URL = '/wordsearch_webcomponent.html?version=0.38.0'
 const WORDSEARCH_CORE_URL = '/wordsearch_generator.js'
 const WORDSEARCH_LOG_URL = '/temp_js_logger.js'
+const HEADER_COMPONENT_URL = '/header_webcomponent.html'
 const DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR = '.wordsearch-container'
 const WORDSEARCH_CONTAINERS_PARENT_SELECTOR = `${DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR}s`
 
@@ -152,6 +148,28 @@ let wordsearch_webpage_promise = new Promise(function(resolve, reject) {
 				error: function(err) {
 					console.log('ERROR failed to fetch logging lib')
 					resolve_log()
+				}
+			})
+		}),
+
+		// header nav bar
+		new Promise(function(resolve_nav, reject_nav) {
+			let url = USE_WP_HOST_URL
+				? `${WP_HOST_URL}${HEADER_COMPONENT_URL}`
+				: HEADER_COMPONENT_URL
+			
+			$.ajax({
+				method: 'GET',
+				url: url,
+				dataType: 'html',
+				success: function(header_html) {
+					console.log(`debug loaded header html of length ${header_html.length}`)
+					document.body.querySelector('header.shared-header').innerHTML = header_html
+					resolve_nav()
+				},
+				error: function(err) {
+					console.log(`error failed to get header at ${url}. ${err}`)
+					reject_nav()
 				}
 			})
 		}),
