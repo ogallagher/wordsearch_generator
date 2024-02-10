@@ -424,7 +424,9 @@ function quizcard_generate(quizgen_id, opts) {
 					quizgen_id,
 					res.file_path,
 					res.file_size,
-					res.file_size_unit
+					res.file_size_unit,
+					res.file_expiry,
+					res.file_expiry_unit
 				)
 			},
 			error: (err) => {
@@ -434,7 +436,7 @@ function quizcard_generate(quizgen_id, opts) {
 	}
 }
 
-function quizcard_result_download(quizgen_id, file_url, file_size, file_size_unit) {
+function quizcard_result_download(quizgen_id, file_url, file_size, file_size_unit, file_expiry, file_expiry_unit) {
 	let quizgen = document.querySelector(`.quizgen-component[data-qg-id="${quizgen_id}"]`)
 
 	// show download
@@ -453,6 +455,9 @@ function quizcard_result_download(quizgen_id, file_url, file_size, file_size_uni
 	
 	quizgen.getElementsByClassName('quizgen-download-size-unit')[0]
 	.innerText = file_size_unit
+
+	quizgen.getElementsByClassName('quizgen-download-expiry')[0].innerText = file_expiry
+	quizgen.getElementsByClassName('quizgen-download-expiry-unit')[0].innerText = file_expiry_unit
 }
 
 /**

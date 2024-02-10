@@ -73,7 +73,7 @@ function main(server, public_dir) {
 
             if (DELETE_EXPORTS) {
                 setTimeout(
-                    () => delete_file(`${public_dir}/${file_path}`),
+                    () => delete_file(`${public_dir}${file_path}`),
                     // delete file after so many minutes
                     EXPORT_DELETE_DELAY_MIN * (1000 * 60)
                 )
