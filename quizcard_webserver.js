@@ -99,6 +99,15 @@ function generator(opts) {
         opts[opt.OPT_INPUT_FILE_CONTENT],
         input_file_path,
         opts[opt.OPT_EXCLUDE_WORD]
+        // and parse strings, regexp
+        ?.map((exclude) => {
+            if (exclude.startsWith('/') && exclude.endsWith('/')) {
+                return new RegExp(exclude.slice(1, exclude.lastIndexOf('/')))
+            }
+            else {
+                return exclude
+            }
+        })
     )
 
     return qg.finish_calculation

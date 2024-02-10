@@ -52,7 +52,8 @@
                         <textarea 
                             name="quizgen-word-excludes" 
                             class="form-control font-monospace quizgen-word-excludes" 
-                            rows="3"></textarea>
+                            rows="3"
+                            placeholder="string1&#10;/reg(ular)?exp(ression)?/"></textarea>
                     </div>
 
                     <!-- testable words min length -->
@@ -186,19 +187,13 @@
                     disabled>anki notes file text</textarea>
             </div>
             <!-- anki cards preview -->
-            <div class="row quizgen-anki-cards">
-                <div class="col-lg card-container mb-2">
-                    <div class="card">
+            <div class="quizgen-anki-cards">
+                <div class="card-container mb-2 ">
+                    <h3>Front card</h3>
+                    <div class="card quizgen-anki-notes-card-front">
                         <div class="card-body">
-                            <div class="card-title">Front card</div>
-                            <div class="card-text">card content</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg card-container mb-2">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="card-title">Back card</div>
+                            <div class="card-title">card title</div>
+                            <hr/>
                             <div class="card-text">card content</div>
                         </div>
                     </div>

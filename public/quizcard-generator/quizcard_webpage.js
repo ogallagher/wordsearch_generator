@@ -10,6 +10,22 @@ const quizgen_frequency_order = {
 	FIRST: 'common',
 	LAST: 'rare'
 }
+const QUIZGEN_ANKI_NOTES_DELIM = '\t'
+const QUIZGEN_ANKI_NOTES_DQUOTE_ESCAPE = /\"\"/g
+/**
+ * Anki notes column indexes. 
+ * Better would be to read them from the header metadata.
+ */
+const quizgen_anki_fields = {
+	EUID: 0,
+	TYPE: 1,
+	TAGS: 2,
+	TEXT: 3,
+	CLOZES: 4,
+	SOURCE_FILE: 5,
+	SOURCE_LINE: 6,
+	TRANSLATIONS: 7
+}
 
 let quizcard_webpage_promise = new Promise(function(res, rej) {
     // update whether to use host in url
@@ -279,7 +295,7 @@ function quizcard_set_opts(quizgen_id, limit) {
 				 * @type {HTMLElement}
 				 */
 				let frequency_order_label = quizgen.querySelector('.quizgen-frequency-order-select')
-				let frequency_order = quizcard_opt_value_normalized(frequency_order_label.innerText)
+				let frequency_order = quizcard_opt_value_normalized(frequency_order_label.innerText.trim())
 				opt_key = (
 					frequency_order === quizgen_frequency_order.FIRST
 					? 'word-frequency-first'
@@ -290,7 +306,7 @@ function quizcard_set_opts(quizgen_id, limit) {
 				 */
 				let frequency_order_limiter = quizgen.querySelector('input.quizgen-frequency-order-limit')
 				let frequency_order_limit = quizcard_opt_value_normalized(
-					parseInt(frequency_order_limiter)
+					parseInt(frequency_order_limiter.value)
 				)
 				r_ffl([opt_key, frequency_order_limit])
 			}
@@ -349,20 +365,8 @@ function quizcard_generate(quizgen_id, opts) {
 			 */
 			success: (res) => {
 				console.log(`info fetched notes preview of ${res.anki_notes.length} notes`)
-				let quizgen = document.querySelector(`.quizgen-component[data-qg-id="${quizgen_id}"]`)
-
 				console.log(`debug first note\n${res.anki_notes[0]}`)
-
-				/**
-				 * @type {HTMLTextAreaElement}
-				 */
-				let notes_preview_textarea = quizgen.querySelector('textarea.quizgen-anki-notes-text')
-
-				// let notes_buffer = new ArrayBuffer(1000)
-				notes_preview_textarea.value = res.anki_notes
-				.join('\n')
-				.replace('<', '&lt;')
-				.replace('>', '&gt;')
+				quizcard_result_preview(quizgen_id, res.anki_notes, res.anki_notes_header)
 			},
 			error: (err) => {
 				console.log(`error ${err}`)
@@ -423,6 +427,55 @@ function quizcard_result_download(quizgen_id, file_url, file_size, file_size_uni
 	
 	quizgen.getElementsByClassName('quizgen-download-size-unit')[0]
 	.innerText = file_size_unit
+}
+
+/**
+ * Load Anki notes to webpage UI.
+ * 
+ * @param {string} quizgen_id Quizcard generator id.
+ * @param {string[]} anki_notes Anki notes delim-separated-values rows.
+ * @param {string} anki_notes_header Anki notes delim-separated-values header.
+ */
+function quizcard_result_preview(quizgen_id, anki_notes, anki_notes_header) {
+	const quizgen = document.querySelector(`.quizgen-component[data-qg-id="${quizgen_id}"]`)
+	/**
+	 * @type {HTMLTextAreaElement}
+	 */
+	let notes_preview_textarea = quizgen.querySelector('textarea.quizgen-anki-notes-text')
+	notes_preview_textarea.value = (
+		anki_notes_header + '\n'
+		+ (
+			anki_notes
+			.join('\n')
+		)
+	)
+
+	// load first note into cards
+	// TODO this split on delimiter ignores strings with delimiter inside them.
+	let note_fields = anki_notes[0].split(QUIZGEN_ANKI_NOTES_DELIM)
+	let clozes = note_fields[quizgen_anki_fields.CLOZES]
+	if (clozes.startsWith('"')) {
+		clozes = clozes.substring(1, clozes.length-1)
+	}
+	let text = note_fields[quizgen_anki_fields.TEXT]
+	if (text.startsWith('"')) {
+		text = text.substring(1, text.length-1)
+	}
+
+	/**
+	 * @type {HTMLDialogElement}
+	 */
+	let note_card = quizgen.querySelector('.quizgen-anki-notes-card-front')
+	/**
+	 * @type {HTMLDivElement}
+	 */
+	let card_title = note_card.querySelector('.card-body > .card-title')
+	card_title.innerText = text.replace(QUIZGEN_ANKI_NOTES_DQUOTE_ESCAPE, '"')
+	/**
+	 * @type {HTMLDivElement}
+	 */
+	let card_text = note_card.querySelector('.card-body > .card-text')
+	card_text.innerHTML = clozes.replace(QUIZGEN_ANKI_NOTES_DQUOTE_ESCAPE, '"')
 }
 
 /**
