@@ -19,6 +19,19 @@
     border-width: 0.1em;
 }
 
+.quizgen-component .quizgen-anki-cards .card .choice {
+    display: none;
+}
+.quizgen-component .quizgen-anki-cards .card .choice.active {
+    display: block;
+}
+.quizgen-component .quizgen-anki-cards .card .quizgen-cloze {
+    font-weight: bold;
+}
+.quizgen-component .quizgen-anki-cards .card .quizgen-cloze.active {
+    color: lightblue;
+}
+
 .quizgen-component .dropdown-item {
     cursor: pointer;
 }

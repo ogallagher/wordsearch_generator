@@ -1,5 +1,6 @@
 const current_script = document.currentScript
 
+let USE_WP_HOST_URL = false
 const WP_HOST_URL = 'https://wordsearch.dreamhosters.com'
 const DEPENDENCIES_URL = '/webpage_dependencies.html'
 const QUIZGEN_COMPONENT_URL = '/quizcard-generator/quizcard_webcomponent.html?version=0.0.1'
@@ -12,6 +13,7 @@ const quizgen_frequency_order = {
 }
 const QUIZGEN_ANKI_NOTES_DELIM = '\t'
 const QUIZGEN_ANKI_NOTES_DQUOTE_ESCAPE = /\"\"/g
+const QUIZGEN_ANKI_CLOZE_PLACEHOLDER = /\{\{c(\d+)::([^}]+)\}\}/g
 /**
  * Anki notes column indexes. 
  * Better would be to read them from the header metadata.
@@ -26,6 +28,7 @@ const quizgen_anki_fields = {
 	SOURCE_LINE: 6,
 	TRANSLATIONS: 7
 }
+/* global dsv */
 
 let quizcard_webpage_promise = new Promise(function(res, rej) {
     // update whether to use host in url
@@ -208,12 +211,26 @@ function add_quizcard_generator() {
 }
 
 function quizcard_opt_value_normalized(value) {
-	return (
+	let value_or_undefined = (
 		value === '' 
 		|| (Array.isArray(value) && (value.length === 0 || value[0] === ''))
 		|| value === undefined || value === null 
 		|| value === Number.NaN
 	) ? undefined : value
+
+	if (Array.isArray(value_or_undefined)) {
+		return value_or_undefined.map(v => {
+			if (typeof v === 'string') {
+				return v.trim()
+			}
+			else {
+				return v
+			}
+		})
+	}
+	else {
+		return value_or_undefined
+	}
 }
 
 /**
@@ -344,6 +361,15 @@ function quizcard_set_opts(quizgen_id, limit) {
  * @param {{[key=string]: any}} opts
  */
 function quizcard_generate(quizgen_id, opts) {
+	if (opts['input-file-content'] === undefined) {
+		console.log(`error cannot generate from empty source text`)
+		return
+	}
+	else if (opts['input-file-content'].split(/\s+/g).length < 3) {
+		console.log(`error source text should include at least 3 words`)
+		return
+	}
+
 	const http_method = 'post'
 	const content_type = 'application/json; charset=UTF-8'
 
@@ -449,18 +475,34 @@ function quizcard_result_preview(quizgen_id, anki_notes, anki_notes_header) {
 			.join('\n')
 		)
 	)
+	
+	/**
+	 * @type {HTMLButtonElement}
+	 */
+	let card_dealer = quizgen.querySelector('.quizgen-anki-cards button.quizgen-anki-card-random-front')
+	card_dealer.onclick = (_mouse_event) => {
+		quizcard_note_card_preview(quizgen_id, anki_notes)
+	}
+	// load first card
+	card_dealer.click()
+}
 
-	// load first note into cards
-	// TODO this split on delimiter ignores strings with delimiter inside them.
-	let note_fields = anki_notes[0].split(QUIZGEN_ANKI_NOTES_DELIM)
-	let clozes = note_fields[quizgen_anki_fields.CLOZES]
-	if (clozes.startsWith('"')) {
-		clozes = clozes.substring(1, clozes.length-1)
+function quizcard_note_card_preview(quizgen_id, anki_notes, note_idx) {
+	const quizgen = document.querySelector(`.quizgen-component[data-qg-id="${quizgen_id}"]`)
+
+	// update note number
+	/**
+	 * @type {HTMLInputElement}
+	 */
+	let note_number_label = quizgen.querySelector('.quizgen-anki-cards input.quizgen-anki-note-idx-front')
+	if (note_idx === undefined) {
+		note_idx = Math.round(Math.random() * (anki_notes.length-1))
+
+		if (note_idx + 1 === note_number_label.value) {
+			note_idx = (note_idx + 1) % anki_notes.length
+		}
 	}
-	let text = note_fields[quizgen_anki_fields.TEXT]
-	if (text.startsWith('"')) {
-		text = text.substring(1, text.length-1)
-	}
+	note_number_label.value = note_idx + 1
 
 	/**
 	 * @type {HTMLDialogElement}
@@ -470,12 +512,61 @@ function quizcard_result_preview(quizgen_id, anki_notes, anki_notes_header) {
 	 * @type {HTMLDivElement}
 	 */
 	let card_title = note_card.querySelector('.card-body > .card-title')
-	card_title.innerText = text.replace(QUIZGEN_ANKI_NOTES_DQUOTE_ESCAPE, '"')
 	/**
 	 * @type {HTMLDivElement}
 	 */
 	let card_text = note_card.querySelector('.card-body > .card-text')
-	card_text.innerHTML = clozes.replace(QUIZGEN_ANKI_NOTES_DQUOTE_ESCAPE, '"')
+	if (anki_notes[note_idx] === undefined) {
+		card_title.innerText = '<empty note>'
+		card_text.innerText = ''
+		return
+	}
+	/**
+	 * @type {string[]}
+	 */
+	let note_fields = d3.dsvFormat(QUIZGEN_ANKI_NOTES_DELIM).parseRows(anki_notes[note_idx])[0]
+	let text = note_fields[quizgen_anki_fields.TEXT].replace(QUIZGEN_ANKI_NOTES_DQUOTE_ESCAPE, '"')
+	/**
+	 * @type {HTMLDivElement}
+	 */
+	let clozes = $(note_fields[quizgen_anki_fields.CLOZES].replace(QUIZGEN_ANKI_NOTES_DQUOTE_ESCAPE, '"'))[0]
+	
+	// convert text into markup and replace cloze placeholder syntax {{cX::word}} 
+	// with <span class="quizgen-cloze" data-cloze="X">word</span>.
+	let text_div = document.createElement('div')
+	text_div.innerHTML = text.replace(
+		QUIZGEN_ANKI_CLOZE_PLACEHOLDER, 
+		(_substr, c_idx, c_word) => {
+			return `<span class="quizgen-cloze" data-cloze="${c_idx}">${c_word}</span>`
+		}
+	)
+	card_title.replaceChildren(text_div)
+	
+	let choices = clozes.getElementsByClassName('choice')
+	// this cloze card rendering logic essentially imitates what's already done in the front card template
+	if (choices.length === 0) {
+		clozes.innerHTML = `<b>No testable words found.</b>`
+	}
+	else {
+		// activate random choice
+		let active_choice_idx = Math.round(Math.random() * (choices.length-1))
+
+		// update choice number label
+		let active_choice_label = quizgen.querySelector('.quizgen-anki-cards input.quizgen-anki-cloze-idx-front')
+		if (active_choice_idx + 1 === active_choice_label.value) {
+			active_choice_idx = (active_choice_idx + 1) % choices.length
+		}
+		active_choice_label.value = active_choice_idx + 1
+
+		let choice = choices[active_choice_idx]
+		console.log(`info activate choice ${active_choice_idx}+1 ${choice.outerHTML}`)
+		choice.classList.add('active')
+
+		let cloze = text_div.querySelector(`.quizgen-cloze[data-cloze="${active_choice_idx+1}"]`)
+		cloze.innerText = '[...]'
+		cloze.classList.add('active')		
+	}
+	card_text.replaceChildren(clozes)
 }
 
 /**

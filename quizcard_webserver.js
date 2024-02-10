@@ -30,7 +30,9 @@ function main(server, public_dir) {
         generator(req.body)
         .then((anki_notes) => {
             res.json({
-                anki_notes: anki_notes.map((note) => note.toString()),
+                anki_notes: anki_notes.map(
+                    (note) => note.toString(undefined, req.body[opt.OPT_TAG]?.join(AnkiNote.SEPARATOR))
+                ),
                 anki_notes_header: AnkiNote.header(anki_notes.length)
             })
         })

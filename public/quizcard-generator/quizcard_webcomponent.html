@@ -23,8 +23,7 @@
                             name="quizgen-source-text-editor"
                             class="form-control font-monospace quizgen-source-text-editor" 
                             rows="5"
-                            placeholder="file upload preview pending"
-                            disabled></textarea>
+                            placeholder="file upload preview pending"></textarea>
                     </div>
                 </div>
 
@@ -190,6 +189,21 @@
             <div class="quizgen-anki-cards">
                 <div class="card-container mb-2 ">
                     <h3>Front card</h3>
+                    <div class="input-group mb-2">
+                        <div class="input-group-text">note #</div>
+                        <input 
+                            class="quizgen-anki-note-idx-front form-control bg-dark text-light" 
+                            disabled/>
+                        <div class="input-group-text">word #</div>
+                        <input 
+                            class="quizgen-anki-cloze-idx-front form-control bg-dark text-light" 
+                            disabled/>
+                        <button 
+                            class="quizgen-anki-card-random-front btn btn-outline-light" 
+                            role="button">
+                            <i class="bi bi-dice-3 fs-5"></i>
+                        </button>
+                    </div>
                     <div class="card quizgen-anki-notes-card-front">
                         <div class="card-body">
                             <div class="card-title">card title</div>
