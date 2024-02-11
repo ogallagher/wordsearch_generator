@@ -1,6 +1,6 @@
 {
 	"name": "wordsearch_generator",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "Wordsearch generator, extensible for different languages.",
 	"homepage": "https://github.com/ogallagher/wordsearch_generator",
 	"repository": {
@@ -12,8 +12,8 @@
 		"cli": "node wordsearch_cli.js",
 		"web": "node wordsearch_webserver.js",
 		"test": "mocha",
-    "web-forever": "forever start wordsearch_webserver.js",
-    "web-stop": "forever stop wordsearch_webserver.js"
+		"web-forever": "forever start wordsearch_webserver.js",
+		"web-stop": "forever stop wordsearch_webserver.js"
 	},
 	"keywords": [
 		"braille",
