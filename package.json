@@ -11,7 +11,9 @@
 	"scripts": {
 		"cli": "node wordsearch_cli.js",
 		"web": "node wordsearch_webserver.js",
-		"test": "mocha"
+		"test": "mocha",
+    "web-forever": "forever start wordsearch_webserver.js",
+    "web-stop": "forever stop wordsearch_webserver.js"
 	},
 	"keywords": [
 		"braille",
@@ -45,6 +47,7 @@
 		"progress": "^2.0.3"
 	},
 	"optionalDependencies": {
+		"forever": "^4.0.3",
 		"sonic-boom": "^3.2.0",
 		"temp_js_logger": "^0.7.8",
 		"yargs": "^17.7.2"
