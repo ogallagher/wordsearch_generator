@@ -418,7 +418,7 @@ function quizcard_generate(quizgen_id, opts) {
 				quizcard_result_preview(quizgen_id, res.anki_notes, res.anki_notes_header)
 			},
 			error: (err) => {
-				console.log(`error ${err}`)
+				console.log(`error failed to generate notes preview ${JSON.stringify(err)}`)
 			}
 		})
 	}
@@ -453,7 +453,7 @@ function quizcard_generate(quizgen_id, opts) {
 				)
 			},
 			error: (err) => {
-				console.log(`error ${err}`)
+				console.log(`error failed to generate notes file ${err}`)
 			}
 		})
 	}
