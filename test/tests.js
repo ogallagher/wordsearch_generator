@@ -1,12 +1,17 @@
 const assert = require('assert')
 const ProgressBar = require('progress')
+const temp_logger = require('temp_js_logger')
 
 describe('WordsearchGenerator', function() {
-	const temp_logger = require('./temp_js_logger')
 	let wg
 	
 	before(function(done) {
-		temp_logger.set_level('info')
+		try {
+			temp_logger.set_level('info')
+		}
+		catch (err) {
+			console.log(`error failed to update log level ${err}`)
+		}
 		
 		temp_logger.imports_promise.then(function() {
 			wg = require('./wordsearch_generator.js')

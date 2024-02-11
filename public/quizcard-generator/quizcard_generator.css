@@ -1,0 +1,37 @@
+.quizgen-component {
+    /* set root font size relative to default */
+	font-size: 100%;
+}
+
+.quizgen-component textarea {
+    white-space: pre;
+    font-size: small;
+}
+
+.quizgen-component .quizgen-anki-notes-text > textarea {
+    min-height: 5em;
+}
+
+.quizgen-component .quizgen-anki-cards .card {
+    background-color: #444;
+    border-color: whitesmoke;
+    border-style: solid;
+    border-width: 0.1em;
+}
+
+.quizgen-component .quizgen-anki-cards .card .choice {
+    display: none;
+}
+.quizgen-component .quizgen-anki-cards .card .choice.active {
+    display: block;
+}
+.quizgen-component .quizgen-anki-cards .card .quizgen-cloze {
+    font-weight: bold;
+}
+.quizgen-component .quizgen-anki-cards .card .quizgen-cloze.active {
+    color: lightblue;
+}
+
+.quizgen-component .dropdown-item {
+    cursor: pointer;
+}

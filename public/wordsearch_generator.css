@@ -1,6 +1,5 @@
 /**
- * Owen Gallagher
- * 2021-11-28
+ * Wordsearch generator styles.
  * 
  * TODO qualify all styles as being within .wordsearch-component container.
  */
@@ -21,8 +20,8 @@ body {
 	color: red;
 }
 
-.ws-row {
-}
+/* .ws-row {
+} */
 
 .ws-cell {
 	font-size: 2.25rem;
@@ -67,8 +66,8 @@ body {
 	margin-left: 16px;
 }
 
-.ws-clue {
-}
+/* .ws-clue {
+} */
 
 .ws-word {
 	font-weight: bold;
@@ -213,9 +212,8 @@ body {
 	display: block;
 }
 
-.wordsearch.printable {
-	
-}
+/* .wordsearch.printable {	
+} */
 
 .printable .ws-cell, 
 .printable .ws-cell:hover {

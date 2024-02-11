@@ -19,7 +19,7 @@ const NV_MAJOR = parseInt(NODE_VERSION.substring(1, NODE_VERSION.indexOf('.')))
 // common syntax
 const fs = require('fs')
 const rl = require('readline')
-const temp_logger = require('./temp_js_logger')
+const temp_logger = require('temp_js_logger')
 
 // local imports
 
