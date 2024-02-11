@@ -89,7 +89,7 @@ let wordsearch_webpage_promise = new Promise(function(resolve, reject) {
 	}
 	console.log(`DEBUG set use-host=${USE_WP_HOST_URL}`)
 	
-	Promise.all([
+	return Promise.all([
 		// external/peripheral dependencies
 		new Promise(function(resolve_ext, reject_ext) {
 			let url = USE_WP_HOST_URL
