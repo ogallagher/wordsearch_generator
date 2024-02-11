@@ -13,7 +13,8 @@
 		"web": "node wordsearch_webserver.js",
 		"test": "mocha",
 		"web-forever": "forever start wordsearch_webserver.js",
-		"web-stop": "forever stop wordsearch_webserver.js"
+		"web-stop": "forever stop wordsearch_webserver.js",
+		"qg-anki": "cd quizcard-generator && npm run build && cd .. && mkdir -p public/out/webserver/anki/cards && cp -r quizcard-generator/anki/cards/fill-blanks public/out/webserver/anki/cards"
 	},
 	"keywords": [
 		"braille",
