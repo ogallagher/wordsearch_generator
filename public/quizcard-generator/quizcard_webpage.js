@@ -3,7 +3,7 @@ const current_script = document.currentScript
 let USE_WP_HOST_URL = false
 const WP_HOST_URL = 'https://wordsearch.dreamhosters.com'
 const DEPENDENCIES_URL = '/webpage_dependencies.html'
-const QUIZGEN_COMPONENT_URL = '/quizcard-generator/quizcard_webcomponent.html?version=0.0.1'
+const QUIZGEN_COMPONENT_URL = '/quizcard-generator/quizcard_webcomponent.html?version=0.0.2'
 const HEADER_COMPONENT_URL = '/header_webcomponent.html'
 const WORDSEARCH_LOG_URL = '/temp_js_logger.js'
 const DEFAULT_QUIZGEN_CONTAINERS_SELECTOR = '.quizgen-container'

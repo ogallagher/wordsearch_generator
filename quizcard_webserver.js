@@ -121,7 +121,8 @@ function generator(opts) {
             else {
                 return exclude
             }
-        })
+        }),
+        opts[opt.OPT_SENTENCE_TOKENS_MAX]
     )
 
     return qg.finish_calculation
