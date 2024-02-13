@@ -4,12 +4,12 @@
             <!-- inputs -->
             <div class="quizgen-inputs">
                 <h1>Source text</h1>
-                <div>                    
+                <div>
                     <!-- input file -->
                     <div class="mb-3">
                         <div class="form-label">Source text file</div>
                         <div class="input-group">
-                            <input type="file" class="quizgen-source-file form-control"/>
+                            <input type="file" class="quizgen-source-file form-control" title="Select the source text file. This will overwrite the text editor contents."/>
                         </div>
                     </div>
 
@@ -23,7 +23,8 @@
                             name="quizgen-source-text-editor"
                             class="form-control font-monospace quizgen-source-text-editor" 
                             rows="5"
-                            placeholder="file upload preview pending"></textarea>
+                            placeholder="file upload preview pending"
+                            title="Write/edit the source text."></textarea>
                     </div>
                 </div>
 
@@ -33,7 +34,8 @@
                     <input 
                         name="quizgen-notes-name" 
                         class="form-control quizgen-notes-name" 
-                        type="text" placeholder="target-lang-notes-1"/>
+                        type="text" placeholder="target-lang-notes-1"
+                        title="The generated Anki notes file will include this value in the file name."/>
                 </div>
 
                 <h3 role="button" aria-expanded="false"
@@ -64,7 +66,7 @@
                             <div class="input-group-text">
                                 Exclude words shorter than
                             </div>
-                            <input type="number" class="quizgen-word-length-min form-control" value="2"/>
+                            <input type="number" class="quizgen-word-length-min form-control" value="2" min="1"/>
                             <div class="input-group-text">
                                 characters
                             </div>
@@ -80,7 +82,7 @@
                             <div class="input-group-text">
                                 Exclude words that occur fewer than
                             </div>
-                            <input type="number" class="quizgen-frequency-min form-control" value="2"/>
+                            <input type="number" class="quizgen-frequency-min form-control" value="2" min="1"/>
                             <div class="input-group-text">
                                 times
                             </div>
@@ -105,7 +107,7 @@
                             <input 
                                 type="number" 
                                 class="quizgen-frequency-order-limit form-control" 
-                                value="100"/>
+                                value="100" min="0" disabled/>
                             <div class="input-group-text">
                                 most
                             </div>
@@ -113,14 +115,14 @@
                                 type="button" 
                                 class="quizgen-frequency-order-select btn btn-secondary dropdown-toggle"
                                 data-bs-toggle="dropdown"
-                                aria-expanded="false">
+                                aria-expanded="false" disabled>
                                 common
                             </button>
                             <ul class="dropdown-menu">
                                 <li>
                                     <span class="dropdown-item quizgen-frequency-order-most">common</span>
                                 </li>
-                                <li class="">
+                                <li>
                                     <span class="dropdown-item quizgen-frequency-order-least">rare</span>
                                 </li>
                             </ul>
@@ -138,7 +140,30 @@
                         <textarea 
                             name="quizgen-note-tags" 
                             class="form-control font-monospace quizgen-note-tags" 
-                            rows="3" placeholder="tag-1,tag-2"></textarea>
+                            rows="1" placeholder="tag-1,tag-2"
+                            title="Tags are a helpful and flexible way to organize notes within Anki."></textarea>
+                    </div>
+
+                    <!-- sentence length limits -->
+                    <div class="mb-3">
+                        <label for="quizgen-sentence-limits">
+                            Sentence length limits
+                        </label>
+                        <div 
+                            class="input-group quizgen-sentence-limits" 
+                            name="quizgen-sentence-limits" 
+                            title="Control the minimum number of testable words required to finish a sentence (1 note is at least 1 sentence), and the maximum number of tokens (testable and not testable) before breaking a sentence.">
+                            <div class="input-group-text">
+                                <input 
+                                    class="quizgen-sentence-limits-enable form-check-input mt-0" 
+                                    type="checkbox"
+                                    value="filter-frequency-order"/>
+                            </div>
+                            <div class="input-group-text">testable word min</div>
+                            <input class="form-control quizgen-sentence-word-min" type="number" placeholder="3" min=0 disabled/>
+                            <div class="input-group-text">token max</div>
+                            <input class="form-control quizgen-sentence-token-max" type="number" min="0" disabled/>
+                        </div>
                     </div>
                 </div>
             </div>

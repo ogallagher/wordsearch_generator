@@ -205,6 +205,26 @@ function add_quizcard_generator() {
 			quizcard_on_source_file_upload(change_event, text_editor)
 		})
 
+		// ordinal frequency checkbox effect
+		quizgen.querySelector('input.quizgen-frequency-order-enable').addEventListener(
+			'change',
+			/**
+			 * @param {InputEvent} change_event 
+			 */
+			(change_event) => {
+				if (change_event.target.checked) {
+					console.log('debug enable ordinal frequency filters')
+					quizgen.querySelector('input.quizgen-frequency-order-limit').removeAttribute('disabled')
+					quizgen.querySelector('.quizgen-frequency-order-select').removeAttribute('disabled')
+				}
+				else {
+					console.log('debug disable ordinal frequency filters')
+					quizgen.querySelector('input.quizgen-frequency-order-limit').setAttribute('disabled', true)
+					quizgen.querySelector('.quizgen-frequency-order-select').setAttribute('disabled', true)
+				}
+			}
+		)
+
 		// animate ordinal frequency button label
 		let frequency_order_select = quizgen.querySelector('.quizgen-frequency-order-select')
 		quizgen.querySelector('.quizgen-frequency-order-most')
@@ -218,6 +238,27 @@ function add_quizcard_generator() {
 			(mouse_event) => quizcard_choose_frequency_order(mouse_event, frequency_order_select)
 		)
 
+		// sentence length limits checkbox effect
+		quizgen.querySelector('input.quizgen-sentence-limits-enable').addEventListener(
+			'change',
+			/**
+			 * @param {InputEvent} change_event
+			 */
+			(change_event) => {
+				if (change_event.target.checked) {
+					console.log('debug enable sentence length filters')
+					quizgen.querySelector('input.quizgen-sentence-word-min').removeAttribute('disabled')
+					quizgen.querySelector('input.quizgen-sentence-token-max').removeAttribute('disabled')
+				}
+				else {
+					console.log('debug enable sentence length filters')
+					quizgen.querySelector('input.quizgen-sentence-word-min').setAttribute('disabled', true)
+					quizgen.querySelector('input.quizgen-sentence-token-max').setAttribute('disabled', true)
+				}
+			}
+		)
+		
+		// preview and generate
 		quizgen.querySelector('button.quizgen-generate-preview')
 		.addEventListener('click', (_mouse_event) => {
 			console.log(`debug generate-preview pressed`)
@@ -273,6 +314,8 @@ function quizcard_set_opts(quizgen_id, limit) {
 		'word-frequency-first': undefined,
 		'word-frequency-last': undefined,
 		'word-length-min': undefined,
+		'sentence-length-min': undefined, // opt not yet supported
+		'sentence-length-max': undefined,
 		'tag': undefined,
 		'limit': limit
 	}
@@ -281,6 +324,7 @@ function quizcard_set_opts(quizgen_id, limit) {
 	 * @type {HTMLElement}
 	 */
 	const quizgen = document.querySelector(`.quizgen-component[data-qg-id="${quizgen_id}"]`)
+	let sentence_limit_enable = quizgen.querySelector('input.quizgen-sentence-limits-enable')
 	
 	return Promise.all([
 		new Promise((r_if) => {
@@ -360,6 +404,25 @@ function quizcard_set_opts(quizgen_id, limit) {
 				parseInt(length_min_input.value)
 			)
 			r_wlm(['word-length-min', length_min])
+		}),
+		new Promise((r_smin) => {
+			if (sentence_limit_enable.checked) {
+				const sentence_min_input = quizgen.querySelector('input.quizgen-sentence-word-min')
+				r_smin(['sentence-length-min', quizcard_opt_value_normalized(parseInt(sentence_min_input.value))])
+			}
+			else {
+				
+				r_smin(['sentence-length-min', undefined])
+			}
+		}),
+		new Promise((r_smax) => {
+			if (sentence_limit_enable.checked) {
+				const sentence_max_input = quizgen.querySelector('input.quizgen-sentence-token-max')
+				r_smax(['sentence-length-max', quizcard_opt_value_normalized(parseInt(sentence_max_input.value))])
+			}
+			else {
+				r_smax(['sentence-length-max', undefined])
+			}
 		}),
 		new Promise((r_t) => {
 			const tags_input = quizgen.querySelector('textarea.quizgen-note-tags')

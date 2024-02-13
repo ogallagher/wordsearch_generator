@@ -93,7 +93,19 @@ exports.main = main
  * @param quizgen
  */
 function generator(opts) {
-    console.log(`debug generator(${JSON.stringify(opts, undefined, 2)})`)
+    console.log(`debug generator(${JSON.stringify(
+        opts, 
+        (key, val) => {
+            if (key === opt.OPT_INPUT_FILE_CONTENT) {
+                // show reduced preview
+                return val.substring(0, 1500) + '...'
+            }
+            else {
+                return val
+            }
+        }, 
+        2
+    )})`)
     const input_file_path = opts[opt.OPT_INPUT_FILE]
 
     console.log('debug new quizgen instance')

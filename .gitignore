@@ -22,3 +22,8 @@ tmp
 # jsdoc
 out
 
+# test output
+
+# ide
+.vscode
+*.heapprofile
