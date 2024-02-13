@@ -314,7 +314,7 @@ function quizcard_set_opts(quizgen_id, limit) {
 		'word-frequency-first': undefined,
 		'word-frequency-last': undefined,
 		'word-length-min': undefined,
-		'sentence-length-min': undefined, // opt not yet supported
+		'sentence-length-min': undefined,
 		'sentence-length-max': undefined,
 		'tag': undefined,
 		'limit': limit

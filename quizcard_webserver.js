@@ -122,6 +122,7 @@ function generator(opts) {
                 return exclude
             }
         }),
+        opts[opt.OPT_SENTENCE_WORDS_MIN],
         opts[opt.OPT_SENTENCE_TOKENS_MAX]
     )
 
