@@ -298,7 +298,10 @@ function add_quizcard_generator() {
 		quizgen.querySelector('button.quizgen-generate-preview')
 		.addEventListener('click', (_mouse_event) => {
 			console.log(`debug generate-preview pressed`)
-			quizcard_set_opts(quizgen_id, 3)
+			const preview_limit = quizcard_opt_value_normalized(
+				quizgen.querySelector('input.quizgen-preview-limit').value
+			)
+			quizcard_set_opts(quizgen_id, preview_limit || 3)
 			.then((opts) => quizcard_generate(quizgen_id, opts))
 		})
 		quizgen.querySelector('button.quizgen-generate-full')
@@ -353,7 +356,7 @@ function quizcard_set_opts(quizgen_id, limit) {
 		'sentence-length-min': undefined,
 		'sentence-length-max': undefined,
 		'tag': undefined,
-		'limit': limit
+		'limit': parseInt(limit)
 	}
 
 	/**

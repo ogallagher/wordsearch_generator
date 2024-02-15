@@ -66,7 +66,10 @@
                             <div class="input-group-text">
                                 Exclude words shorter than
                             </div>
-                            <input type="number" class="quizgen-word-length-min form-control" value="2" min="1"/>
+                            <input 
+                                type="number" class="quizgen-word-length-min form-control" 
+                                value="2" min="1" step="1"
+                            />
                             <div class="input-group-text">
                                 characters
                             </div>
@@ -82,7 +85,10 @@
                             <div class="input-group-text">
                                 Exclude words that occur fewer than
                             </div>
-                            <input type="number" class="quizgen-frequency-min form-control" value="2" min="1"/>
+                            <input 
+                                type="number" class="quizgen-frequency-min form-control" 
+                                value="2" min="1" step="1"
+                            />
                             <div class="input-group-text">
                                 times
                             </div>
@@ -166,9 +172,34 @@
                                     value="filter-frequency-order"/>
                             </div>
                             <div class="input-group-text">testable word min</div>
-                            <input class="form-control quizgen-sentence-word-min" type="number" placeholder="3" min=0 disabled/>
+                            <input class="form-control quizgen-sentence-word-min" 
+                                type="number" placeholder="3" min=0 step="1" disabled
+                            />
                             <div class="input-group-text">token max</div>
-                            <input class="form-control quizgen-sentence-token-max" type="number" min="0" disabled/>
+                            <input 
+                                class="form-control quizgen-sentence-token-max" 
+                                type="number" min="0" step="1" disabled
+                            />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="quizgen-preview-limits">
+                            Preview limit
+                        </label>
+                        <div class="input-group quizgen-preview-limits"
+                            name="quizgen-preview-limits">
+                            <div class="input-group-text">
+                                Include up to
+                            </div>
+                            <input 
+                                class="form-control quizgen-preview-limit"
+                                placeholder="3"
+                                value="3" type="number" min="1" max="50" step="1"
+                            />
+                            <div class="input-group-text">
+                                Anki notes in preview
+                            </div>
                         </div>
                     </div>
                 </div>
