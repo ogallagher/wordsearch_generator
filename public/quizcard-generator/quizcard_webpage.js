@@ -215,11 +215,13 @@ function add_quizcard_generator() {
 				if (change_event.target.checked) {
 					console.log('debug enable ordinal frequency filters')
 					quizgen.querySelector('input.quizgen-frequency-order-limit').removeAttribute('disabled')
+					quizgen.querySelector('button.quizgen-frequency-order-percent').removeAttribute('disabled')
 					quizgen.querySelector('.quizgen-frequency-order-select').removeAttribute('disabled')
 				}
 				else {
 					console.log('debug disable ordinal frequency filters')
 					quizgen.querySelector('input.quizgen-frequency-order-limit').setAttribute('disabled', true)
+					quizgen.querySelector('button.quizgen-frequency-order-percent').setAttribute('disabled', true)
 					quizgen.querySelector('.quizgen-frequency-order-select').setAttribute('disabled', true)
 				}
 			}
@@ -236,6 +238,40 @@ function add_quizcard_generator() {
 		.addEventListener(
 			'click', 
 			(mouse_event) => quizcard_choose_frequency_order(mouse_event, frequency_order_select)
+		)
+		// animate ordinal frequency percentage toggle
+		quizgen.querySelector('button.quizgen-frequency-order-percent')
+		.addEventListener(
+			'click', 
+			/**
+			 * 
+			 * @param {MouseEvent} mouse_event 
+			 */
+			(mouse_event) => {
+				/**
+				 * @type {HTMLButtonElement}
+				 */
+				const percent_btn = mouse_event.target
+				/**
+				 * @type {boolean}
+				 */
+				const data_percent = percent_btn.getAttribute('data-percent') === 'true'
+				const percent_icon = percent_btn.querySelector('i.bi')
+				if (data_percent) {
+					// switch to number
+					console.log('debug frequency order percent')
+					percent_icon.classList.remove('bi-percent')
+					percent_icon.classList.add('bi-hash')
+				}
+				else {
+					// switch to percent
+					console.log('debug frequency order number')
+					percent_icon.classList.remove('bi-hash')
+					percent_icon.classList.add('bi-percent')
+				}
+
+				percent_btn.setAttribute('data-percent', (!data_percent) ? 'true' : 'false')
+			}
 		)
 
 		// sentence length limits checkbox effect
@@ -389,10 +425,17 @@ function quizcard_set_opts(quizgen_id, limit) {
 				 * @type {HTMLInputElement}
 				 */
 				let frequency_order_limiter = quizgen.querySelector('input.quizgen-frequency-order-limit')
+				let frequency_order_percent = quizcard_opt_value_normalized(
+					quizgen.querySelector('button.quizgen-frequency-order-percent')
+					.getAttribute('data-percent') === 'true'
+				)
 				let frequency_order_limit = quizcard_opt_value_normalized(
 					parseInt(frequency_order_limiter.value)
 				)
-				r_ffl([opt_key, frequency_order_limit])
+				r_ffl([
+					opt_key, 
+					frequency_order_percent ? `${frequency_order_limit}%` : frequency_order_limit
+				])
 			}
 			else {
 				r_ffl([opt_key, undefined])
