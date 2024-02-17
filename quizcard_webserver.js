@@ -126,17 +126,23 @@ function generator(opts) {
         opts[opt.OPT_SENTENCE_TOKENS_MAX]
     )
 
+    AnkiNote.set_choices_max(opts[opt.OPT_CHOICES_MAX])
+
     return qg.finish_calculation
     .then(
         () => {
             console.log(`info calculations complete for ${input_file_path}`)
             // console.log(`debug sentences = ${qg.get_sentences().join(',')}`)
+
             return qg.generate_anki_notes(
                 opts[opt.OPT_LIMIT],
                 opts[opt.OPT_WORD_FREQUENCY_MIN], 
                 opts[opt.OPT_WORD_LENGTH_MIN],
                 opts[opt.OPT_WORD_FREQUENCY_ORDINAL_MAX],
-                opts[opt.OPT_WORD_FREQUENCY_ORDINAL_MIN]
+                opts[opt.OPT_WORD_FREQUENCY_ORDINAL_MIN],
+                undefined,
+                undefined,
+                opts[opt.OPT_CHOICE_VARIATION]
             )
         },
         (err) => {

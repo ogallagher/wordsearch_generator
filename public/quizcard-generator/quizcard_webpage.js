@@ -492,7 +492,7 @@ function quizcard_set_opts(quizgen_id, limit) {
 			 */
 			const variation_input = quizgen.querySelector('input.quizgen-choice-variation')
 
-			r_cv(['choice-variation', quizcard_opt_value_normalized(variation_input.value)])
+			r_cv(['choice-randomness', quizcard_opt_value_normalized(variation_input.value)])
 		})
 	])
 	.then((opt_entries) => {
