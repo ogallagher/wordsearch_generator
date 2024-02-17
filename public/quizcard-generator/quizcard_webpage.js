@@ -27,7 +27,9 @@ const quizgen_anki_fields = {
 	CLOZES: 4,
 	SOURCE_FILE: 5,
 	SOURCE_LINE: 6,
-	TRANSLATIONS: 7
+	TRANSLATIONS: 7,
+	PROLOGUE: 8,
+	EPILOGUE: 9
 }
 /* global dsv */
 
@@ -486,7 +488,7 @@ function quizcard_set_opts(quizgen_id, limit) {
 			 * @type {HTMLInputElement}
 			 */
 			const count_input = quizgen.querySelector('input.quizgen-choice-count')
-			r_cc(['choices', quizcard_opt_value_normalized(count_input.value)])
+			r_cc(['choices', quizcard_opt_value_normalized(parseInt(count_input.value))])
 		}),
 		new Promise((r_cv) => {
 			/**
@@ -501,14 +503,14 @@ function quizcard_set_opts(quizgen_id, limit) {
 			 * @type {HTMLInputElement}
 			 */
 			const prologue_input = quizgen.querySelector('input.quizgen-prologue-length')
-			r_pro(['prologue', quizcard_opt_value_normalized(prologue_input.value)])
+			r_pro(['prologue', quizcard_opt_value_normalized(parseInt(prologue_input.value))])
 		}),
 		new Promise((r_epi) => {
 			/**
 			 * @type {HTMLInputElement}
 			 */
 			const epilogue_input = quizgen.querySelector('input.quizgen-epilogue-length')
-			r_epi(['epilogue', quizcard_opt_value_normalized(epilogue_input.value)])
+			r_epi(['epilogue', quizcard_opt_value_normalized(parseInt(epilogue_input.value))])
 		})
 	])
 	.then((opt_entries) => {
@@ -700,17 +702,32 @@ function quizcard_note_card_preview(quizgen_id, anki_notes, note_idx) {
 	 * @type {HTMLDivElement}
 	 */
 	let clozes = $(note_fields[quizgen_anki_fields.CLOZES].replace(QUIZGEN_ANKI_NOTES_DQUOTE_ESCAPE, '"'))[0]
+	let prologue = note_fields[quizgen_anki_fields.PROLOGUE].replace(QUIZGEN_ANKI_NOTES_DQUOTE_ESCAPE, '"')
+	let epilogue = note_fields[quizgen_anki_fields.EPILOGUE].replace(QUIZGEN_ANKI_NOTES_DQUOTE_ESCAPE, '"')
 	
 	// convert text into markup and replace cloze placeholder syntax {{cX::word}} 
 	// with <span class="quizgen-cloze" data-cloze="X">word</span>.
-	let text_div = document.createElement('div')
+	let text_div = document.createElement('span')
 	text_div.innerHTML = text.replace(
 		QUIZGEN_ANKI_CLOZE_PLACEHOLDER, 
 		(_substr, c_idx, c_word) => {
 			return `<span class="quizgen-cloze" data-cloze="${c_idx}">${c_word}</span>`
 		}
 	)
-	card_title.replaceChildren(text_div)
+	let prologue_div = document.createElement('span')
+	prologue_div.classList.add('quizgen-text-neighbor', 'quizgen-prologue')
+	if (prologue.length === 0) {
+		prologue_div.classList.add('d-none')
+	}
+	prologue_div.innerText = prologue + ' '
+	let epilogue_div = document.createElement('span')
+	epilogue_div.classList.add('quizgen-text-neighbor', 'quizgen-epilogue')
+	epilogue_div.innerText = ' ' + epilogue
+	if (epilogue.length === 0) {
+		epilogue_div.classList.add('d-none')
+	}
+
+	card_title.replaceChildren(prologue_div, text_div, epilogue_div)
 	
 	let choices = clozes.getElementsByClassName('choice')
 	// this cloze card rendering logic essentially imitates what's already done in the front card template

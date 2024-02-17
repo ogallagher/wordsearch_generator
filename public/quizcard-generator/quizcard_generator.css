@@ -32,6 +32,11 @@
     color: lightblue;
 }
 
+.quizgen-component .quizgen-anki-cards .card .quizgen-text-neighbor {
+    color: lightgray;
+    font-style: italic;
+}
+
 .quizgen-component .dropdown-item {
     cursor: pointer;
 }
