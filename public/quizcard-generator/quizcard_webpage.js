@@ -356,7 +356,9 @@ function quizcard_set_opts(quizgen_id, limit) {
 		'sentence-length-min': undefined,
 		'sentence-length-max': undefined,
 		'tag': undefined,
-		'limit': parseInt(limit)
+		'limit': parseInt(limit),
+		'choices': undefined,
+		'choice-randomness': undefined
 	}
 
 	/**
@@ -476,6 +478,21 @@ function quizcard_set_opts(quizgen_id, limit) {
 				tags_input.value?.split(',')
 			)
 			r_t(['tag', tags])
+		}),
+		new Promise((r_cc) => {
+			/**
+			 * @type {HTMLInputElement}
+			 */
+			const count_input = quizgen.querySelector('input.quizgen-choice-count')
+			r_cc(['choices', quizcard_opt_value_normalized(count_input.value)])
+		}),
+		new Promise((r_cv) => {
+			/**
+			 * @type {HTMLInputElement}
+			 */
+			const variation_input = quizgen.querySelector('input.quizgen-choice-variation')
+
+			r_cv(['choice-variation', quizcard_opt_value_normalized(variation_input.value)])
 		})
 	])
 	.then((opt_entries) => {

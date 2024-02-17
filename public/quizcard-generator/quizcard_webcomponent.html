@@ -144,6 +144,34 @@
                         </div>
                     </div>
 
+                    <div>
+                        <div class="form-label">
+                            Answer choice options
+                        </div>
+                        <!-- choice count -->
+                        <div class="input-group mb-3">
+                            <div class="input-group-text">
+                                Choice count
+                            </div>
+                            <input name="quizgen-choice-count" 
+                                class="quizgen-choice-count form-control"
+                                type="number" min="0" step="1"
+                                placeholder="5" value="5"/>
+                        </div>
+                        
+                        <!-- choice variation -->
+                        <div class="row mb-3">
+                            <div class="col-sm">
+                                Choice variation/randomness
+                            </div>
+                            <div class="col-sm">
+                                <input name="quizgen-choice-variation" 
+                                class="quizgen-choice-variation form-range"
+                                type="range" min="0" max="1" step="0.05"/>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- note tags -->
                     <div class="mb-3">
                         <label for="quizgen-note-tags form-label">
@@ -183,6 +211,7 @@
                         </div>
                     </div>
 
+                    <!-- preview note count limit -->
                     <div class="mb-3">
                         <label for="quizgen-preview-limits">
                             Preview limit

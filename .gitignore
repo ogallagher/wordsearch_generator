@@ -25,5 +25,5 @@ out
 # test output
 
 # ide
-.vscode
+.vscode/
 *.heapprofile
