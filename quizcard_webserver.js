@@ -140,8 +140,8 @@ function generator(opts) {
                 opts[opt.OPT_WORD_LENGTH_MIN],
                 opts[opt.OPT_WORD_FREQUENCY_ORDINAL_MAX],
                 opts[opt.OPT_WORD_FREQUENCY_ORDINAL_MIN],
-                undefined,
-                undefined,
+                opts[opt.OPT_PROLOGUE],
+                opts[opt.OPT_EPILOGUE],
                 opts[opt.OPT_CHOICE_VARIATION]
             )
         },

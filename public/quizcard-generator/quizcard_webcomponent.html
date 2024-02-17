@@ -225,6 +225,39 @@
                         </div>
                     </div>
 
+                    <!-- note prologue, epilogue -->
+                    <label class="form-label">
+                        Note prologue and epilogue word counts
+                    </label>
+                    <div class="row">
+                        <div class="col-sm">
+                            <div 
+                                class="input-group mb-3" 
+                                title="Number of tokens in prologue (from previous sentence)">
+                                <div class="input-group-text">
+                                    Prologue
+                                </div>
+                                <input
+                                    class="form-control quizgen-prologue-length"
+                                    type="number" min="0" value="0" placeholder="0"
+                                />
+                            </div>
+                        </div>
+                        <div class="col-sm">
+                            <div 
+                                class="input-group mb-3" 
+                                title="Number of tokens in epilogue (words from next sentence)">
+                                <div class="input-group-text">
+                                    Epilogue
+                                </div>
+                                <input
+                                    class="form-control quizgen-epilogue-length"
+                                    type="number" min="0" value="0" placeholder="0"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- preview note count limit -->
                     <div class="mb-3">
                         <label for="quizgen-preview-limits">

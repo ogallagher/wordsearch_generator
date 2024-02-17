@@ -358,7 +358,9 @@ function quizcard_set_opts(quizgen_id, limit) {
 		'tag': undefined,
 		'limit': parseInt(limit),
 		'choices': undefined,
-		'choice-randomness': undefined
+		'choice-randomness': undefined,
+		'prologue': undefined,
+		'epilogue': undefined
 	}
 
 	/**
@@ -493,6 +495,20 @@ function quizcard_set_opts(quizgen_id, limit) {
 			const variation_input = quizgen.querySelector('input.quizgen-choice-variation')
 
 			r_cv(['choice-randomness', quizcard_opt_value_normalized(variation_input.value)])
+		}),
+		new Promise((r_pro) => {
+			/**
+			 * @type {HTMLInputElement}
+			 */
+			const prologue_input = quizgen.querySelector('input.quizgen-prologue-length')
+			r_pro(['prologue', quizcard_opt_value_normalized(prologue_input.value)])
+		}),
+		new Promise((r_epi) => {
+			/**
+			 * @type {HTMLInputElement}
+			 */
+			const epilogue_input = quizgen.querySelector('input.quizgen-epilogue-length')
+			r_epi(['epilogue', quizcard_opt_value_normalized(epilogue_input.value)])
 		})
 	])
 	.then((opt_entries) => {
