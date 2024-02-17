@@ -96,50 +96,58 @@
                     </div>
 
                     <!-- testable words ordinal frequency -->
-                    <div class="mb-3">
+                    <div>
                         <div class="form-label">
                             Filter most common or rare for testable words
                         </div>
-                        <div class="input-group">
-                            <div class="input-group-text">
-                                <input 
-                                    class="quizgen-frequency-order-enable form-check-input mt-0" 
-                                    type="checkbox"
-                                    value="filter-frequency-order"/>
+                        <div class="row">
+                            <div class="col-xl mb-3">
+                                <div class="input-group">
+                                    <div class="input-group-text">
+                                        <input 
+                                            class="quizgen-frequency-order-enable form-check-input mt-0" 
+                                            type="checkbox"
+                                            value="filter-frequency-order"/>
+                                    </div>
+                                    <div class="input-group-text">
+                                        Include the
+                                    </div>
+                                    <input 
+                                        type="number" 
+                                        class="quizgen-frequency-order-limit form-control" 
+                                        value="100" min="0" disabled/>
+                                    <button 
+                                        class="btn btn-outline-light quizgen-frequency-order-percent" 
+                                        data-percent="false"
+                                        title="whether to treat this number as a percentage" disabled>
+                                        <i class="bi bi-hash pe-none"></i>
+                                    </button>
+                                </div>
                             </div>
-                            <div class="input-group-text">
-                                Include the
-                            </div>
-                            <input 
-                                type="number" 
-                                class="quizgen-frequency-order-limit form-control" 
-                                value="100" min="0" disabled/>
-                            <button 
-                                class="btn btn-outline-light quizgen-frequency-order-percent" 
-                                data-percent="false"
-                                title="whether to treat this number as a percentage" disabled>
-                                <i class="bi bi-hash pe-none"></i>
-                            </button>
-                            <div class="input-group-text">
-                                most
-                            </div>
-                            <button 
-                                type="button" 
-                                class="quizgen-frequency-order-select btn btn-secondary dropdown-toggle"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false" disabled>
-                                common
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <span class="dropdown-item quizgen-frequency-order-most">common</span>
-                                </li>
-                                <li>
-                                    <span class="dropdown-item quizgen-frequency-order-least">rare</span>
-                                </li>
-                            </ul>
-                            <div class="input-group-text">
-                                words
+                            <div class="col-xl mb-3">
+                                <div class="input-group justify-content-center">
+                                    <div class="input-group-text">
+                                        most
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        class="quizgen-frequency-order-select btn btn-secondary dropdown-toggle"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false" disabled>
+                                        common
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <span class="dropdown-item quizgen-frequency-order-most">common</span>
+                                        </li>
+                                        <li>
+                                            <span class="dropdown-item quizgen-frequency-order-least">rare</span>
+                                        </li>
+                                    </ul>
+                                    <div class="input-group-text">
+                                        words
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
