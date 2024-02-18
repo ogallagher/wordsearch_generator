@@ -358,7 +358,7 @@ function quizcard_set_opts(quizgen_id, limit) {
 		'sentence-length-min': undefined,
 		'sentence-length-max': undefined,
 		'tag': undefined,
-		'limit': parseInt(limit),
+		'limit': limit === undefined ? undefined : parseInt(limit),
 		'choices': undefined,
 		'choice-randomness': undefined,
 		'prologue': undefined,
