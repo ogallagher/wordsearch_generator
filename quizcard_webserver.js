@@ -31,21 +31,33 @@ function main(server, public_dir) {
         .then((anki_notes) => {
             res.json({
                 anki_notes: anki_notes.map(
-                    (note) => note.toString(undefined, req.body[opt.OPT_TAG]?.join(AnkiNote.SEPARATOR))
+                    (note) => note.toString(
+                        undefined, 
+                        req.body[opt.OPT_TAG]?.join(AnkiNote.SEPARATOR)
+                    )
                 ),
-                anki_notes_header: AnkiNote.header(anki_notes.length)
+                anki_notes_header: AnkiNote.header(
+                    anki_notes.length,
+                    undefined,
+                    opt.clean_opts(req.body)
+                )
             })
         })
     })
 
     // api/generate
     server.post(`/${DIR}/api/generate`, function(req, res) {
-        let notes_name = req.body[opt.OPT_NOTES_NAME]
+        /**
+         * @type {opt.OptArgv}
+         */
+        const opts = req.body
+
+        let notes_name = opts[opt.OPT_NOTES_NAME]
         if (notes_name === undefined) {
             notes_name = 'quizgen-anki-notes'
         }
 
-        generator(req.body)
+        generator(opts)
         .then((anki_notes) => {
             // add unique suffix
             notes_name += '-' + new Date().toISOString().replace(/[:\s]/g, '-')
@@ -57,7 +69,8 @@ function main(server, public_dir) {
                 notes_name,
                 `${public_dir}/${EXPORTS_DIR}`,
                 undefined,
-                req.body[opt.OPT_TAG]
+                opts[opt.OPT_TAG],
+                opt.clean_opts(opts)
             )
         })
         .then((export_bytes) => {
@@ -89,7 +102,7 @@ exports.main = main
 /**
  * Instantiate a QuizCardGenerator given options provided by a web client.
  * 
- * @param opts
+ * @param {opt.OptArgv} opts
  * @param quizgen
  */
 function generator(opts) {
