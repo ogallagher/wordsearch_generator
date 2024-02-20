@@ -3,7 +3,10 @@
     <a class="navbar-brand" href="https://github.com/ogallagher/quizcard-generator">
       <i class="bi bi-github"></i>
     </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-items" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <button 
+      class="navbar-toggler" type="button" 
+      data-bs-toggle="collapse" data-bs-target="#navbar-items" 
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse d-flex justify-content-end" id="navbar-items">
@@ -14,7 +17,14 @@
         <div class="nav-item">
           <a class="nav-link" href="/quizcard-generator/">Quiz Cards</a>
         </div>
+        <div class="nav-item d-flex flex-column justify-content-center">
+          <button 
+            class="btn btn-outline-light about-button" 
+            type="button" data-bs-toggle="modal" data-bs-target=".about-modal">
+            <i class="bi bi-question-circle"></i>
+          </button>
+        </div>
       </div>
     </div>
   </div>
-  </nav>
+</nav>
