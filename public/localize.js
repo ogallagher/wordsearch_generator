@@ -53,4 +53,15 @@ function localize_set_language(locale_key, label_query_selector) {
 
     // update locale cookie
     cookies_set(LOCALE_COOKIE, locale_key)
+
+    localize_on_language(locale_key)
+}
+
+/**
+ * Locale language update handler.
+ * 
+ * @param {string} locale_key 
+ */
+function localize_on_language(locale_key) {
+    console.log(`debug locale language handler not yet defined for ${locale_key}`)
 }

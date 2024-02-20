@@ -7,6 +7,7 @@ const QUIZGEN_COMPONENT_URL = '/quizcard-generator/quizcard_webcomponent.html?ve
 const HEADER_COMPONENT_URL = '/header_webcomponent.html'
 const ABOUT_COMPONENT_URL = '/out/webserver/quizcard-generator/about_webcomponent.html'
 const WORDSEARCH_LOG_URL = '/temp_js_logger.js'
+const QUIZGEN_TRANSLATIONS_URL = '/quizcard-generator/translations'
 const DEFAULT_QUIZGEN_CONTAINERS_SELECTOR = '.quizgen-container'
 const QUIZGEN_CONTAINERS_PARENT_SELECTOR = `${DEFAULT_QUIZGEN_CONTAINERS_SELECTOR}s`
 const quizgen_frequency_order = {
@@ -33,6 +34,13 @@ const quizgen_anki_fields = {
 	EPILOGUE: 9
 }
 /* global dsv */
+const quizgen_translation_attrs = {
+	innerText: 'i',
+	innerHTML: 'h',
+	title: 't',
+	placeholder: 'p',
+	value: 'v'
+}
 
 let quizcard_webpage_promise = new Promise(function(res, rej) {
     // update whether to use host in url
@@ -196,6 +204,8 @@ window.addEventListener('load', function(e) {
         }
     )
     .then(() => {
+		// override language update handler
+		localize_on_language = quizcard_localize_on_language
 		// localize for language selection
 		localize_select_language(
 			'a.locale-opt',
@@ -848,4 +858,80 @@ function quizcard_choose_frequency_order(mouse_event, order_label) {
 	let frequency_order = mouse_event.target.innerText
 	console.log(`info word frequency order ${frequency_order}`)
 	order_label.innerText = frequency_order
+}
+
+function quizcard_localize_on_language(locale_key) {
+	if (locale_key === 'eng') {
+		console.log(`debug skip translations of default language ${locale_key}`)
+		return Promise.resolve()
+	}
+	else {
+		// fetch translations for given locale
+		return new Promise((res, rej) => {
+			let url = `${QUIZGEN_TRANSLATIONS_URL}/${locale_key}.json`
+		
+			$.ajax({
+				method: 'GET',
+				url: url,
+				dataType: 'json',
+				cache: true,
+				success: function(translations) {
+					console.log(
+						`debug fetched translations for ${locale_key}`
+					)
+					res(translations)
+				},
+				error: function(err) {
+					rej(`error failed to fetch translations for ${locale_key} at ${url}`)
+					rej()
+				}
+			})
+		})
+		// apply translations to webpage
+		.then(
+			(translations) => {
+				locale_translator = i18n.create(translations)
+				for (let key_selector_attr of Object.keys(translations.values)) {
+					let [selector, attr] = key_selector_attr.split(',')
+					let val = locale_translator(key_selector_attr)
+					/**
+					 * @type {HTMLElement|HTMLInputElement}
+					 */
+					const element = document.querySelector(selector)
+					try {
+						switch (attr) {
+							case quizgen_translation_attrs.innerText:
+								element.innerText = val
+								break
+							case quizgen_translation_attrs.innerHTML:
+								element.innerHTML = val
+								break
+							case quizgen_translation_attrs.title:
+								element.title = val
+								break
+							case quizgen_translation_attrs.placeholder:
+								element.placeholder = val
+								break
+							case quizgen_translation_attrs.value:
+								element.value = val
+								break
+							default:
+								console.log(
+									`error unsupported attribute ${attr} for translation key ${key_selector_attr}`
+								)
+						}
+					}
+					catch (err) {
+						console.log(`error failed to translate ${selector}[${attr}]`)
+					}
+				}
+			},
+			(err) => {
+				console.log(err)
+			}
+		)
+		.then(() => {
+			console.log(`info translation to ${locale_key} complete`)
+		})
+	}
 }

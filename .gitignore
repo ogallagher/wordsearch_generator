@@ -30,6 +30,7 @@ public/example_cfg_files
 public/temp_js_logger.js
 public/wordsearch_generator.js
 public/quizcard-generator/docs
+public/i18n.js
 
 # test output
 

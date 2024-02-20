@@ -3,20 +3,21 @@
         <div class="col-lg quizgen-inputs-container">
             <!-- inputs -->
             <div class="quizgen-inputs">
-                <h1>Source text</h1>
+                <h1 id="quizgen-h-source-text">Source text</h1>
                 <div>
                     <!-- input file -->
                     <div class="mb-3">
-                        <div class="form-label">Source text file</div>
+                        <div class="form-label quizgen-source-file-label">Source text file</div>
                         <div class="input-group">
                             <input type="file" class="quizgen-source-file form-control" title="Select the source text file. This will overwrite the text editor contents."/>
                         </div>
                     </div>
 
                     <!-- input text -->
-                    <h1></h1>
                     <div class="mb-3">
-                        <label for="quizgen-source-text-editor" class="form-label">
+                        <label 
+                            for="quizgen-source-text-editor" 
+                            class="form-label quizgen-source-text-editor-label">
                             Source text editor
                         </label>
                         <textarea 
@@ -30,7 +31,11 @@
 
                 <!-- input notes name -->
                 <div class="mb-3">
-                    <label for="quizgen-notes-name" class="form-label">Generated notes name</label>
+                    <label 
+                        for="quizgen-notes-name" 
+                        class="form-label quizgen-notes-name-label">
+                        Generated notes name
+                    </label>
                     <input 
                         name="quizgen-notes-name" 
                         class="form-control quizgen-notes-name" 
@@ -40,14 +45,17 @@
 
                 <h3 role="button" aria-expanded="false"
                     data-bs-toggle="collapse"
-                    data-bs-target=".quizgen-advanced-options">
-                    Advanced options
+                    data-bs-target=".quizgen-advanced-options"
+                    id="quizgen-h-advanced-opts">
+                    <span>Advanced options</span>
                     <i class="collapse-arrow bi bi-caret-left h4 mx-4 pe-none"></i>
                 </h3>
                 <div class="collapse quizgen-advanced-options">
                     <!-- testable words filter -->
                     <div class="mb-3">
-                        <label for="quizgen-word-excludes form-label">
+                        <label 
+                            for="quizgen-word-excludes"
+                            class="form-label quizgen-word-excludes-label">
                             Excluded patterns from testable words
                         </label>
                         <textarea 
@@ -59,18 +67,18 @@
 
                     <!-- testable words min length -->
                     <div class="mb-3">
-                        <div class="form-label">
+                        <div class="form-label quizgen-word-length-min-label">
                             Minimum length for testable words
                         </div>
                         <div class="input-group">
-                            <div class="input-group-text">
+                            <div class="input-group-text quizgen-word-length-prefix">
                                 Exclude words shorter than
                             </div>
                             <input 
                                 type="number" class="quizgen-word-length-min form-control" 
                                 value="2" min="1" step="1"
                             />
-                            <div class="input-group-text">
+                            <div class="input-group-text quizgen-word-length-suffix">
                                 characters
                             </div>
                         </div>
@@ -78,18 +86,19 @@
 
                     <!-- testable words min frequency -->
                     <div class="mb-3">
-                        <div class="form-label">
+                        <div 
+                            class="form-label quizgen-frequency-min-label">
                             Minimum frequency/occurrences in source text for testable words
                         </div>
                         <div class="input-group">
-                            <div class="input-group-text">
+                            <div class="input-group-text quizgen-frequency-min-prefix">
                                 Exclude words that occur fewer than
                             </div>
                             <input 
                                 type="number" class="quizgen-frequency-min form-control" 
                                 value="2" min="1" step="1"
                             />
-                            <div class="input-group-text">
+                            <div class="input-group-text quizgen-frequency-min-suffix">
                                 times
                             </div>
                         </div>
@@ -97,7 +106,7 @@
 
                     <!-- testable words ordinal frequency -->
                     <div>
-                        <div class="form-label">
+                        <div class="form-label quizgen-frequency-order-label">
                             Filter most common or rare for testable words
                         </div>
                         <div class="row">
@@ -107,9 +116,10 @@
                                         <input 
                                             class="quizgen-frequency-order-enable form-check-input mt-0" 
                                             type="checkbox"
-                                            value="filter-frequency-order"/>
+                                            value="filter-frequency-order"
+                                        />
                                     </div>
-                                    <div class="input-group-text">
+                                    <div class="input-group-text quizgen-frequency-order-limit-prefix">
                                         Include the
                                     </div>
                                     <input 
@@ -126,7 +136,7 @@
                             </div>
                             <div class="col-xl mb-3">
                                 <div class="input-group justify-content-center">
-                                    <div class="input-group-text">
+                                    <div class="input-group-text quizgen-frequency-order-prefix">
                                         most
                                     </div>
                                     <button 
@@ -144,7 +154,7 @@
                                             <span class="dropdown-item quizgen-frequency-order-least">rare</span>
                                         </li>
                                     </ul>
-                                    <div class="input-group-text">
+                                    <div class="input-group-text quizgen-frequency-order-suffix">
                                         words
                                     </div>
                                 </div>
@@ -152,15 +162,16 @@
                         </div>
                     </div>
 
+                    <!-- choice options -->
                     <div>
-                        <div class="form-label">
+                        <div class="form-label quizgen-choice-opt-label">
                             Answer choice options
                         </div>
                         <!-- choice count -->
                         <div 
-                            class="input-group mb-3"
+                            class="input-group mb-3 quizgen-choice-count-group"
                             title="Number of choices from which to choose the answer">
-                            <div class="input-group-text">
+                            <div class="input-group-text quizgen-choice-count-prefix">
                                 Choice count
                             </div>
                             <input name="quizgen-choice-count" 
@@ -171,9 +182,9 @@
                         
                         <!-- choice variation -->
                         <div 
-                            class="row mb-3" 
+                            class="row mb-3 quizgen-choice-variation-group" 
                             title="Probability that a choice will be random instead of similar to the test word">
-                            <div class="col-sm">
+                            <div class="col-sm quizgen-choice-variation-prefix">
                                 Choice variation/randomness
                             </div>
                             <div class="col-sm">
@@ -186,7 +197,8 @@
 
                     <!-- note tags -->
                     <div class="mb-3">
-                        <label for="quizgen-note-tags form-label">
+                        <label for="quizgen-note-tags"
+                            class="form-label quizgen-note-tags-label">
                             Anki note tags
                         </label>
                         <textarea 
@@ -198,7 +210,7 @@
 
                     <!-- sentence length limits -->
                     <div class="mb-3">
-                        <label for="quizgen-sentence-limits">
+                        <label for="quizgen-sentence-limits" class="quizgen-sentence-limits-label">
                             Sentence length limits
                         </label>
                         <div 
@@ -211,13 +223,17 @@
                                     type="checkbox"
                                     value="filter-frequency-order"/>
                             </div>
-                            <div class="input-group-text">testable word min</div>
+                            <div class="input-group-text quizgen-sentence-word-min-prefix">
+                                testable word min
+                            </div>
                             <input class="form-control quizgen-sentence-word-min" 
                                 type="number" placeholder="3" value="3"
                                 min=0 step="1" 
                                 disabled
                             />
-                            <div class="input-group-text">token max</div>
+                            <div class="input-group-text quizgen-sentence-token-max-prefix">
+                                token max
+                            </div>
                             <input 
                                 class="form-control quizgen-sentence-token-max" 
                                 type="number" min="0" step="1" disabled
@@ -226,15 +242,15 @@
                     </div>
 
                     <!-- note prologue, epilogue -->
-                    <label class="form-label">
+                    <label class="form-label quizgen-prologue-epilogue-label">
                         Note prologue and epilogue word counts
                     </label>
                     <div class="row">
                         <div class="col-sm">
                             <div 
-                                class="input-group mb-3" 
+                                class="input-group mb-3 quizgen-prologue-group" 
                                 title="Number of tokens in prologue (from previous sentence)">
-                                <div class="input-group-text">
+                                <div class="input-group-text quizgen-prologue-prefix">
                                     Prologue
                                 </div>
                                 <input
@@ -245,9 +261,9 @@
                         </div>
                         <div class="col-sm">
                             <div 
-                                class="input-group mb-3" 
+                                class="input-group mb-3 quizgen-epilogue-group" 
                                 title="Number of tokens in epilogue (words from next sentence)">
-                                <div class="input-group-text">
+                                <div class="input-group-text quizgen-epilogue-prefix">
                                     Epilogue
                                 </div>
                                 <input
@@ -260,12 +276,12 @@
 
                     <!-- preview note count limit -->
                     <div class="mb-3">
-                        <label for="quizgen-preview-limits">
+                        <label for="quizgen-preview-limits" class="quizgen-preview-limits-label">
                             Preview limit
                         </label>
                         <div class="input-group quizgen-preview-limits"
                             name="quizgen-preview-limits">
-                            <div class="input-group-text">
+                            <div class="input-group-text quizgen-preview-limit-prefix">
                                 Include up to
                             </div>
                             <input 
@@ -273,7 +289,7 @@
                                 placeholder="3"
                                 value="3" type="number" min="1" max="50" step="1"
                             />
-                            <div class="input-group-text">
+                            <div class="input-group-text quizgen-preview-limit-suffix">
                                 Anki notes in preview
                             </div>
                         </div>
@@ -302,16 +318,16 @@
                 <!-- result file download url will be set here -->
                 <div 
                     class="quizgen-download d-none mb-3">
-                    <h4>Anki notes file</h4>
+                    <h4 id="quizgen-h-notes-file">Anki notes file</h4>
                     <div>
                         <a class="quizgen-download-anchor"></a>
                         [<span class="quizgen-download-size"></span>
                         <span class="quizgen-download-size-unit"></span>]
-                        [expiry <span class="quizgen-download-expiry"></span> 
+                        [<span class="quizgen-expiry">expiry</span> <span class="quizgen-download-expiry"></span> 
                         <span class="quizgen-download-expiry-unit"></span>]
                     </div>
                     
-                    <h4>Anki card template files</h4>
+                    <h4 id="quizgen-h-template-files">Anki card template files</h4>
                     <div class="quizgen-anki-card-download">
                         <div class="mb-2">
                             <a href="/out/webserver/anki/cards/fill-blanks/front.html" download>front.html</a>
@@ -329,29 +345,34 @@
 
         <!-- outputs -->
         <div class="col-lg quizgen-previews-container">
-            <h1>Output previews</h1>
+            <h1 id="quizgen-h-outputs">Output previews</h1>
 
             <!-- anki notes export preview -->
             <div class="quizgen-anki-notes-container mb-3">
-                <label class="form-label" for="quizgen-anki-notes-text">
+                <label 
+                    class="form-label quizgen-anki-notes-text-label" 
+                    for="quizgen-anki-notes-text">
                     Anki notes file preview
                 </label>
                 <textarea 
                     name="quizgen-anki-notes-text" 
                     class="quizgen-anki-notes-text form-control font-monospace" 
                     rows="10" 
-                    disabled>anki notes file text</textarea>
+                    placeholder="anki notes file text"
+                    disabled></textarea>
             </div>
             <!-- anki cards preview -->
             <div class="quizgen-anki-cards">
                 <div class="card-container mb-2 ">
-                    <h3>Front card</h3>
+                    <h3 id="quizgen-h-front">Front card</h3>
                     <div class="input-group mb-2">
-                        <div class="input-group-text">note #</div>
+                        <div class="input-group-text quizgen-note-num">
+                            note #
+                        </div>
                         <input 
                             class="quizgen-anki-note-idx-front form-control bg-dark text-light" 
                             disabled/>
-                        <div class="input-group-text">word #</div>
+                        <div class="input-group-text quizgen-word-num">word #</div>
                         <input 
                             class="quizgen-anki-cloze-idx-front form-control bg-dark text-light" 
                             disabled/>
