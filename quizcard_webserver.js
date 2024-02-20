@@ -2,6 +2,8 @@ const { AnkiNote } = require('./quizcard-generator/anki/anki_generator')
 const { QuizCardGenerator, opt } = require('./quizcard-generator/quizcard_generator')
 const { Express } = require('express')
 const fs = require('fs/promises')
+const md2html = require('./md2html')
+const path = require('path')
 
 const DIR = 'quizcard-generator'
 const MAIN_PAGE = 'quizcard_generator.html'
@@ -15,6 +17,12 @@ const EXPORTS_DIR = `out/webserver/anki`
 function main(server, public_dir) {
     const DELETE_EXPORTS = process.env.DELETE_EXPORTS || true
     const EXPORT_DELETE_DELAY_MIN = process.env.EXPORT_DELETE_DELAY_MIN || 1
+
+    // compile quizgen markdown pages
+    md2html.compile(
+        path.join(DIR, 'readme.md'), 
+        path.join(public_dir, 'out/webserver', DIR, 'about_webcomponent.html')
+    )
 
     // main page
     server.get(`/${DIR}`, function(_req, res) {

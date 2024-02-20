@@ -14,7 +14,7 @@
 		"test": "mocha",
 		"web-forever": "forever start wordsearch_webserver.js",
 		"web-stop": "forever stop wordsearch_webserver.js",
-		"qg-anki": "cd quizcard-generator && npm run build && cd .. && mkdir -p public/out/webserver/anki/cards && cp -r quizcard-generator/anki/cards/fill-blanks public/out/webserver/anki/cards"
+		"qg-anki": "cd quizcard-generator && npm run build && cd .. && echo \"copy anki card templates to frontend\" && mkdir -p public/out/webserver/anki/cards && cp -r quizcard-generator/anki/cards/fill-blanks public/out/webserver/anki/cards && mkdir -p public/out/webserver/quizcard-generator && echo \"copy quizgen docs resources to frontend\" && mkdir -p public/quizcard-generator/docs/img && cp -r quizcard-generator/docs/img public/quizcard-generator/docs/."
 	},
 	"keywords": [
 		"braille",
@@ -45,7 +45,8 @@
 	"devDependencies": {
 		"jsdoc": "^4.0.2",
 		"mocha": "^9.2.1",
-		"progress": "^2.0.3"
+		"progress": "^2.0.3",
+		"showdown": "^2.1.0"
 	},
 	"optionalDependencies": {
 		"forever": "^4.0.3",

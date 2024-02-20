@@ -22,6 +22,9 @@ tmp
 # jsdoc
 out
 
+# copies and symlinks
+public/quizcard-generator/docs
+
 # test output
 
 # ide

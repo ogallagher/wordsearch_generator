@@ -5,7 +5,7 @@ const WP_HOST_URL = 'https://wordsearch.dreamhosters.com'
 const DEPENDENCIES_URL = '/webpage_dependencies.html'
 const QUIZGEN_COMPONENT_URL = '/quizcard-generator/quizcard_webcomponent.html?version=0.1.0'
 const HEADER_COMPONENT_URL = '/header_webcomponent.html'
-const ABOUT_COMPONENT_URL = '/quizcard-generator/about_webcomponent.html'
+const ABOUT_COMPONENT_URL = '/out/webserver/quizcard-generator/about_webcomponent.html'
 const WORDSEARCH_LOG_URL = '/temp_js_logger.js'
 const DEFAULT_QUIZGEN_CONTAINERS_SELECTOR = '.quizgen-container'
 const QUIZGEN_CONTAINERS_PARENT_SELECTOR = `${DEFAULT_QUIZGEN_CONTAINERS_SELECTOR}s`
