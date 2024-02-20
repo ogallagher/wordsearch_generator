@@ -10,6 +10,7 @@
 	"main": "wordsearch_webserver.js",
 	"scripts": {
 		"cli": "node wordsearch_cli.js",
+		"web-link": "cd public && ln -s ../alphabet_charsets . && ln -s ../alphabet_prob_dists . && ln -s ../docs/examples example_cfg_files && ln -s ../alphabets.json . && ln -s ../node_modules/temp_js_logger/temp_js_logger.js . && ln -s ../wordsearch_generator.js .",
 		"web": "node wordsearch_webserver.js",
 		"test": "mocha",
 		"web-forever": "forever start wordsearch_webserver.js",

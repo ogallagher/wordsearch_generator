@@ -23,6 +23,12 @@ tmp
 out
 
 # copies and symlinks
+public/alphabet_charsets
+public/alphabet_prob_dists
+public/alphabets.json
+public/example_cfg_files
+public/temp_js_logger.js
+public/wordsearch_generator.js
 public/quizcard-generator/docs
 
 # test output
