@@ -195,13 +195,22 @@ window.addEventListener('load', function(e) {
             return Promise.reject()
         }
     )
-    .then(add_quizcard_generator)
+    .then(() => {
+		// localize for language selection
+		localize_select_language(
+			'a.locale-opt',
+			'button.locale-select'
+		)
+
+		// load quizcard generator interface
+		add_quizcard_generator()
+	})
 })
 
 function add_quizcard_generator() {
     console.log('debug add_quizcard_generator()')
 
-	quizcard_component_promise.then((quizgen_html) => {
+	return quizcard_component_promise.then((quizgen_html) => {
 		console.log('loaded quizcard generator component html')
 		
 		/**

@@ -17,11 +17,15 @@
         <!-- dsv parsing,formatting -->
         <script src="https://cdn.jsdelivr.net/npm/d3-dsv@3.0.1"></script>
 
+        <!-- localization -->
+        <script src="/localize.js?version=0.1.1" type="text/javascript"></script>
+        <!-- cookies -->
+        <script src="/cookies.js?version=0.1.0" type="text/javascript"></script>
+
         <!--
             quizcard webpage component driver
         -->
         <script
-            src-release="https://wordsearch.dreamhosters.com/quizcard_webpage.js?version=0.1.0"
             src="/quizcard-generator/quizcard_webpage.js?version=0.1.0"
             type="text/javascript"
             data-containers=".quizgen-container"
@@ -58,10 +62,29 @@
             </div>
         </div>
 
-        <footer class="container-fluid py-4 text-center">
-            <a href="https://github.com/ogallagher/quizcard-generator" class="text-light">
-                By Owen Gallagher, available on GitHub
-            </a>
+        <footer class="container-fluid py-4">
+            <div class="row">
+                <div class="col text-left">
+                    <a href="https://github.com/ogallagher/quizcard-generator" class="text-light">
+                        By Owen Gallagher, available on GitHub
+                    </a>
+                </div>
+                <div class="col">
+                    <div class="d-flex justify-content-end">
+                        <button 
+                            type="button" 
+                            class="btn btn-outline-light dropdown-toggle locale-select" 
+                            data-locale="eng"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            English
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item locale-opt" data-locale="eng" href="#">English</a></li>
+                            <li><a class="dropdown-item locale-opt" data-locale="spa" href="#">Español</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </footer>
     </body>
 </html>
