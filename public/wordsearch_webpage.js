@@ -166,6 +166,7 @@ let wordsearch_webpage_promise = new Promise(function(resolve, reject) {
 				success: function(header_html) {
 					console.log(`debug loaded header html of length ${header_html.length}`)
 					document.body.querySelector('header.shared-header').innerHTML = header_html
+					document.body.querySelector('header.shared-header a.navbar-brand').href = 'https://github.com/ogallagher/wordsearch_generator'
 					resolve_nav()
 				},
 				error: function(err) {
