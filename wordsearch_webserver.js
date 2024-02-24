@@ -46,6 +46,13 @@ Promise.all([
 			console.log(`error failed to import quizcard-generator. ${err}`)
 			return undefined
 		}
+	),
+	import('./md2html.js').then(
+		(mod) => mod,
+		(err) => {
+			console.log(`error failed to import md2html. ${err}`)
+			return undefined
+		}
 	)
 ])
 .then(function(modules) {
@@ -57,6 +64,7 @@ Promise.all([
 		const path = modules[4].default
 		const body_parser = modules[6].default
 		const quizgen = modules[7]
+		const md2html = modules[8]
 		
 		// load .env into process.env
 		dotenv.config()
@@ -133,6 +141,23 @@ Promise.all([
 			})
 		})
 
+		// compile markdown pages
+		if (md2html !== undefined) {
+			fs.mkdir(
+				path.join(PUBLIC_DIR, 'out/webserver/wordsearch-generator'),
+				{ recursive: true },
+				() => {
+					md2html.compile(
+						path.join('.', 'readme.md'),
+						path.join(PUBLIC_DIR, 'out/webserver/wordsearch-generator', 'readme.html')
+					)
+				}
+			)
+
+			// compile translated markdown pages
+		}
+
+		// serve quizcard generator page
 		if (quizgen !== undefined) {
 			console.log('info serving quizcard-generator')
 			import('./quizcard_webserver.js')

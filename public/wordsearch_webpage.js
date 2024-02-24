@@ -13,6 +13,7 @@ const WORDSEARCH_LOG_URL = '/temp_js_logger.js'
 const HEADER_COMPONENT_URL = '/header_webcomponent.html'
 const DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR = '.wordsearch-container'
 const WORDSEARCH_CONTAINERS_PARENT_SELECTOR = `${DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR}s`
+const ABOUT_COMPONENT_URL = '/out/webserver/wordsearch-generator/readme.html'
 
 const REM_MIN = 5
 
@@ -170,6 +171,28 @@ let wordsearch_webpage_promise = new Promise(function(resolve, reject) {
 				error: function(err) {
 					console.log(`error failed to get header at ${url}. ${err}`)
 					reject_nav()
+				}
+			})
+		}),
+
+		// readme.md to about
+		new Promise((resolve_about) => {
+			let url = USE_WP_HOST_URL
+				? `${WP_HOST_URL}${ABOUT_COMPONENT_URL}`
+				: ABOUT_COMPONENT_URL
+			
+			$.ajax({
+				method: 'GET',
+				url: url,
+				dataType: 'html',
+				success: function(about_html) {
+					console.log(`debug loaded about of length ${about_html.length}`)
+					document.body.querySelector('.readme-container').innerHTML = about_html
+					resolve_about()
+				},
+				error: function(err) {
+					console.log(`error failed to get about at ${url}. ${JSON.stringify(err, undefined, 2)}`)
+					resolve_about()
 				}
 			})
 		}),

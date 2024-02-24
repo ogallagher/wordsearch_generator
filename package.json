@@ -10,7 +10,7 @@
 	"main": "wordsearch_webserver.js",
 	"scripts": {
 		"cli": "node wordsearch_cli.js",
-		"web-link": "cd public && ln -sf ../alphabet_charsets . && ln -sf ../alphabet_prob_dists . && mkdir -p ./example_cfg_files && cd example_cfg_files && ln -sf ../../docs/examples/* . && cd .. && ln -sf ../alphabets.json . && ln -sf ../node_modules/temp_js_logger/temp_js_logger.js . && ln -sf ../wordsearch_generator.js . && ln -sf ../node_modules/ogallagher-i18n/dist/i18n.js .",
+		"web-link": "cd public && ln -sf ../alphabet_charsets . && ln -sf ../alphabet_prob_dists . && mkdir -p ./example_cfg_files && cd example_cfg_files && ln -sf ../../docs/examples/* . && cd .. && ln -sf ../alphabets.json . && ln -sf ../node_modules/temp_js_logger/temp_js_logger.js . && ln -sf ../wordsearch_generator.js . && mkdir -p docs && cd docs && ln -sf ../../docs/img . && cd .. && ln -sf ../node_modules/ogallagher-i18n/dist/i18n.js .",
 		"web": "node wordsearch_webserver.js",
 		"test": "mocha",
 		"web-forever": "forever start wordsearch_webserver.js",
@@ -44,6 +44,7 @@
 		"express": "^4.17.1"
 	},
 	"devDependencies": {
+		"@types/node": "^20.11.20",
 		"jsdoc": "^4.0.2",
 		"mocha": "^9.2.1",
 		"progress": "^2.0.3",
