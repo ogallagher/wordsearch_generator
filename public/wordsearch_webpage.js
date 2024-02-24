@@ -10,7 +10,7 @@ const DEPENDENCIES_URL = '/webpage_dependencies.html'
 const WORDSEARCH_COMPONENT_URL = '/wordsearch_webcomponent.html?version=0.38.0'
 const WORDSEARCH_CORE_URL = '/wordsearch_generator.js'
 const WORDSEARCH_LOG_URL = '/temp_js_logger.js'
-const HEADER_COMPONENT_URL = '/header_webcomponent.html'
+const HEADER_COMPONENT_URL = '/header_webcomponent.html?version=0.1.0'
 const DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR = '.wordsearch-container'
 const WORDSEARCH_CONTAINERS_PARENT_SELECTOR = `${DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR}s`
 const ABOUT_COMPONENT_URL = '/out/webserver/wordsearch-generator/readme.html'

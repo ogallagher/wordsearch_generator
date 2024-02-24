@@ -4,7 +4,7 @@ let USE_WP_HOST_URL = false
 const WP_HOST_URL = 'https://wordsearch.dreamhosters.com'
 const DEPENDENCIES_URL = '/webpage_dependencies.html'
 const QUIZGEN_COMPONENT_URL = '/quizcard-generator/quizcard_webcomponent.html?version=0.1.0'
-const HEADER_COMPONENT_URL = '/header_webcomponent.html'
+const HEADER_COMPONENT_URL = '/header_webcomponent.html?version=0.1.0'
 const ABOUT_COMPONENT_URL = '/out/webserver/quizcard-generator/readme.html'
 const WORDSEARCH_LOG_URL = '/temp_js_logger.js'
 const QUIZGEN_TRANSLATIONS_URL = '/quizcard-generator/translations'
