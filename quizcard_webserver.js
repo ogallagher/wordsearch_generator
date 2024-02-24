@@ -7,7 +7,7 @@ const path = require('path')
 
 const DIR = 'quizcard-generator'
 const MAIN_PAGE = 'quizcard_generator.html'
-const EXPORTS_DIR = `out/webserver/anki`
+const ANKI_DIR = `out/webserver/anki`
 
 /**
  * 
@@ -21,8 +21,28 @@ function main(server, public_dir) {
     // compile quizgen markdown pages
     md2html.compile(
         path.join(DIR, 'readme.md'), 
-        path.join(public_dir, 'out/webserver', DIR, 'about_webcomponent.html')
+        path.join(public_dir, 'out/webserver', DIR, 'readme.html')
     )
+    // compile translated markdown pages
+    for (let locale_path of [
+        'spa/readme.md'
+    ]) {
+        fs.mkdir(
+            path.join(public_dir, 'out/webserver', DIR, 'translations', path.dirname(locale_path)),
+            { recursive: true }
+        )
+        .then(() => {
+            md2html.compile(
+                path.join(DIR, 'i18n', locale_path),
+                path.join(
+                    public_dir, 'out/webserver', DIR, 'translations',
+                    path.dirname(locale_path), 
+                    path.basename(locale_path, '.md') + '.html'
+                )
+            )
+        })
+    }
+    
 
     // main page
     server.get(`/${DIR}`, function(_req, res) {
@@ -75,7 +95,7 @@ function main(server, public_dir) {
             return AnkiNote.export(
                 anki_notes,
                 notes_name,
-                `${public_dir}/${EXPORTS_DIR}`,
+                `${public_dir}/${ANKI_DIR}`,
                 undefined,
                 opts[opt.OPT_TAG],
                 opt.clean_opts(opts)
@@ -83,7 +103,7 @@ function main(server, public_dir) {
         })
         .then((export_bytes) => {
             // send anki notes file for download
-            const file_path = `/${EXPORTS_DIR}/${notes_name}.txt`
+            const file_path = `/${ANKI_DIR}/${notes_name}.txt`
             res.json({
                 file_path: file_path,
                 file_size: export_bytes,

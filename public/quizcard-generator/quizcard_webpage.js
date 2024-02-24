@@ -5,7 +5,7 @@ const WP_HOST_URL = 'https://wordsearch.dreamhosters.com'
 const DEPENDENCIES_URL = '/webpage_dependencies.html'
 const QUIZGEN_COMPONENT_URL = '/quizcard-generator/quizcard_webcomponent.html?version=0.1.0'
 const HEADER_COMPONENT_URL = '/header_webcomponent.html'
-const ABOUT_COMPONENT_URL = '/out/webserver/quizcard-generator/about_webcomponent.html'
+const ABOUT_COMPONENT_URL = '/out/webserver/quizcard-generator/readme.html'
 const WORDSEARCH_LOG_URL = '/temp_js_logger.js'
 const QUIZGEN_TRANSLATIONS_URL = '/quizcard-generator/translations'
 const DEFAULT_QUIZGEN_CONTAINERS_SELECTOR = '.quizgen-container'
@@ -890,41 +890,68 @@ function quizcard_localize_on_language(locale_key) {
 		// apply translations to webpage
 		.then(
 			(translations) => {
-				locale_translator = i18n.create(translations)
-				for (let key_selector_attr of Object.keys(translations.values)) {
+				/**
+				 * @type {import("roddeh-i18n")}
+				 */
+				const locale_translator = i18n.create(translations)
+				locale_translator.extend((_text, _num, _formatting, entry) => {
+					if ('url' in entry) {
+						return quizcard_fetch_webcomponent(entry['url'])
+					}
+					else {
+						console.log(`error translator extension failed for entry ${JSON.stringify(entry)}`)
+					}
+				})
+				
+				let tv = Object.keys(locale_translator.translator.data.values)
+				console.log(
+					`info apply ${tv.length} `
+					+ `translations for ${locale_key}`
+				)
+
+				let p = []
+				for (let key_selector_attr of tv) {
 					let [selector, attr] = key_selector_attr.split(',')
-					let val = locale_translator(key_selector_attr)
-					/**
-					 * @type {HTMLElement|HTMLInputElement}
-					 */
-					const element = document.querySelector(selector)
-					try {
-						switch (attr) {
-							case quizgen_translation_attrs.innerText:
-								element.innerText = val
-								break
-							case quizgen_translation_attrs.innerHTML:
-								element.innerHTML = val
-								break
-							case quizgen_translation_attrs.title:
-								element.title = val
-								break
-							case quizgen_translation_attrs.placeholder:
-								element.placeholder = val
-								break
-							case quizgen_translation_attrs.value:
-								element.value = val
-								break
-							default:
-								console.log(
-									`error unsupported attribute ${attr} for translation key ${key_selector_attr}`
-								)
-						}
-					}
-					catch (err) {
-						console.log(`error failed to translate ${selector}[${attr}]`)
-					}
+					p.push(
+						new Promise((res) => res(locale_translator(key_selector_attr)))
+						.then((val) => {
+							/**
+							 * @type {HTMLElement|HTMLInputElement}
+							 */
+							const element = document.querySelector(selector)
+							try {
+								switch (attr) {
+									case quizgen_translation_attrs.innerText:
+										element.innerText = val
+										break
+									case quizgen_translation_attrs.innerHTML:
+										element.innerHTML = val
+										break
+									case quizgen_translation_attrs.title:
+										element.title = val
+										break
+									case quizgen_translation_attrs.placeholder:
+										element.placeholder = val
+										break
+									case quizgen_translation_attrs.value:
+										element.value = val
+										break
+									default:
+										console.log(
+											`error unsupported attribute ${attr} for translation key ${key_selector_attr}`
+										)
+								}
+							}
+							catch (err) {
+								console.log(`error failed to translate ${selector}[${attr}]`)
+							}
+
+							return Promise.resolve()
+						})
+					)
 				}
+
+				return Promise.all(p)
 			},
 			(err) => {
 				console.log(err)
@@ -934,4 +961,25 @@ function quizcard_localize_on_language(locale_key) {
 			console.log(`info translation to ${locale_key} complete`)
 		})
 	}
+}
+
+function quizcard_fetch_webcomponent(url) {
+	return new Promise((res, rej) => {	
+		$.ajax({
+			method: 'GET',
+			url: url,
+			dataType: 'html',
+			cache: true,
+			success: function(html) {
+				console.log(
+					`debug fetched webcomponent from ${url}`
+				)
+				res(html)
+			},
+			error: function(err) {
+				rej(`error failed to fetch webcomponent from ${url}`)
+				rej()
+			}
+		})
+	})
 }

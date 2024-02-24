@@ -53,6 +53,9 @@
         "textarea.quizgen-anki-notes-text,p": "texto de archivo de notas Anki",
         "#quizgen-h-front,i": "Carta de frente",
         ".quizgen-note-num,i": "nota #",
-        ".quizgen-word-num,i": "palabra #"
+        ".quizgen-word-num,i": "palabra #",
+        ".readme-container,h": {
+            "url": "/out/webserver/quizcard-generator/translations/spa/readme.html"
+        }
     }
 }
