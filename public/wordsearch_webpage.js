@@ -7,7 +7,7 @@ const D3_DSV_URL = 'https://cdn.jsdelivr.net/npm/d3-dsv@3'
 let USE_WP_HOST_URL = true
 const WP_HOST_URL = 'https://wordsearch.dreamhosters.com'
 const DEPENDENCIES_URL = '/webpage_dependencies.html'
-const WORDSEARCH_COMPONENT_URL = '/wordsearch_webcomponent.html?version=0.38.0'
+const WORDSEARCH_COMPONENT_URL = '/wordsearch_webcomponent.html?version=0.39.0'
 const WORDSEARCH_CORE_URL = '/wordsearch_generator.js'
 const WORDSEARCH_LOG_URL = '/temp_js_logger.js'
 const HEADER_COMPONENT_URL = '/header_webcomponent.html?version=0.1.0'
