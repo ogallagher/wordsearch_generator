@@ -278,17 +278,10 @@ function on_alphabet_load() {
 	})
 }
 
-function on_file_load(input_json) {
-	wordsearch = WordsearchGenerator.import_config(input_json)
-	
-	wordsearch.init_promise
-	/*
-	// load word-clues via driver
-	.then(() => {
-		load_word_clues(desc['words'])
-	})
-	*/
-	.then(print_wordsearch)
+async function on_file_load(input_json) {
+	wordsearch = await WordsearchGenerator.import_config(input_json)
+	await wordsearch.init_promise
+	print_wordsearch()
 }
 
 function next_word_clue() {
