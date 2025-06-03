@@ -1447,8 +1447,6 @@ class WordsearchGenerator {
 
 	/**
 	 * Create WordsearchGenerator from config json file.
-	 * 
-	 * TODO return a promise.
 	 *
 	 * @param {String|Object} config_json Config json contents.
 	 *
@@ -1460,8 +1458,6 @@ class WordsearchGenerator {
 		let config = (typeof config_json === 'string' || config_json instanceof Buffer)
 			? JSON.parse(config_json)
 			: config_json
-		
-		TempLogger.CONSOLE_METHOD['log'](config)
 		
 		let grid = config[KEY_GRID]
 		let has_grid = grid !== undefined
