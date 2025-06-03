@@ -19,7 +19,13 @@ const NV_MAJOR = parseInt(NODE_VERSION.substring(1, NODE_VERSION.indexOf('.')))
 // common syntax
 const fs = require('fs')
 const rl = require('readline')
-const temp_logger = require('temp_js_logger')
+let temp_logger
+try {
+	temp_logger = require('temp_js_logger')
+}
+catch (import_err) {
+	console.log('info skip missing module temp_js_logger')
+}
 
 // local imports
 
@@ -54,7 +60,7 @@ let word_count = 0
 let word_clues
 
 // init logging
-temp_logger.config({
+temp_logger?.config({
 	level: 'info',
 	with_timestamp: false,
 	caller_name: 'wordsearch_cli',
@@ -87,7 +93,7 @@ wg.environment_promise
 })
 
 function main(log_level) {
-	temp_logger.set_level(log_level)
+	temp_logger?.set_level(log_level)
 
 	cli.question('create with file (f) or interactively (i)? ', (input_mode) => {
 		if (input_mode == 'f') {
@@ -327,15 +333,21 @@ function load_word_clues(word_clues, clue_delim=WORD_CLUE_DELIM) {
 }
 
 function print_wordsearch() {
+	const cli_print = (
+		temp_logger !== undefined
+		? temp_logger.TempLogger.CONSOLE_METHOD['log']
+		: console.log
+	)
+
 	if (wordsearch.title !== undefined) {
-		temp_logger.TempLogger.CONSOLE_METHOD['log'](`\n${
+		cli_print(`\n${
 			wordsearch.title
 		}\n${
 			new Array(wordsearch.title.length).fill('-').join('')
 		}\n`)
 	}
 	
-	temp_logger.TempLogger.CONSOLE_METHOD['log'](`\n${wordsearch.grid_string()}\n`)
+	cli_print(`\n${wordsearch.grid_string()}\n`)
 	
-	temp_logger.TempLogger.CONSOLE_METHOD['log'](`clues:\n\n${wordsearch.clues.join('\n')}\n`)
+	cli_print(`clues:\n\n${wordsearch.clues.join('\n')}\n`)
 }
