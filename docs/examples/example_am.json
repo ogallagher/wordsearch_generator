@@ -1,0 +1,13 @@
+{
+    "language": "am",
+    "title": "Example Ethiopian/Amharic small wordsearch.",
+    "size": 10,
+    "case": "lower",
+    "words": [
+        "ዛፍ:tree",
+        "መኪና:car",
+        "ጫማ:shoe",
+        "ጠርሙስ:bottle"
+    ],
+    "selected_charset": "endale 2018"
+}

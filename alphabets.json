@@ -5,6 +5,7 @@
 	"alphabet_aliases": {
 		"//comment": "Primary key is ISO 2-char language code if it exists. Otherwise, the primary key is the full name in English.",
 		
+		"am": ["amh", "amharic", "eth", "ethiopian", "fidal"],
 		"braille-8": ["점자-8"],
 		"braille-6": ["braille", "점자-6"],
 		"chess": ["ajedrez", "체스"],
@@ -25,6 +26,42 @@
 	"default_prob_dist": {
 		"name": "uniform",
 		"description": "uniform (default) probability distribution, allowing all characters to appear equally as often."
+	},
+
+	"am": {
+		"//comment": "ethiopian አማርኛ. ሀ-ቈ ቊ-ቍ ቐ-ቖ ቘ ቚ-ቝ በ-ኈ ኊ-ኍ ነ-ኰ ኲ-ኵ ኸ-ኾ ዀ ዂ-ዅ ወ-ዖ ዘ-ጐ ጒ-ጕ ጘ-ፚ. Ethiopic syllables. Excludes reserved code points without characters. Excludes diacritics, punctuation, digits and numbers. Excludes supplements for Gurage, Me'en, Blin, Bench, Gamo-Gofa-Dawro, Basketo, and Gumuz.",
+
+		"ranges": [
+			[4608, 4680],
+			[4682, 4685],
+			[4688, 4694],
+			[4696],
+			[4698, 4701],
+			[4704, 4744],
+			[4746, 4749],
+			[4752, 4784],
+			[4786, 4789],
+			[4792, 4798],
+			[4800],
+			[4802, 4805],
+			[4808, 4822],
+			[4824, 4880],
+			[4882, 4885],
+			[4888, 4954]
+		],
+
+		"charsets": [
+			{
+				"name": "endale 2018",
+				"description": "source = https://github.com/SamAsEnd/amharic-letter-frequency-distribution",
+				"filename": "am_endale_ethiopia.txt",
+				"prob_dist": {
+					"name": "natural",
+					"description": "frequency distribution calculated in 2018",
+					"filename": "am_endale_ethiopia.txt"
+				}
+			}
+		]
 	},
 	
 	"de": {

@@ -11,6 +11,8 @@ having found it in [unicode documentation](https://unicode.org/charts/nameslist/
 characters that seem generally valid for spelling. If you find mistakes with any alphabet, open an 
 issue and we can fix them by modifying `alphabets.json`.
 
+**Amharic/አማርኛ/Ethiopian (am)**
+
 **Chinese/漢語 (zh)**
 
 **Deutsch/German (de)**
@@ -133,6 +135,10 @@ frog
 turtle
 squid
 ```
+
+### Amharic (Ethiopian)
+
+![amharic example](docs/img/wordsearch\_webpage\_am.png)
 
 ## Use
 
