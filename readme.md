@@ -65,32 +65,73 @@ issue and we can fix them by modifying `alphabets.json`.
 ./wordsearch_cli.js    
 create with file [f] or interactively [i]? f
 wordsearch json description file: docs/examples/example_ko.json
-INFO placed 사과 in 1 attempts
-INFO placed 머리 in 1 attempts
-INFO placed 가위 in 1 attempts
-INFO placed 지름 in 2 attempts
-INFO placed 까치 in 2 attempts
+914.INFO: use default charset from ranges
+856.INFO: use probability dist dictionary --> alphabet_prob_dists/ko_prob_dist.txt
+639.INFO: placed 토끼 in 1 attempts
+639.INFO: placed 고양이 in 1 attempts
+639.INFO: placed 다람쥐 in 1 attempts
+639.INFO: placed 고래 in 1 attempts
+639.INFO: placed 물고기 in 1 attempts
+639.INFO: placed 코끼리 in 1 attempts
+639.INFO: placed 여우 in 1 attempts
+639.INFO: placed 사슴 in 1 attempts
+639.INFO: placed 돼지 in 1 attempts
+639.INFO: placed 고슴도치 in 1 attempts
+639.INFO: placed 강아지 in 1 attempts
+639.INFO: placed 도마뱀 in 1 attempts
+639.INFO: placed 개미 in 1 attempts
+639.INFO: placed 개구리 in 1 attempts
+639.INFO: placed 거북이 in 1 attempts
+639.INFO: placed 오징어 in 1 attempts
 
-한국 단어찾기 예
----------
+한국어 단어찾기 예시 - 동물
+----------------
 
 
-껪 쉘 뛋 퉐 렗 겸 쪾 헻
-졍 쾾 랇 름 쳜 푤 턻 사
-가 꼩 지 욊 쭞 먶 땜 과
-쫖 위 뮥 춄 됩 퓿 암 닇
-퐉 럷 헢 톼 꽲 띯 쳥 쁀
-껁 샅 헞 뉘 머 리 툔 쬰
-치 뮘 봵 콻 눟 궇 칃 폼
-논 까 흭 쌂 쭁 딡 꼄 짨
+에 비 는 오 서 스 환 고 있 에 을 법 리 늘 치 치 생 크 방 이 도 이 경 벌 를
+미 외 는 쓰 설 으 다 이 양 관 사 서 다 이 고 도 대 주 스 오 징 어 관 성 으
+개 김 통 활 로 읽 하 단 류 이 지 유 개 임 대 슴 관 있 무 진 합 지 일 그 선
+일 의 일 먼 러 야 는 치 장 내 라 고 구 을 이 고 급 촉 보 년 는 고 기 기 라
+할 심 닐 혁 만 그 데 는 일 라 함 지 리 결 기 고 의 으 색 고 하 이 화 것 고
+것 의 성 작 사 최 화 게 향 정 매 선 부 다 인 로 체 와 외 로 세 한 우 련 요
+제 된 회 수 금 는 축 표 우 난 습 서 가 년 당 비 운 문 이 판 대 결 여 이 아
+기 우 또 에 이 준 선 는 를 다 각 역 들 으 어 민 못 피 은 이 랜 원 부 무 국
+사 끼 토 관 는 는 농 소 면 의 가 상 일 자 승 고 는 로 코 끼 리 언 나 될 는
+공 어 가 러 다 트 도 이 본 가 는 재 하 니 열 사 래 호 의 말 및 의 들 은 다
+자 시 정 난 되 을 지 적 린 관 는 한 묻 조 부 언 품 너 태 위 여 필 국 기 기
+요 니 이 정 국 삼 프 사 중 분 엇 분 기 이 되 않 은 이 전 날 의 다 갖 구 밀
+한 다 수 는 반 량 는 시 고 정 이 범 서 가 및 증 바 투 로 힐 심 종 사 해 업
+는 작 습 개 가 체 기 합 요 답 가 개 강 아 지 근 농 대 에 들 미 작 를 있 우
+쟁 웠 서 손 장 원 고 엔 런 지 문 는 동 로 질 료 원 이 었 다 원 가 회 험 시
+북 몸 다 씨 동 정 물 를 나 이 돼 공 다 무 를 이 는 형 체 밖 다 첫 해 이 국
+않 고 출 노 담 모 들 으 다 민 중 로 접 기 위 람 획 히 계 전 인 수 베 올 만
+여 교 는 나 사 적 하 속 린 와 스 을 민 두 신 거 드 자 기 변 회 이 지 다 면
+어 연 자 믿 료 구 이 을 위 덴 소 자 제 포 차 북 은 명 망 양 석 자 이 학 스
+이 욱 느 분 는 식 갖 을 의 학 를 영 다 을 같 이 었 신 발 다 제 자 물 제 수
+에 의 다 단 진 라 씨 슴 하 것 학 수 직 가 해 넘 때 그 의 일 찼 서 용 로 화
+지 것 북 수 뱀 마 도 사 프 향 및 를 의 미 도 레 북 성 것 그 전 카 다 자 식
+을 수 사 선 정 승 의 로 화 학 는 야 점 후 행 한 야 모 로 과 에 로 람 다 한
+그 료 만 독 범 는 송 잘 핵 포 두 에 람 은 경 의 된 학 상 다 로 진 쥐 이 실
+오 해 폐 방 서 발 자 에 도 나 서 산 말 마 있 악 거 도 세 곡 전 외 리 동 고
 
 clues:
 
-과일 중 하나
-head, 목 위에
-scissors
-diameter
-이름이 ㄲ로 시작하는 새
+rabbit
+cat
+squirrel
+whale
+fish
+elephant
+fox
+deer
+pig
+hedgehog
+puppy
+lizard
+ant
+frog
+turtle
+squid
 ```
 
 ## Use
