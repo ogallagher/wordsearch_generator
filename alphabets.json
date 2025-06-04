@@ -10,6 +10,7 @@
 		"braille-6": ["braille", "점자-6"],
 		"chess": ["ajedrez", "체스"],
 		"de": ["deu","deutsch","독일어","alemán"],
+		"el": ["ell", "greek"],
 		"en": ["eng","english","inglés","영어","fr-plain","french-plain","français-simple"],
 		"es": ["esp","spa","spanish","español","스페인어"],
 		"fr": ["fre","french","français","파랑스어"],
@@ -75,6 +76,20 @@
 		"upper_ranges": [
 			[65,90],
 			[196, 214, 220, 7838]
+		]
+	},
+
+	"el": {
+		"//comment": "greek ελληνικά. Α-Ρ Σ-Ω α-ρ σ-ω. 24 chars x2 cases. Excludes diacritics like modern accent and dieresis. Excludes punctuation. Excludes all cases of Ͱ Ͳ Ͷ Ϳ. Excludes variants like word ending ς and script ϑ.",
+
+		"ranges": [
+			[945, 961],
+			[963, 969]
+		],
+
+		"upper_ranges": [
+			[913, 929],
+			[931, 937]
 		]
 	},
 	
@@ -247,7 +262,7 @@
 	},
 	
 	"zh": {
-		"//comment": "chinese 漢語. primary is cjk unified ideographs 4e00-9fd0, ext. A 3400-4db0, excluding other extensions.",
+		"//comment": "chinese 漢語. primary is cjk unified ideographs 4e00-9fd0, ext A 3400-4db0, excluding other extensions.",
 		
 		"ranges": [
 			[19968,40912],

@@ -1,0 +1,13 @@
+{
+    "language": "el",
+    "case": "lower",
+    "size": 15,
+    "title": "αναζήτηση λέξεων στα ελληνικά",
+    "words": [
+        "ψωμι:bread",
+        "λασπη:mud",
+        "σκυλι:dog",
+        "φτερο:feather",
+        "ελια:olive"
+    ]
+}

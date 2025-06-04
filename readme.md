@@ -23,6 +23,8 @@ issue and we can fix them by modifying `alphabets.json`.
 
 **Français/French (fr)**
 
+**Ελληνικά/Greek (el)**
+
 **עִבְרִית/Hebrew (he)**
 
 **ひらがな/Hiragana, Japanese (hiragana)**
@@ -55,7 +57,7 @@ issue and we can fix them by modifying `alphabets.json`.
 
 ### Chinese
 
-![chinese example](docs/img/wordsearch\_webpage\_zh.png)
+![chinese example](docs/img/wordsearch\_webpage\_zh.jpg)
 
 ### Russian
 
@@ -138,7 +140,11 @@ squid
 
 ### Amharic (Ethiopian)
 
-![amharic example](docs/img/wordsearch\_webpage\_am.png)
+![amharic example](docs/img/wordsearch\_webpage\_am.jpg)
+
+### Greek
+
+![greek example](docs/img/wordsearch\_webpage\_el.jpg)
 
 ## Use
 
