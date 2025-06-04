@@ -1,6 +1,6 @@
 {
 	"name": "wordsearch_generator",
-	"version": "1.2.0",
+	"version": "1.3.0",
 	"description": "Wordsearch generator, extensible for different languages.",
 	"homepage": "https://github.com/ogallagher/wordsearch_generator",
 	"repository": {
