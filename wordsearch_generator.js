@@ -101,6 +101,12 @@ const KEY_COUNTS = 'counts'
 const KEY_PROBABILITIES = 'probabilities'
 const KEY_ACCUM_PROBABILITIES = 'accum_probabilities'
 
+/**
+ * @typedef {{
+ * 	[id: string]: string[]
+ * }} AlphabetAliases
+ */
+
 // wordsearch config keys
 
 const KEY_LANGUAGE = 'language'
@@ -111,6 +117,9 @@ const KEY_WORDS_DELIM = 'words_delim'
 const KEY_RANDOM_SUBSET = 'random_subset'
 const KEY_TITLE = 'title'
 
+/**
+ * Wordsearch generator model instance.
+ */
 class WordsearchGenerator {
 	/**
 	 * Constructor.
@@ -130,13 +139,18 @@ class WordsearchGenerator {
 	constructor(language = LANGUAGE_DEFAULT, alphabet_case = CASE_DEFAULT, width = WIDTH_DEFAULT, words, random_subset, title, words_delim, selected_charset, selected_prob_dist) {
 		/**
 		 * Language/alphabet name.
+		 * @type {string}
 		 */
 		this.language = language
 		/**
 		 * Alphabet case string (upper/lower).
+		 * @type {string}
 		 */
 		this.alphabet_case = alphabet_case
 		
+		/**
+		 * @type {string}
+		 */
 		let case_key
 		switch (alphabet_case) {
 			case CASE_UPPER:
@@ -150,6 +164,7 @@ class WordsearchGenerator {
 		}
 		/**
 		 * Character code sets key corresponding to the alphabet case.
+		 * @type {string}
 		 */
 		this.alphabet_case_key = case_key
 
@@ -160,6 +175,9 @@ class WordsearchGenerator {
 		this.title = title
 		
 		// convert width to width,height
+		/**
+		 * @type {number}
+		 */
 		let height
 		if (width instanceof Array) {
 			let dimensions = width
@@ -171,18 +189,18 @@ class WordsearchGenerator {
 		}
 		/**
 		 * Wordsearch grid width.
-		 * @type {Number}
+		 * @type {number}
 		 */
 		this.width = width
 		/**
 		 * Wordsearch grid height.
-		 * @type {Number}
+		 * @type {number}
 		 */
 		this.height = height
 		
 		/**
 		 * How many words to select from the population for each wordsearch.
-		 * @type {Number}
+		 * @type {number}
 		 */
 		this.random_subset = random_subset
 
@@ -980,7 +998,7 @@ class WordsearchGenerator {
 	 *
 	 * @param {String} path Path to alphabets file.
 	 *
-	 * @returns {Promise<Object>} Resolve alphabet aliases, or reject on failure.
+	 * @returns {Promise<AlphabetAliases>} Resolve alphabet aliases, or reject on failure.
 	 */
 	static get_alphabet_aliases(filepath = ALPHABET_FILE) {
 		if (USE_WG_HOST_URL && environment == ENV_FRONTEND) {

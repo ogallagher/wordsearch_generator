@@ -1,3 +1,8 @@
+/**
+ * @typedef {import('./wordsearch_generator').AlphabetAliases} AlphabetAliases
+ * @typedef {import('./wordsearch_generator').WordsearchGenerator} WordsearchGenerator
+ */
+
 const current_script = document.currentScript
 const INPUT_FILE = 0
 const INPUT_FORM = 1
@@ -48,10 +53,12 @@ const SHARE_URL_QUERY_KEY_WSCONFIG_PREFIX = 'wscfg_'
 const SHARE_URL_QUERY_KEY_WSWHITESPACE_PREFIX = 'wsws_'
 const SHARE_URL_QUERY_KEY_WSFONTSIZE_PREFIX = 'wsfs_'
 
+const CSS_CLASS_WORDSEARCH_CONTAINER = 'wordsearch-container'
 const CSS_CLASS_WORDSEARCH_CHARSET = 'charset'
 const CSS_CLASS_WORDSEARCH_PROB_DIST = 'prob-dist'
 const CSS_CLASS_WORDSEARCH_CONFIG = 'wordsearch-config'
 const CSS_CLASS_WORDSEARCH_INPUT_METHODS = 'wordsearch-input-methods'
+const CSS_CLASS_WORDSEARCH_TITLE = 'wordsearch-title'
 const CSS_CLASS_WORDSEARCH_WHITESPACE_CONTROL = 'whitespace-control'
 const CSS_CLASS_WORDSEARCH_FONTSIZE_CONTROL = 'font-size-control'
 const CSS_CLASS_WORD_CLUES_SHOW_BUTTON = 'show-word-clues'
@@ -67,6 +74,9 @@ const CSS_CLASS_EDIT = 'editing'
 const CSS_CLASS_SHARE_URL_ONLY = 'share-url-only'
 const CSS_CLASS_SHARE_URL = 'sharing-url'
 
+/**
+ * @type {AlphabetAliases}
+ */
 let alphabets
 
 // global vars corresponding to each wordsearch generator component by id
@@ -225,7 +235,10 @@ let wordsearch_webpage_promise = new Promise(function(resolve, reject) {
 	.catch(reject)
 })
 
-// load wordsearch web component and resolve the html as a string
+/**
+ * Load wordsearch web component and resolve the html as a string.
+ * @type {(res: function, rej: function) => Promise<string>}
+ */
 let wordsearch_component_promise = new Promise(function(resolve, reject) {
 	let url = USE_WP_HOST_URL
 		? `${WP_HOST_URL}${WORDSEARCH_COMPONENT_URL}`
@@ -388,13 +401,13 @@ function wordsearch_webpage_main() {
 /**
  * 
  * @param {JQuery} parent_jq 
- * @param {String} wordsearch_html 
- * @param {String} wordsearch_id Index or unique identifier string.
+ * @param {string} wordsearch_html 
+ * @param {string} wordsearch_id Index or unique identifier string.
  * @param {WordsearchGenerator} wordsearch 
- * @param {Number} whitespace
- * @param {Number} fontsize
+ * @param {number} whitespace
+ * @param {number} fontsize
  * 
- * @returns {Number} Wordsearch id.
+ * @returns {string} Wordsearch id.
  */
 function load_child_wordsearch_generator(
 	parent_jq,
@@ -456,11 +469,12 @@ function load_child_wordsearch_generator(
 		}, 150)
 	})
 	
-	const alphabet_option_template = 
-	`<div class="language-option px-2">
+	const alphabet_option_template = (
+		`<div class="language-option px-2">
 		<span class="alphabet-key"></span>
 		<span class="alphabet-aliases"></span>
-	</div>`
+		</div>`
+	)
 	
 	// display alphabets in list
 	for (let alphabet_key in alphabets) {
@@ -775,8 +789,7 @@ function add_wordsearch_container_btn() {
 
 	wordsearch_component_promise.then((wordsearch_html) => {
 		console.log('handle add-wordsearch-container button')
-
-		$('#add-wordsearch-container').click(function() {
+		$('#add-wordsearch-container').on('click', function() {
 			console.log('DEBUG add-wordsearch-container.click')
 			
 			add_wordsearch_container(wordsearch_html)
@@ -786,12 +799,12 @@ function add_wordsearch_container_btn() {
 
 /**
  * 
- * @param {String} wordsearch_html
- * @param {String} parent_selector
- * @param {String} wordsearch_id
+ * @param {string} wordsearch_html
+ * @param {string} parent_selector
+ * @param {string} wordsearch_id
  * @param {WordsearchGenerator} wordsearch
- * @param {Number} whitespace
- * @param {Number} fontsize
+ * @param {number} whitespace
+ * @param {number} fontsize
  * 
  * @returns {Promise}
  */
@@ -806,7 +819,6 @@ function add_wordsearch_container(
 	// add new wordsearch container
 	let header_jq = $(
 		`<div class="mb-2 row">
-			<div class="h2 col">Wordsearch generator</div>
 			<div class="col-auto">
 				<button class="btn btn-danger rm-wordsearch-container">
 					Remove wordsearch generator
@@ -815,7 +827,7 @@ function add_wordsearch_container(
 		</div>`
 	)
 	let container_jq = $(
-		`<section class="wordsearch-container mb-3"></section>`
+		`<section class="${CSS_CLASS_WORDSEARCH_CONTAINER} mb-3"></section>`
 	)
 	let hr_jq = $(`<hr/>`)
 	
@@ -1566,6 +1578,9 @@ function display_wordsearch(wordsearch, wordsearch_cmp_id) {
 
 		// enable export
 		wordsearch_cmp.find('.wordsearch-export-config').prop('disabled', false)
+
+		// TODO show title
+		wordsearch_cmp.find(`.${CSS_CLASS_WORDSEARCH_TITLE}`).text(wordsearch.title)
 
 		// update wordsearch reference
 		wordsearch_global[wordsearch_cmp_id] = wordsearch

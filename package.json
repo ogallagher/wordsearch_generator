@@ -44,6 +44,7 @@
 		"express": "^4.21.2"
 	},
 	"devDependencies": {
+		"@types/jquery": "^3.5.32",
 		"@types/node": "^20.11.20",
 		"jsdoc": "^4.0.2",
 		"mocha": "^9.2.1",
