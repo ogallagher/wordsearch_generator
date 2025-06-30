@@ -135,8 +135,9 @@ class WordsearchGenerator {
 	 * @param {String} words_delim Delimiter between a word and a clue.
 	 * @param {String} selected_charset Name of the selected character set.
 	 * @param {String} selected_prob_dist Name of the selected probability distribution.
+	 * @param {string} file_proxy_path Path under which expected resource files are nested.
 	 */
-	constructor(language = LANGUAGE_DEFAULT, alphabet_case = CASE_DEFAULT, width = WIDTH_DEFAULT, words, random_subset, title, words_delim, selected_charset, selected_prob_dist) {
+	constructor(language = LANGUAGE_DEFAULT, alphabet_case = CASE_DEFAULT, width = WIDTH_DEFAULT, words, random_subset, title, words_delim, selected_charset, selected_prob_dist, file_proxy_path = '') {
 		/**
 		 * Language/alphabet name.
 		 * @type {string}
@@ -236,7 +237,10 @@ class WordsearchGenerator {
 		 * Promise whose resolution means the wordsearch generator is ready for use.
 		 * @type {Promise}
 		 */
-		this.init_promise = WordsearchGenerator.get_alphabet(this.language, case_key)
+		this.init_promise = WordsearchGenerator.get_alphabet(
+			this.language, 
+			case_key
+		)
 		// load alphabet
 		.then((alphabet) => {
 			this.alphabet = alphabet
@@ -245,9 +249,9 @@ class WordsearchGenerator {
 			// alphabet succeeds
 			// select charset
 			() => {
-				return this.set_charset(selected_charset)
+				return this.set_charset(selected_charset, file_proxy_path)
 				.then(() => {
-					return this.set_probability_distribution(selected_prob_dist)
+					return this.set_probability_distribution(selected_prob_dist, file_proxy_path)
 				})
 				.then(() => {
 					// randomize cells
@@ -832,10 +836,11 @@ class WordsearchGenerator {
 	 * 
 	 * @param {String|Object} pd_name The prob dist name/key to be selected from 
 	 * this.alphabet[KEY_PROB_DIST], or the prob dist object itself.
+	 * @param {string} pd_file_dir Dir under which prob dist file is nested.
 	 * 
 	 * @returns {Promise<undefined>} Promise resolves undefined.
 	 */
-	set_probability_distribution(pd_name) {
+	set_probability_distribution(pd_name, pd_file_dir) {
 		let self = this
 		
 		return new Promise(function(resolve) {			
@@ -887,7 +892,7 @@ class WordsearchGenerator {
 					// update alphabet individual and cumulative probabilities
 					WordsearchGenerator.load_alphabet_probability_dist_file(
 						prob_dist[KEY_PD_FILE],
-						prob_dist[KEY_PD_DIR]
+						(pd_file_dir !== '' ? pd_file_dir + '/' : '') + prob_dist[KEY_PD_DIR]
 					)
 					.catch(function() {
 						console.log(`ERROR failed to read prob dist file ${prob_dist[KEY_PD_FILE]}`)
@@ -918,10 +923,11 @@ class WordsearchGenerator {
 	 * Set wordsearch charset.
 	 * 
 	 * @param {String} cs_name
+	 * @param {string} cs_file_dir
 	 *
 	 * @returns {Promise<undefined>} Promise resolves undefined.
 	 */
-	set_charset(cs_name) {
+	set_charset(cs_name, cs_file_dir) {
 		let self = this
 		
 		return new Promise(function(resolve) {
@@ -961,7 +967,7 @@ class WordsearchGenerator {
 						// update alphabet charset
 						WordsearchGenerator.load_alphabet_charset_file(
 							charset[KEY_CS_FILE],
-							charset[KEY_CS_DIR]
+							(cs_file_dir !== '' ? cs_file_dir + '/' : '') + charset[KEY_CS_DIR],
 						)
 						.then(
 							// pass
@@ -981,7 +987,7 @@ class WordsearchGenerator {
 					let prob_dist = charset[KEY_PROB_DIST]
 					if (prob_dist != undefined) {
 						// update alphabet prob dist
-						p.push(self.set_probability_distribution(prob_dist))
+						p.push(self.set_probability_distribution(prob_dist, cs_file_dir))
 					}
 					
 					// resolve on charset, prob dist updates

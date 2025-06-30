@@ -12,7 +12,7 @@ const ANKI_DIR = `out/webserver/anki`
 /**
  * 
  * @param {Express} server Existing server to which quizcard is added.
- * @param {string} public_dir
+ * @param {string} public_dir Path to public assets directory.
  */
 function main(server, public_dir) {
     const DELETE_EXPORTS = process.env.DELETE_EXPORTS || true

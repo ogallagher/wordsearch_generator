@@ -71,6 +71,7 @@ Promise.all([
 	
 		// constants
 		const port = process.env.PORT || 80
+		const proxy_path_wordsearch = process.env.PROXY_SERVER_PATH_WORDSEARCH || '/wordsearch'
 
 		let PUBLIC_DIR
 		if (process.env.IS_DREAMHOST) {
@@ -103,8 +104,31 @@ Promise.all([
 	
 		server.set('port', port)
 
+		// handle proxy server of public/		
+		for (let proxy_path of [proxy_path_wordsearch]) {
+			if (proxy_path !== '') {
+				console.log(`INFO create reference to public dir under proxy path ${proxy_path}`)
+				// remove absolute path syntax leading slash
+				proxy_path = proxy_path.substring(1)
+				if (!fs.existsSync(proxy_path)) {
+					fs.mkdirSync(proxy_path, {recursive: true})
+				}
+				try {
+					fs.symlinkSync(PUBLIC_DIR, path.join(proxy_path, path.basename(PUBLIC_DIR)), 'dir')
+				}
+				catch (err) {
+					console.log(`INFO skip symlink. ${err}`)
+				}
+			}
+		}
 		// serve website from public/
-		server.use(express.static(PUBLIC_DIR))
+		server.use(express.static(
+			(
+				proxy_path_wordsearch === '' 
+				? `${PUBLIC_DIR}`
+				: path.join(proxy_path_wordsearch.substring(1), path.basename(PUBLIC_DIR))
+			)
+		))
 	
 		// route root path to wordsearch generator page
 		server.get('/', function(req,res,next) {

@@ -11,14 +11,15 @@ const D3_DSV_URL = 'https://cdn.jsdelivr.net/npm/d3-dsv@3'
 
 let USE_WP_HOST_URL = true
 const WP_HOST_URL = 'https://wordsearch.dreamhosters.com'
-const DEPENDENCIES_URL = '/webpage_dependencies.html'
-const WORDSEARCH_COMPONENT_URL = '/wordsearch_webcomponent.html?version=0.39.0'
-const WORDSEARCH_CORE_URL = '/wordsearch_generator.js'
-const WORDSEARCH_LOG_URL = '/temp_js_logger.js'
-const HEADER_COMPONENT_URL = '/header_webcomponent.html?version=0.1.0'
+const PROXY_SERVER_PATH_WORDSEARCH = '/wordsearch'
+const DEPENDENCIES_URL = PROXY_SERVER_PATH_WORDSEARCH + '/webpage_dependencies.html'
+const WORDSEARCH_COMPONENT_URL = PROXY_SERVER_PATH_WORDSEARCH + '/wordsearch_webcomponent.html?version=0.39.0'
+const WORDSEARCH_CORE_URL = PROXY_SERVER_PATH_WORDSEARCH + '/wordsearch_generator.js'
+const WORDSEARCH_LOG_URL = PROXY_SERVER_PATH_WORDSEARCH + '/temp_js_logger.js'
+const HEADER_COMPONENT_URL = PROXY_SERVER_PATH_WORDSEARCH + '/header_webcomponent.html?version=0.1.0'
 const DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR = '.wordsearch-container'
 const WORDSEARCH_CONTAINERS_PARENT_SELECTOR = `${DEFAULT_WORDSEARCH_CONTAINERS_SELECTOR}s`
-const ABOUT_COMPONENT_URL = '/out/webserver/wordsearch-generator/readme.html'
+const ABOUT_COMPONENT_URL = PROXY_SERVER_PATH_WORDSEARCH + '/out/webserver/wordsearch-generator/readme.html'
 
 const REM_MIN = 5
 
@@ -304,7 +305,7 @@ function ext_js_dependencies() {
 
 function wordsearch_webpage_main() {
 	console.log('DEBUG wordsearch_webpage_main')
-	let p = WordsearchGenerator.get_alphabet_aliases()
+	let p = WordsearchGenerator.get_alphabet_aliases(`${PROXY_SERVER_PATH_WORDSEARCH}/${ALPHABET_FILE}`)
 	.catch(function(err) {
 		if (err) {
 			console.log(err)
@@ -1287,7 +1288,8 @@ function on_wordsearch_config_file(wordsearch_id, wordsearch_json) {
 				description[WordsearchGenerator.KEY_TITLE],
 				words_delim,
 				description[WordsearchGenerator.KEY_SELECTED_CHARSET],
-				description[WordsearchGenerator.KEY_SELECTED_PROB_DIST]
+				description[WordsearchGenerator.KEY_SELECTED_PROB_DIST],
+				PROXY_SERVER_PATH_WORDSEARCH
 			)
 		
 			if (random_subset != undefined) {
@@ -1340,7 +1342,8 @@ function on_wordsearch_config_form(wordsearch_id) {
 			// charset
 			wordsearch_cmp.find('.charset').val(),
 			// prob dist
-			wordsearch_cmp.find('.prob-dist').val()
+			wordsearch_cmp.find('.prob-dist').val(),
+			PROXY_SERVER_PATH_WORDSEARCH
 		)
 		
 		wordsearch.init_promise.then(() => {

@@ -1,13 +1,7 @@
-/*
-
-Owen Gallagher <github.com/ogallagher>
-2021-01-22
-
-*/
-
-const EX_CFG_FILE_CMP_PATH = '/ex_cfg_file_webcomponent.html'
-const EX_CFG_FILES_PATH = '/api/list_ex_cfg_files'
-const EX_CFG_FILE_PATH = '/api/ex_cfg_file'
+// declare PROXY_SERVER_PATH_WORDSEARCH 
+const EX_CFG_FILE_CMP_PATH = `${PROXY_SERVER_PATH_WORDSEARCH}/ex_cfg_file_webcomponent.html`
+const EX_CFG_FILES_PATH = '/wordsearch/api/list_ex_cfg_files'
+const EX_CFG_FILE_PATH = '/wordsearch/api/ex_cfg_file'
 
 // fetch example config files list
 let ex_cfg_files_fetch_promise = new Promise(function(resolve, reject) {

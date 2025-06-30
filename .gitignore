@@ -33,6 +33,9 @@ public/quizcard-generator/docs
 public/i18n.js
 public/docs/img
 
+# proxy server copies and symlinks
+wordsearch/public
+
 # test output
 
 # ide
