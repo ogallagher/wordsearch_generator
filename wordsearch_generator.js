@@ -239,7 +239,8 @@ class WordsearchGenerator {
 		 */
 		this.init_promise = WordsearchGenerator.get_alphabet(
 			this.language, 
-			case_key
+			case_key,
+			`${file_proxy_path}/${ALPHABET_FILE}`
 		)
 		// load alphabet
 		.then((alphabet) => {
