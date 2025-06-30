@@ -71,6 +71,9 @@ Promise.all([
 	
 		// constants
 		const port = process.env.PORT || 80
+		/**
+		 * @type {string}
+		 */
 		const proxy_path_wordsearch = process.env.PROXY_SERVER_PATH_WORDSEARCH || '/wordsearch'
 
 		let PUBLIC_DIR
@@ -105,20 +108,19 @@ Promise.all([
 		server.set('port', port)
 
 		// handle proxy server of public/		
-		for (let proxy_path of [proxy_path_wordsearch]) {
-			if (proxy_path !== '') {
-				console.log(`INFO create reference to public dir under proxy path ${proxy_path}`)
-				// remove absolute path syntax leading slash
-				proxy_path = proxy_path.substring(1)
-				if (!fs.existsSync(proxy_path)) {
-					fs.mkdirSync(proxy_path, {recursive: true})
-				}
-				try {
-					fs.symlinkSync(PUBLIC_DIR, path.join(proxy_path, path.basename(PUBLIC_DIR)), 'dir')
-				}
-				catch (err) {
-					console.log(`INFO skip symlink. ${err}`)
-				}
+		if (proxy_path_wordsearch !== '') {
+			let proxy_path = proxy_path_wordsearch
+			console.log(`INFO create reference to public dir under proxy path ${proxy_path}`)
+			// remove absolute path syntax leading slash
+			proxy_path = proxy_path.substring(1)
+			if (!fs.existsSync(proxy_path)) {
+				fs.mkdirSync(proxy_path, {recursive: true})
+			}
+			try {
+				fs.symlinkSync(PUBLIC_DIR, path.join(proxy_path, path.basename(PUBLIC_DIR)), 'dir')
+			}
+			catch (err) {
+				console.log(`INFO skip symlink. ${err}`)
 			}
 		}
 		// serve website from public/
@@ -171,9 +173,14 @@ Promise.all([
 				path.join(PUBLIC_DIR, 'out/webserver/wordsearch-generator'),
 				{ recursive: true },
 				() => {
+					const readme_html_path = path.join(PUBLIC_DIR, 'out/webserver/wordsearch-generator', 'readme.html')
 					md2html.compile(
 						path.join('.', 'readme.md'),
-						path.join(PUBLIC_DIR, 'out/webserver/wordsearch-generator', 'readme.html')
+						readme_html_path,
+						// handle proxy server of public/docs
+						(proxy_path_wordsearch === '' ? undefined : [
+							['docs/img', `${proxy_path_wordsearch}/docs/img`]
+						])
 					)
 				}
 			)

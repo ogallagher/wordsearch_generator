@@ -20,9 +20,10 @@ const md_html_converter = new ShowdownConverter({
  * Compile markdown source file to html file.
  * 
  * @param {string} md_path Source file path.
- * @param {string} html_path? Dest file path. Default is same as source, with `.html` extension.
+ * @param {string|undefined} html_path Dest file path. Default is same as source, with `.html` extension.
+ * @param {Iterable<[RegExp|string, string]>|undefined} replace Patterns from source file to replace in dest file.
  */
-function compile(md_path, html_path) {
+function compile(md_path, html_path, replace) {
     if (html_path === undefined) {
         html_path = path.join(path.dirname(md_path), path.basename(md_path, '.md'), '.html')
     }
@@ -33,6 +34,14 @@ function compile(md_path, html_path) {
     .then(
         (md_content) => {
             console.log(`debug loaded markdown of length ${md_content.length} from ${md_path}`)
+
+            if (replace !== undefined) {
+                for (let [pattern, value] of replace) {
+                    console.log(`debug replace pattern=${pattern} with value=${value}`)
+                    md_content = md_content.replaceAll(pattern, value)
+                }
+            }
+
             try {
                 let html_content = md_html_converter.makeHtml(md_content)
                 
