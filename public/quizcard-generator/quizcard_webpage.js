@@ -127,6 +127,11 @@ let quizcard_webpage_promise = new Promise(function(res, rej) {
 					console.log(`debug loaded header html of length ${header_html.length}`)
 					document.body.querySelector('header.shared-header').innerHTML = header_html
 					document.body.querySelector('header.shared-header a.navbar-brand').href = 'https://github.com/ogallagher/quizcard-generator'
+					const wordsearch_anchor = document.body.querySelector('header.shared-header a.wordsearch-link')
+					const wordsearch_link = new URL(window.location.href)
+					wordsearch_link.pathname = new URL(wordsearch_anchor.href).pathname
+					wordsearch_link.port = (wordsearch_link.protocol === 'http:' ? '80' : '443')
+					wordsearch_anchor.href = wordsearch_link.toString()
 					resolve_nav()
 				},
 				error: function(err) {
