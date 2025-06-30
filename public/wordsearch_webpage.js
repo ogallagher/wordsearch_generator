@@ -1935,7 +1935,7 @@ function load_charsets_prob_dists(wordsearch_cmp_id, alphabet_key) {
 	let wordsearch_jq = $(`#${wordsearch_cmp_id}`)
 	
 	// updates available charsets and prob dists lists
-	return WordsearchGenerator.get_alphabet(alphabet_key)
+	return WordsearchGenerator.get_alphabet(alphabet_key, undefined, `${PROXY_SERVER_PATH_WORDSEARCH}/${ALPHABET_FILE}`)
 	.then(
 		// pass
 		(alphabet) => {
