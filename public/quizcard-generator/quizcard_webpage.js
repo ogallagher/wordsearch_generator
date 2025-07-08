@@ -1,7 +1,7 @@
 const current_script = document.currentScript
 
 let USE_WP_HOST_URL = false
-const WP_HOST_URL = 'https://wordsearch.dreamhosters.com'
+const WP_HOST_URL = 'https://o.dreamhosters.com'
 const DEPENDENCIES_URL = '/webpage_dependencies.html'
 const QUIZGEN_COMPONENT_URL = '/quizcard-generator/quizcard_webcomponent.html?version=0.1.0'
 const HEADER_COMPONENT_URL = '/header_webcomponent.html?version=0.1.0'

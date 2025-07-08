@@ -10,7 +10,7 @@ const INPUT_FORM = 1
 const D3_DSV_URL = 'https://cdn.jsdelivr.net/npm/d3-dsv@3'
 
 let USE_WP_HOST_URL = true
-const WP_HOST_URL = 'https://wordsearch.dreamhosters.com'
+const WP_HOST_URL = 'https://o.dreamhosters.com'
 const PROXY_SERVER_PATH_WORDSEARCH = '/wordsearch'
 const DEPENDENCIES_URL = PROXY_SERVER_PATH_WORDSEARCH + '/webpage_dependencies.html'
 const WORDSEARCH_COMPONENT_URL = PROXY_SERVER_PATH_WORDSEARCH + '/wordsearch_webcomponent.html?version=0.39.0'
